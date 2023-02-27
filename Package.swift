@@ -4,18 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "${NAME}",
-    platforms: [
-        .iOS(.v13),
-    ],
+    name: "SwiftOpenAPI",
     products: [
-        .library(name: "${NAME}", targets: ["${NAME}"]),
+        .library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
     ],
     dependencies: [
     ],
     targets: [
         .target(
-            name: "${NAME}",
+            name: "SwiftOpenAPI",
             dependencies: [
             ]
         )
