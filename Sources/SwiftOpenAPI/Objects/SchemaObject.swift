@@ -1,111 +1,188 @@
 import Foundation
 
+// TODO - format, externalDocs, example
+
 /// The Schema Object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. This object is a superset of the JSON Schema Specification Draft 2020-12.
 ///
 /// For more information about the properties, see JSON Schema Core and JSON Schema Validation.
 ///
 /// Unless stated otherwise, the property definitions follow those of JSON Schema and do not add any additional semantics. Where JSON Schema indicates that behavior is defined by the application (e.g. for annotations), OAS also defers the definition of semantics to the application consuming the OpenAPI document.
-public struct SchemaObject: Codable, Equatable, SpecificationExtendable {
+public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
     
-    public var type: String?
+    case any
     
-    public var format: String?
+    case primitive(PrimitiveDataType)
     
-    public var objectType: SchemaObjectType
+    case object(
+        [String: ReferenceOr<SchemaObject>],
+        required: [String]?,
+        additionalProperties: ReferenceOr<SchemaObject>?,
+        xml: XMLObject?
+    )
     
-    /// Adds support for polymorphism. The discriminator is an object name that is used to differentiate between other schemas which may satisfy the payload description. See Composition and Inheritance for more details.
-    public var discriminator: DiscriminatorObject?
+    case array(
+        ReferenceOr<SchemaObject>
+    )
     
-    /// This MAY be used only on properties schemas. It has no effect on root schemas. Adds additional metadata to describe the XML representation of this property.
-    public var xml: XMLObject?
-    
-    /// Additional external documentation for this schema.
-    public var externalDocs: ExternalDocumentationObject?
-    
-    /// A free-form property to include an example of an instance for this schema. To represent examples that cannot be naturally represented in JSON or YAML, a string value can be used to contain the example with escaping where necessary.
-    
-    @available(*, deprecated, message: "The example property has been deprecated in favor of the JSON Schema examples keyword. Use of example is discouraged, and later versions of this specification may remove it.")
-    public var example: AnyValue?
+    case composite(
+        CompositeType,
+        [ReferenceOr<SchemaObject>],
+        discriminator: DiscriminatorObject?
+    )
     
     public enum CodingKeys: String, CodingKey {
         
         case type
-        case format
         case items
         case required
         case properties
-        case example
         case discriminator
         case xml
-        case externalDocs
         case additionalProperties
-    }
-    
-    public init(
-        type: String? = nil,
-        format: String? = nil,
-        objectType: SchemaObjectType,
-        discriminator: DiscriminatorObject? = nil,
-        xml: XMLObject? = nil,
-        externalDocs: ExternalDocumentationObject? = nil
-    ) {
-        self.type = type
-        self.format = format
-        self.objectType = objectType
-        self.discriminator = discriminator
-        self.xml = xml
-        self.externalDocs = externalDocs
+        
+        case oneOf
+        case allOf
+        case anyOf
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        type = try container.decodeIfPresent(String.self, forKey: .type)
-        format = try container.decodeIfPresent(String.self, forKey: .format)
-        discriminator = try container.decodeIfPresent(DiscriminatorObject.self, forKey: .discriminator)
-        xml = try container.decodeIfPresent(XMLObject.self, forKey: .xml)
-        externalDocs = try container.decodeIfPresent(ExternalDocumentationObject.self, forKey: .externalDocs)
-        example = try container.decodeIfPresent(AnyValue.self, forKey: .example)
+        let type = try container.decodeIfPresent(DataType.self, forKey: .type)
         
-        if let properties = try container.decodeIfPresent([String: ReferenceOr<SchemaObject>].self, forKey: .properties) {
-            objectType =  try .object(
+        switch type {
+        case .array:
+            let items = try container.decode(ReferenceOr<SchemaObject>.self, forKey: .items)
+            self = .array(items)
+            
+        case .object:
+            let properties = try container.decode([String: ReferenceOr<SchemaObject>].self, forKey: .properties)
+            let xml = try container.decodeIfPresent(XMLObject.self, forKey: .xml)
+        		let required = try container.decodeIfPresent([String].self, forKey: .required)
+        		let additionalProperties = try container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .additionalProperties)
+            self = .object(
                 properties,
-                required: container.decodeIfPresent([String].self, forKey: .required),
-                additionalProperties: container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .additionalProperties)
+                required: required,
+                additionalProperties: additionalProperties,
+                xml: xml
             )
-        } else if let items = try container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .items) {
-            objectType = .array(items)
-        } else {
-            objectType = .primitive
+            
+        case .none:
+            let compositionKey = Set(container.allKeys).intersection([.oneOf, .allOf, .anyOf]).first
+            
+            if let compositionKey, let composition = CompositeType(rawValue: compositionKey.rawValue) {
+                let discriminator = try container.decodeIfPresent(DiscriminatorObject.self, forKey: .discriminator)
+                let objects = try container.decode([ReferenceOr<SchemaObject>].self, forKey: compositionKey)
+                self = .composite(
+                    composition,
+                    objects,
+                    discriminator: discriminator
+                )
+            } else {
+                self = .any
+            }
+            
+        case let .some(type):
+            self = .primitive(PrimitiveDataType(rawValue: type.rawValue) ?? .string)
         }
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(type, forKey: .type)
-        try container.encodeIfPresent(discriminator, forKey: .discriminator)
-        try container.encodeIfPresent(format, forKey: .format)
-        try container.encodeIfPresent(xml, forKey: .xml)
-        try container.encodeIfPresent(externalDocs, forKey: .externalDocs)
-        try container.encodeIfPresent(example, forKey: .example)
-        
-        switch objectType {
-        case .primitive:
+        switch self {
+        case .any:
             break
             
-        case let .object(properties, required, additionalProperties):
+        case let .primitive(type):
+            try container.encodeIfPresent(type, forKey: .type)
+            
+        case let .object(
+            properties,
+            required,
+            additionalProperties,
+            xml
+        ):
+            try container.encodeIfPresent(DataType.object, forKey: .type)
+            try container.encodeIfPresent(xml, forKey: .xml)
             try container.encode(properties, forKey: .properties)
             try container.encodeIfPresent(required, forKey: .required)
             try container.encodeIfPresent(additionalProperties, forKey: .additionalProperties)
             
         case let .array(schemaObject):
+            try container.encodeIfPresent(DataType.array, forKey: .type)
             try container.encode(schemaObject, forKey: .items)
+            
+        case let .composite(composite, items, discriminator):
+            try container.encodeIfPresent(discriminator, forKey: .type)
+            try container.encode(items, forKey: CodingKeys(rawValue: composite.rawValue) ?? .oneOf)
         }
     }
 }
 
-public indirect enum SchemaObjectType: Equatable {
+public protocol SchemaObjectExpressible {
     
-    case primitive
-    case object([String: ReferenceOr<SchemaObject>], required: [String]?, additionalProperties: ReferenceOr<SchemaObject>?)
-    case array(ReferenceOr<SchemaObject>)
+    init(schemaObject: SchemaObject)
+}
+
+extension SchemaObject: SchemaObjectExpressible {
+    
+    public init(schemaObject: SchemaObject) {
+        self = schemaObject
+    }
+}
+
+extension ReferenceOr: SchemaObjectExpressible where Object: SchemaObjectExpressible {
+    
+    public init(schemaObject: SchemaObject) {
+        self = .value(Object(schemaObject: schemaObject))
+    }
+}
+
+public extension SchemaObjectExpressible {
+    
+    static func oneOf(
+        _ types: ReferenceOr<SchemaObject>...,
+        discriminator: DiscriminatorObject? = nil
+    ) -> Self {
+        Self(
+            schemaObject: .composite(.oneOf, types, discriminator: discriminator)
+        )
+    }
+    
+    static func allOf(
+        _ types: ReferenceOr<SchemaObject>...,
+        discriminator: DiscriminatorObject? = nil
+    ) -> Self {
+        Self(
+            schemaObject: .composite(.allOf, types, discriminator: discriminator)
+        )
+    }
+    
+    static func anyOf(
+        _ types: ReferenceOr<SchemaObject>...,
+        discriminator: DiscriminatorObject? = nil
+    ) -> Self {
+        Self(
+            schemaObject: .composite(.anyOf, types, discriminator: discriminator)
+        )
+    }
+    
+    static var string: Self { Self(schemaObject: .primitive(.string)) }
+    static var number: Self { Self(schemaObject: .primitive(.number)) }
+    static var integer: Self { Self(schemaObject: .primitive(.integer)) }
+    static var boolean: Self { Self(schemaObject: .primitive(.boolean)) }
+}
+
+extension SchemaObject: ExpressibleByDictionary {
+    
+    public typealias Key = String
+    public typealias Value = ReferenceOr<SchemaObject>
+    
+    public init(dictionaryElements elements: [(String, ReferenceOr<SchemaObject>)]) {
+        self = .object(
+            Dictionary(elements) { _, s in s },
+            required: nil,
+            additionalProperties: nil,
+            xml: nil
+        )
+    }
 }

@@ -10,12 +10,71 @@
 SwiftOpenAPI is a Swift library which can generate output compatible with [OpenAPI](https://swagger.io/specification/) version 3.1.0. You can describe your API using `OpenAPIObject` type.
 
 ## Example
-
 ```swift
+OpenAPIObject(
+    openapi: "1.0.0",
+    info: InfoObject(
+        title: "Example API",
+        version: "0.1.0"
+    ),
+    servers: [
+        ServerObject(url: "https://example-server.com"),
+        ServerObject(url: "https://example-server-test.com")
+    ],
+    paths: [
+        "services": .get(
+            summary: "Get services",
+            OperationObject(description: "Get services")
+        ),
+        "login": .post(
+            OperationObject(
+                description: "login",
+                requestBody: .ref(components: \.requestBodies, "LoginRequest"),
+                responses: [
+                    .default: .ref(components: \.responses, "LoginResponse"),
+                    401: .ref(components: \.responses, "ErrorResponse")
+                ]
+            )
+        ),
+        "/services/{serviceID}": [
+            .get: OperationObject(description: "Get service"),
+            .delete: OperationObject(description: "Delete service")
+        ],
+        "/services": .ref(components: \.pathItems, "T")
+    ],
+    components: ComponentsObject(
+        schemas: [
+            "LoginBody": [
+                "username": .string,
+                "password": .string
+            ]
+        ],
+        examples: [
+            "LoginBody": .value(
+                ExampleObject(
+                    value: [
+                        "username": "SomeUser",
+                        "password": "12345678"
+                    ]
+                )
+            )
+        ],
+        requestBodies: [
+            "LoginRequest": .value(
+                RequestBodyObject(
+                    content: [
+                        .application(.json): MediaTypeObject(
+                            schema: .ref(components: \.schemas, "LoginBody")
+                        )
+                    ],
+                    required: nil
+                )
+            )
+        ]
+    )
+)
 
 ```
-## Usage
-
  
 ## Installation
 
@@ -29,7 +88,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "0.1.1")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "0.2.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])

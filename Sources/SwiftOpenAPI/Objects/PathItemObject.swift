@@ -113,7 +113,7 @@ extension PathItemObject: ExpressibleByPathItemObject {
 extension ReferenceOr<PathItemObject>: ExpressibleByPathItemObject {
     
     public init(pathItemObject: PathItemObject) {
-        self = .object(pathItemObject)
+        self = .value(pathItemObject)
     }
 }
 
