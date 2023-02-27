@@ -1,6 +1,6 @@
 import Foundation
 
-public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringLiteral, RawRepresentable, CodingKey {
+public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpolation, RawRepresentable, CodingKey {
     
     public var rawValue: String
     
@@ -17,6 +17,10 @@ public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringLiteral, 
     
     public init(stringLiteral value: String) {
         self.init(rawValue: value)
+    }
+    
+    public init(stringInterpolation value: DefaultStringInterpolation) {
+        self.init(rawValue: String(stringInterpolation: value))
     }
     
     public init?(stringValue: String) {

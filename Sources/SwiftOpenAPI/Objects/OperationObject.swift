@@ -3,22 +3,6 @@ import Foundation
 /// Describes a single API operation on a path.
 public struct OperationObject: Equatable, Codable, SpecificationExtendable {
     
-    public init(tags: [String]? = nil, summary: String? = nil, description: String, externalDocs: ExternalDocumentationObject? = nil, operationId: String? = nil, parameters: [ReferenceOr<ParameterObject>]? = nil, requestBody: ReferenceOr<RequestBodyObject>? = nil, responses: ResponsesObject? = nil, callbacks: [String : ReferenceOr<CallbackObject>]? = nil, deprecated: Bool? = nil, security: [SecurityRequirementObject]? = nil, servers: [ServerObject]? = nil) {
-        self.tags = tags
-        self.summary = summary
-        self.description = description
-        self.externalDocs = externalDocs
-        self.operationId = operationId
-        self.parameters = parameters
-        self.requestBody = requestBody
-        self.responses = responses
-        self.callbacks = callbacks
-        self.deprecated = deprecated
-        self.security = security
-        self.servers = servers
-    }
-    
-    
     /// A list of tags for API documentation control. Tags can be used for logical grouping of operations by resources or any other qualifier.
     public var tags: [String]?
     
@@ -54,4 +38,19 @@ public struct OperationObject: Equatable, Codable, SpecificationExtendable {
     
     /// An alternative server array to service this operation. If an alternative server object is specified at the ```PathItemObject``` or Root level, it will be overridden by this value.
     public var servers: [ServerObject]?
+    
+    public init(tags: [String]? = nil, summary: String? = nil, description: String, externalDocs: ExternalDocumentationObject? = nil, operationId: String? = nil, parameters: [ReferenceOr<ParameterObject>]? = nil, requestBody: ReferenceOr<RequestBodyObject>? = nil, responses: ResponsesObject? = nil, callbacks: [String : ReferenceOr<CallbackObject>]? = nil, deprecated: Bool? = nil, security: [SecurityRequirementObject]? = nil, servers: [ServerObject]? = nil) {
+        self.tags = tags
+        self.summary = summary
+        self.description = description
+        self.externalDocs = externalDocs
+        self.operationId = operationId
+        self.parameters = parameters
+        self.requestBody = requestBody
+        self.responses = responses
+        self.callbacks = callbacks
+        self.deprecated = deprecated
+        self.security = security
+        self.servers = servers
+    }
 }

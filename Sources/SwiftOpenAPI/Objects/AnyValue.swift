@@ -9,6 +9,7 @@ public enum AnyValue: Codable, Equatable {
     case double(Double)
 		case object([String: AnyValue])
     case array([AnyValue])
+    case null
     
     public init(from decoder: Decoder) throws {
         do {
@@ -26,7 +27,16 @@ public enum AnyValue: Codable, Equatable {
                         do {
                             self = try .object([String: AnyValue](from: decoder))
                         } catch {
-                            self = try .array([AnyValue](from: decoder))
+                            do {
+                                self = try .array([AnyValue](from: decoder))
+                            } catch {
+                                let container = try decoder.singleValueContainer()
+                                if container.decodeNil() {
+                                    self = .null
+                                } else {
+                                    throw error
+                                }
+                            }
                         }
                     }
                 }
@@ -42,6 +52,9 @@ public enum AnyValue: Codable, Equatable {
         case let .double(value): try value.encode(to: encoder)
         case let .object(value): try value.encode(to: encoder)
         case let .array(value): try value.encode(to: encoder)
+        case .null:
+            var container = encoder.singleValueContainer()
+            try container.encodeNil()
         }
     }
     
@@ -78,9 +91,12 @@ public enum AnyValue: Codable, Equatable {
     }
 }
 
-extension AnyValue: ExpressibleByDictionaryLiteral {
+extension AnyValue: ExpressibleByDictionary {
     
-    public init(dictionaryLiteral elements: (String, AnyValue)...) {
+    public typealias Key = String
+    public typealias Value = AnyValue
+    
+    public init(dictionaryElements elements: [(String, AnyValue)]) {
         self = .object(
             Dictionary(elements) { _, s in s }
         )
@@ -98,10 +114,12 @@ extension AnyValue: ExpressibleByStringInterpolation {
     }
 }
 
-extension AnyValue: ExpressibleByArrayLiteral {
+extension AnyValue: ExpressibleByArray {
     
-    public init(arrayLiteral elements: AnyValue...) {
-        self = .array(elements)
+    public typealias ArrayLiteralElement = AnyValue
+    
+    public init(arrayElements array: [AnyValue]) {
+        self = .array(array)
     }
 }
 
@@ -192,6 +210,7 @@ private struct AnyValueSingleValueEncodingContainer: SingleValueEncodingContaine
     @Ref var result: AnyValue
     
     mutating func encodeNil() throws {
+        result = .null
     }
     
     mutating func encode(_ value: Bool) throws {
@@ -268,6 +287,7 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
     }
     
     mutating func encodeNil(forKey key: Key) throws {
+        result[str(key)] = .null
     }
     
     mutating func encode(_ value: Bool, forKey key: Key) throws {
@@ -433,6 +453,7 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
     
     mutating func encodeNil() throws {
+        result.append(.null)
     }
     
     mutating func superEncoder() -> Encoder {

@@ -1,8 +1,8 @@
 import Foundation
 
-public struct PathsObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionaryLiteral {
+public struct PathsObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
     
-    public typealias Key = String
+    public typealias Key = Path
     public typealias Value = ReferenceOr<PathItemObject>
     
     public var value: [Key: Value]
@@ -11,7 +11,7 @@ public struct PathsObject: Codable, Equatable, SpecificationExtendable, Expressi
         self.value = value
     }
     
-    public init(dictionaryLiteral elements: (Key, Value)...) {
+    public init(dictionaryElements elements: [(Key, Value)]) {
         self.init(
             Dictionary(elements) { _, second in
                 second
@@ -20,10 +20,21 @@ public struct PathsObject: Codable, Equatable, SpecificationExtendable, Expressi
     }
     
     public init(from decoder: Decoder) throws {
-        try self.init(Dictionary(from: decoder))
+        let container = try decoder.container(keyedBy: Key.self)
+        let pairs = try container.allKeys.map {
+            try ($0, container.decode(Value.self, forKey: $0))
+        }
+        self = Self.init(
+            Dictionary(pairs) { _, second in
+                second
+            }
+        )
     }
     
     public func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
+        var container = encoder.container(keyedBy: Key.self)
+        for (key, object) in value {
+            try container.encode(object, forKey: key)
+        }
     }
 }

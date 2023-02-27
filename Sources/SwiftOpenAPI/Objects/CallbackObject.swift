@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CallbackObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionaryLiteral {
+public struct CallbackObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
     
     public typealias Key = RuntimeExpression
     public typealias Value = ReferenceOr<PathItemObject>
@@ -11,7 +11,7 @@ public struct CallbackObject: Codable, Equatable, SpecificationExtendable, Expre
         self.value = value
     }
     
-    public init(dictionaryLiteral elements: (Key, Value)...) {
+    public init(dictionaryElements elements: [(Key, Value)]) {
         self.init(
             Dictionary(elements) { _, second in
                 second

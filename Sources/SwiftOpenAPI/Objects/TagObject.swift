@@ -20,3 +20,10 @@ public struct TagObject: Codable, Equatable, SpecificationExtendable, Identifiab
         self.externalDocs = externalDocs
     }
 }
+
+extension TagObject: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: String) {
+        self.init(name: value)
+    }
+}

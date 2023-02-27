@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionaryLiteral {
+public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
     
     public typealias Value = ReferenceOr<ResponseObject>
     
@@ -10,7 +10,7 @@ public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, Expr
         self.value = value
     }
     
-    public init(dictionaryLiteral elements: (Key, Value)...) {
+    public init(dictionaryElements elements: [(Key, Value)]) {
         self.init(
             Dictionary(elements) { _, second in
                 second

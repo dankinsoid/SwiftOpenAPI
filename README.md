@@ -7,7 +7,7 @@
 
 
 ## Description
-This repository provides
+SwiftOpenAPI is a Swift library which can generate output compatible with [OpenAPI](https://swagger.io/specification/) version 3.1.0. You can describe your API using `OpenAPIObject` type.
 
 ## Example
 

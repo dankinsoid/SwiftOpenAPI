@@ -29,3 +29,60 @@ public struct ReferenceObject: Codable, Equatable {
         self.description = description
     }
 }
+
+extension ReferenceObject: ExpressibleByStringInterpolation {
+    
+    public init(stringLiteral value: String) {
+        self.init(ref: value)
+    }
+    
+    public init(stringInterpolation value: DefaultStringInterpolation) {
+        self.init(ref: String(stringInterpolation: value))
+    }
+}
+
+public protocol ReferenceObjectExpressible {
+    
+    init(referenceObject: ReferenceObject)
+}
+
+extension ReferenceOr: ReferenceObjectExpressible {
+    
+    public init(referenceObject: ReferenceObject) {
+        self = .ref(referenceObject)
+    }
+}
+
+extension ReferenceObject: ReferenceObjectExpressible {
+    
+    public init(referenceObject: ReferenceObject) {
+        self = referenceObject
+    }
+}
+
+public extension ReferenceObjectExpressible {
+    
+    /// file#/type
+    static func ref(to type: String, file: String? = nil) -> Self {
+        Self(
+            referenceObject: ReferenceObject(
+                ref: "\(file ?? "")#/\(type)"
+            )
+        )
+    }
+    
+    /// file#/type
+    static func ref<T>(to type: T.Type, file: String? = nil) -> Self {
+        .ref(to: String(describing: type), file: file)
+    }
+    
+    /// #/components/path/type
+    static func ref(components path: String, _ name: String) -> Self {
+        Self(referenceObject: "#/components/\(path)/\(name)")
+    }
+    
+    /// #/components/path/type
+    static func ref(components path: String, _ type: Any.Type) -> Self {
+        .ref(components: path, String(describing: type))
+    }
+}

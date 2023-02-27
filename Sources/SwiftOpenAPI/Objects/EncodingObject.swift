@@ -3,7 +3,7 @@ import Foundation
 public struct EncodingObject: Codable, Equatable, SpecificationExtendable {
     
     /// The Content-Type for encoding a specific property. Default value depends on the property type: for object - application/json; for array – the default is defined based on the inner type; for all other cases the default is application/octet-stream. The value can be a specific media type (e.g. application/json), a wildcard media type (e.g. image/*), or a comma-separated list of the two types.
-    public var contentType: String?
+    public var contentType: MediaType?
     
     /// A map allowing additional information to be provided as headers, for example Content-Disposition. Content-Type is described separately and SHALL be ignored in this section. This property SHALL be ignored if the request body media type is not a multipart.
     public var headers: [String: ReferenceOr<HeaderObject>]?
@@ -17,7 +17,7 @@ public struct EncodingObject: Codable, Equatable, SpecificationExtendable {
     /// Determines whether the parameter value SHOULD allow reserved characters, as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included without percent-encoding. The default value is false. This property SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
     public var allowReserved: Bool?
     
-    public init(contentType: String? = nil, headers: [String: ReferenceOr<HeaderObject>]? = nil, style: String? = nil, explode: Bool? = nil, allowReserved: Bool? = nil) {
+    public init(contentType: MediaType? = nil, headers: [String: ReferenceOr<HeaderObject>]? = nil, style: String? = nil, explode: Bool? = nil, allowReserved: Bool? = nil) {
         self.contentType = contentType
         self.headers = headers
         self.style = style

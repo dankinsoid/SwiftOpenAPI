@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Version: Codable, Comparable, LosslessStringConvertible, ExpressibleByStringLiteral {
+public struct Version: Codable, Comparable, LosslessStringConvertible, ExpressibleByStringInterpolation {
  
     public static let zero = Version(0, 0, 0)
     
@@ -76,6 +76,10 @@ public struct Version: Codable, Comparable, LosslessStringConvertible, Expressib
         self = Version(value) ?? .zero
     }
     
+    public init(stringInterpolation: StringInterpolation) {
+        self = Version(stringInterpolation.string) ?? .zero
+    }
+    
     public init(from decoder: Decoder) throws {
         let string = try String(from: decoder)
         guard let version = Version(string) else {
@@ -139,5 +143,22 @@ public struct Version: Codable, Comparable, LosslessStringConvertible, Expressib
         }
         
         return lhs.prereleaseIdentifiers.count < rhs.prereleaseIdentifiers.count
+    }
+     
+    public struct StringInterpolation: StringInterpolationProtocol {
+        
+        var string: String
+        
+        public init(literalCapacity: Int, interpolationCount: Int) {
+            string = ""
+        }
+        
+        public mutating func appendLiteral(_ literal: String) {
+            string += literal
+        }
+        
+        public mutating func appendInterpolation(_ value: some BinaryInteger) {
+           	string += "\(Int(value))"
+        }
     }
 }
