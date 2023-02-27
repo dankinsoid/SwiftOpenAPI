@@ -122,7 +122,7 @@ public extension ReferenceOr {
     }
     
     static func ref(components keyPath: WritableKeyPath<ComponentsObject, [String: ReferenceOr<Object>]?>, _ type: Any.Type) -> ReferenceOr {
-        .ref(components: keyPath, String(describing: type))
+        .ref(components: keyPath, .typeName(type))
     }
 }
 

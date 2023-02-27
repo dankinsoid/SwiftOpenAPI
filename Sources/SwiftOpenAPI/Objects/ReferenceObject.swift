@@ -73,7 +73,7 @@ public extension ReferenceObjectExpressible {
     
     /// file#/type
     static func ref<T>(to type: T.Type, file: String? = nil) -> Self {
-        .ref(to: String(describing: type), file: file)
+        .ref(to: .typeName(type), file: file)
     }
     
     /// #/components/path/type
@@ -83,6 +83,6 @@ public extension ReferenceObjectExpressible {
     
     /// #/components/path/type
     static func ref(components path: String, _ type: Any.Type) -> Self {
-        .ref(components: path, String(describing: type))
+        .ref(components: path, .typeName(type))
     }
 }

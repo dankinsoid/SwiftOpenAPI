@@ -15,9 +15,9 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
     
     case object(
         [String: ReferenceOr<SchemaObject>],
-        required: [String]?,
-        additionalProperties: ReferenceOr<SchemaObject>?,
-        xml: XMLObject?
+        required: Set<String>?,
+        additionalProperties: ReferenceOr<SchemaObject>? = nil,
+        xml: XMLObject? = nil
     )
     
     case array(
@@ -57,7 +57,7 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case .object:
             let properties = try container.decode([String: ReferenceOr<SchemaObject>].self, forKey: .properties)
             let xml = try container.decodeIfPresent(XMLObject.self, forKey: .xml)
-        		let required = try container.decodeIfPresent([String].self, forKey: .required)
+        		let required = try container.decodeIfPresent(Set<String>.self, forKey: .required)
         		let additionalProperties = try container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .additionalProperties)
             self = .object(
                 properties,
@@ -118,26 +118,26 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
     }
 }
 
-public protocol SchemaObjectExpressible {
+public protocol ExpressibleBySchemaObject {
     
     init(schemaObject: SchemaObject)
 }
 
-extension SchemaObject: SchemaObjectExpressible {
+extension SchemaObject: ExpressibleBySchemaObject {
     
     public init(schemaObject: SchemaObject) {
         self = schemaObject
     }
 }
 
-extension ReferenceOr: SchemaObjectExpressible where Object: SchemaObjectExpressible {
+extension ReferenceOr: ExpressibleBySchemaObject where Object: ExpressibleBySchemaObject {
     
     public init(schemaObject: SchemaObject) {
         self = .value(Object(schemaObject: schemaObject))
     }
 }
 
-public extension SchemaObjectExpressible {
+public extension ExpressibleBySchemaObject {
     
     static func oneOf(
         _ types: ReferenceOr<SchemaObject>...,
@@ -184,5 +184,35 @@ extension SchemaObject: ExpressibleByDictionary {
             additionalProperties: nil,
             xml: nil
         )
+    }
+}
+
+extension SchemaObject {
+    
+    var isReferenceable: Bool {
+        switch self {
+        case .any:
+            return false
+        case .object, .array, .composite, .primitive:
+            return true
+        }
+    }
+}
+
+public extension ExpressibleBySchemaObject {
+    
+    @discardableResult
+    static func encode(_ value: Encodable, into schemes: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
+        let encoder = SchemeEncoder()
+        try value.encode(to: encoder)
+        schemes.merge(encoder.references) { _, s in s }
+        schemes[.typeName(type(of: value))] = .value(encoder.result)
+        return Self(schemaObject: encoder.result)
+    }
+    
+    static func encodeWithoutReferences(_ value: Encodable) throws -> Self {
+        let encoder = SchemeEncoder(extractReferences: false)
+        try value.encode(to: encoder)
+        return Self(schemaObject: encoder.result)
     }
 }
