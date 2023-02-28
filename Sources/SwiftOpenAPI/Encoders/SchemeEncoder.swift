@@ -4,7 +4,7 @@ final class SchemeEncoder: Encoder {
     
     var codingPath: [CodingKey]
     var userInfo: [CodingUserInfoKey: Any]
-    var result: SchemaObject
+    var result: ReferenceOr<SchemaObject>
     var required: Bool
     var references: [String: ReferenceOr<SchemaObject>]
     var extractReferences: Bool
@@ -12,7 +12,7 @@ final class SchemeEncoder: Encoder {
     init(codingPath: [CodingKey] = [], extractReferences: Bool = true) {
         self.codingPath = codingPath
         self.userInfo = [:]
-        self.result = .any
+        self.result = .value(.any)
         self.required = true
         self.references = [:]
         self.extractReferences = extractReferences
@@ -23,49 +23,47 @@ final class SchemeEncoder: Encoder {
             codingPath: codingPath,
             result: Ref { [self] in
                 guard
-                    case let .object(properties, _, _, _) = result
+                    case let .value(.object(properties, _, _, _)) = result
                 else { return [:] }
                 return properties ?? [:]
             } set: { [self] newValue in
                 switch result {
-                case let .object(_, required, additionalProperties, xml):
-                    result = .object(newValue, required: required, additionalProperties: additionalProperties, xml: xml)
+                case let .value(.object(_, required, additionalProperties, xml)):
+                    result = .value(.object(newValue, required: required, additionalProperties: additionalProperties, xml: xml))
                 default:
-                    result = .object(newValue, required: [])
+                    result = .value(.object(newValue, required: []))
                 }
             },
             required: Ref { [self] in
                 guard
-                    case let .object(_, required, _, _) = result
+                    case let .value(.object(_, required, _, _)) = result
                 else { return [] }
                 return required ?? []
             } set: { [self] newValue in
                 switch result {
-                case let .object(properties, _, additionalProperties, xml):
-                    result = .object(properties, required: newValue, additionalProperties: additionalProperties, xml: xml)
+                case let .value(.object(properties, _, additionalProperties, xml)):
+                    result = .value(.object(properties, required: newValue, additionalProperties: additionalProperties, xml: xml))
                 default:
-                    result = .object([:], required: newValue)
+                    result = .value(.object([:], required: newValue))
                 }
             },
             extractReferences: extractReferences,
             references: Ref(self, \.references)
         )
-        result = .object([:], required: [])
         return KeyedEncodingContainer(container)
     }
     
     func unkeyedContainer() -> UnkeyedEncodingContainer {
-        result = .array(.value(.any))
-        return SchemeSingleValueEncodingContainer(
+        SchemeSingleValueEncodingContainer(
             isSingle: false,
             codingPath: codingPath,
             result: Ref { [self] in
-                if case let .array(value) = result {
+                if case let .value(.array(value)) = result {
                     return value
                 }
                 return .value(.any)
             } set: { [self] newValue in
-                result = .array(newValue)
+                result = .value(.array(newValue))
             },
             required: .constant(true),
             extractReferences: extractReferences,
@@ -74,21 +72,54 @@ final class SchemeEncoder: Encoder {
     }
     
     func singleValueContainer() -> SingleValueEncodingContainer {
-        result = .any
-        return SchemeSingleValueEncodingContainer(
+        SchemeSingleValueEncodingContainer(
             isSingle: true,
             codingPath: codingPath,
-            result: Ref { [self] in
-                .value(result)
-            } set: { [self] newValue in
-                if case let .value(value) = newValue {
-                    result = value
-                }
-            },
+            result: Ref(self, \.result),
             required: Ref(self, \.required),
             extractReferences: extractReferences,
             references: Ref(self, \.references)
         )
+    }
+    
+    @discardableResult
+    func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr<SchemaObject> {
+        try value.encode(to: self)
+        schemas.merge(references) { _, new in new }
+        
+        let type = type(of: value)
+        switch result {
+        case let .value(.object(properties, _, _, xml)):
+            if let decodable = type as? Decodable.Type {
+                let decoder = SchemeDecoder()
+                _ = try? decodable.init(from: decoder)
+                if decoder.isAdditional, let property = properties?.first?.value {
+                    result = .value(.object(nil, required: nil, additionalProperties: property, xml: xml))
+                }
+            }
+            
+        case let .value(.primitive(dataType, format)):
+            if let iterable = type as? any CaseIterable.Type {
+                let allCases = iterable.allCases as any Collection
+                result = .value(.enum(dataType, allCases: allCases.map { "\($0)" }))
+            } else if let primitive = type as? OpenAPIPrimitive.Type {
+                result = .value(.primitive(dataType, format: format ?? primitive.openAPIFormat))
+            }
+            
+        default:
+            break
+        }
+        if extractReferences, result.isReferenceable, isReferenceable(type: type) {
+            let name = String.typeName(type)
+            schemas[name] = result
+            return .ref(components: \.schemas, name)
+        } else {
+            return result
+        }
+    }
+    
+    private func isReferenceable(type: Any.Type) -> Bool {
+        !(type is OpenAPIPrimitive.Type)
     }
 }
 
@@ -163,19 +194,11 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
     }
     
     mutating func encode<T>(_ value: T) throws where T : Encodable {
-        let encoder = SchemeEncoder(
+        result = try SchemeEncoder(
             codingPath: nestedPath,
             extractReferences: extractReferences
         )
-        try value.encode(to: encoder)
-        references.merge(encoder.references) { _, s in s }
-        if extractReferences, encoder.result.isReferenceable {
-            let name = String.typeName(T.self)
-            references[name] = .value(encoder.result)
-            result = .ref(components: \.schemas, name)
-        } else {
-            result = .value(encoder.result)
-        }
+        .encode(value, into: &references)
     }
     
     mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
@@ -190,7 +213,9 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
             } set: { [$result] newValue in
                 switch $result.wrappedValue {
                 case let .value(.object(_, required, additionalProperties, xml)):
-                    $result.wrappedValue = .value(.object(newValue, required: required, additionalProperties: additionalProperties, xml: xml))
+                    $result.wrappedValue = .value(
+                        .object(newValue, required: required, additionalProperties: additionalProperties, xml: xml)
+                    )
                 default:
                     $result.wrappedValue = .value(.object(newValue, required: []))
                 }
@@ -203,7 +228,9 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
             } set: { [$result] newValue in
                 switch $result.wrappedValue {
                 case let .value(.object(properties, _, additionalProperties, xml)):
-                    $result.wrappedValue = .value(.object(properties, required: newValue, additionalProperties: additionalProperties, xml: xml))
+                    $result.wrappedValue = .value(
+                        .object(properties, required: newValue, additionalProperties: additionalProperties, xml: xml)
+                    )
                 default:
                     $result.wrappedValue = .value(.object([:], required: newValue))
                 }
@@ -381,16 +408,8 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
     
     private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
         let encoder = SchemeEncoder(codingPath: nestedPath(for: key))
-        try value.encode(to: encoder)
-        references.merge(encoder.references) { _, s in s }
         let stringKey = str(key)
-        if extractReferences, encoder.result.isReferenceable {
-            let name = String.typeName(T.self)
-            references[name] = .value(encoder.result)
-            result[stringKey] = .ref(components: \.schemas, name)
-        } else {
-            result[stringKey] = .value(encoder.result)
-        }
+        result[stringKey] = try encoder.encode(value, into: &references)
         if optional {
             required.remove(stringKey)
         } else {
@@ -485,4 +504,55 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
             required.insert(stringKey)
         }
     }
+}
+
+private final class SchemeDecoder: Decoder {
+    
+    var codingPath: [CodingKey] = []
+    var userInfo: [CodingUserInfoKey: Any] = [:]
+    var isAdditional = false
+    
+    func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
+        KeyedDecodingContainer(
+            SchemeDecodingContainer(isAdditional: Ref(self, \.isAdditional))
+        )
+    }
+    
+    func unkeyedContainer() throws -> UnkeyedDecodingContainer { throw AnyError() }
+    func singleValueContainer() throws -> SingleValueDecodingContainer { throw AnyError() }
+}
+
+private struct SchemeDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+    
+    var allKeys: [Key] {
+        isAdditional = true
+        return []
+    }
+    @Ref var isAdditional: Bool
+    
+    var codingPath: [CodingKey] { [] }
+    func contains(_ key: Key) -> Bool { false }
+    func decodeNil(forKey key: Key) throws -> Bool { throw AnyError() }
+    func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { throw AnyError() }
+    func decode(_ type: String.Type, forKey key: Key) throws -> String { throw AnyError() }
+    func decode(_ type: Double.Type, forKey key: Key) throws -> Double { throw AnyError() }
+    func decode(_ type: Float.Type, forKey key: Key) throws -> Float { throw AnyError() }
+    func decode(_ type: Int.Type, forKey key: Key) throws -> Int { throw AnyError() }
+    func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { throw AnyError() }
+    func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 { throw AnyError() }
+    func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 { throw AnyError() }
+    func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 { throw AnyError() }
+    func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt { throw AnyError() }
+    func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 { throw AnyError() }
+    func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 { throw AnyError() }
+    func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 { throw AnyError() }
+    func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { throw AnyError() }
+    func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable { throw AnyError() }
+    func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> { throw AnyError() }
+    func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer { throw AnyError() }
+    func superDecoder() throws -> Decoder { throw AnyError() }
+    func superDecoder(forKey key: Key) throws -> Decoder { throw AnyError() }
+}
+
+private struct AnyError: Error {
 }

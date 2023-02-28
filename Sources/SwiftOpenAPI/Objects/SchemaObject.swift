@@ -1,6 +1,6 @@
 import Foundation
 
-// TODO - format, externalDocs, example
+// TODO - description, externalDocs
 
 /// The Schema Object allows the definition of input and output data types. These types can be objects, but also primitives and arrays. This object is a superset of the JSON Schema Specification Draft 2020-12.
 ///
@@ -33,6 +33,11 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         discriminator: DiscriminatorObject?
     )
     
+    case `enum`(
+        PrimitiveDataType,
+        allCases: [String]
+    )
+    
     public enum CodingKeys: String, CodingKey {
         
         case type
@@ -42,6 +47,7 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case properties
         case discriminator
         case xml
+        case `enum`
         case additionalProperties
         
         case oneOf
@@ -86,8 +92,13 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
             }
             
         case let .some(type):
-            let format = try container.decodeIfPresent(String.self, forKey: .format)
-            self = .primitive(PrimitiveDataType(rawValue: type.rawValue) ?? .string, format: format)
+            let dataType = PrimitiveDataType(rawValue: type.rawValue) ?? .string
+            if let allCases = try container.decodeIfPresent([String].self, forKey: .enum) {
+                self = .enum(dataType, allCases: allCases)
+            } else {
+                let format = try container.decodeIfPresent(String.self, forKey: .format)
+                self = .primitive(dataType, format: format)
+            }
         }
     }
     
@@ -120,6 +131,10 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case let .composite(composite, items, discriminator):
             try container.encodeIfPresent(discriminator, forKey: .type)
             try container.encode(items, forKey: CodingKeys(rawValue: composite.rawValue) ?? .oneOf)
+            
+        case let .enum(type, allCases):
+            try container.encode(type, forKey: .type)
+            try container.encode(allCases, forKey: .enum)
         }
     }
 }
@@ -197,28 +212,32 @@ extension SchemaObject {
     
     var isReferenceable: Bool {
         switch self {
-        case .any:
+        case .any, .array:
             return false
-        case .object, .array, .composite, .primitive:
+        case .composite, .primitive, .enum:
             return true
+        case let .object(properties, _, _, _):
+            return properties?.isEmpty == false
         }
     }
 }
 
-public extension ExpressibleBySchemaObject {
+extension ReferenceOr<SchemaObject> {
     
-    @discardableResult
-    static func encode(_ value: Encodable, into schemes: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
-        let encoder = SchemeEncoder()
-        try value.encode(to: encoder)
-        schemes.merge(encoder.references) { _, s in s }
-        schemes[.typeName(type(of: value))] = .value(encoder.result)
-        return Self(schemaObject: encoder.result)
+    var isReferenceable: Bool {
+        switch self {
+        case .value(let object):
+            return object.isReferenceable
+        case .ref:
+            return false
+        }
     }
+}
+
+public extension SchemaObject {
     
-    static func encodeWithoutReferences(_ value: Encodable) throws -> Self {
-        let encoder = SchemeEncoder(extractReferences: false)
-        try value.encode(to: encoder)
-        return Self(schemaObject: encoder.result)
+    static func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws {
+        let encoder = SchemeEncoder()
+        try encoder.encode(value, into: &schemas)
     }
 }

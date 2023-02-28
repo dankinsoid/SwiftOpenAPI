@@ -33,7 +33,18 @@ public struct ComponentsObject: Codable, Equatable, SpecificationExtendable {
     /// An object to hold reusable Path Item Object.
     public var pathItems: [String: ReferenceOr<PathItemObject>]?
     
-    public init(schemas: [String: ReferenceOr<SchemaObject>]? = nil, responses: [String: ReferenceOr<ResponseObject>]? = nil, parameters: [String: ReferenceOr<ParameterObject>]? = nil, examples: [String: ReferenceOr<ExampleObject>]? = nil, requestBodies: [String: ReferenceOr<RequestBodyObject>]? = nil, headers: [String: ReferenceOr<HeaderObject>]? = nil, securitySchemes: [String: ReferenceOr<SecuritySchemeObject>]? = nil, links: [String: ReferenceOr<LinkObject>]? = nil, callbacks: [String: ReferenceOr<CallbackObject>]? = nil, pathItems: [String: ReferenceOr<PathItemObject>]? = nil) {
+    public init(
+        schemas: [String: ReferenceOr<SchemaObject>]? = nil,
+        responses: [String: ReferenceOr<ResponseObject>]? = nil,
+        parameters: [String: ReferenceOr<ParameterObject>]? = nil,
+        examples: [String: ReferenceOr<ExampleObject>]? = nil,
+        requestBodies: [String: ReferenceOr<RequestBodyObject>]? = nil,
+        headers: [String: ReferenceOr<HeaderObject>]? = nil,
+        securitySchemes: [String: ReferenceOr<SecuritySchemeObject>]? = nil,
+        links: [String: ReferenceOr<LinkObject>]? = nil,
+        callbacks: [String: ReferenceOr<CallbackObject>]? = nil,
+        pathItems: [String: ReferenceOr<PathItemObject>]? = nil
+    ) {
         self.schemas = schemas
         self.responses = responses
         self.parameters = parameters

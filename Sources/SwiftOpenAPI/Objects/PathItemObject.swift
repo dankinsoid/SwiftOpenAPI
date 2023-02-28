@@ -9,29 +9,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
     /// String description, intended to apply to all operations in this path. CommonMark syntax MAY be used for rich text representation.
     public var description: String?
     
-    /// A definition of a GET operation on this path.
-    public var get: OperationObject?
-    
-    /// A definition of a PUT operation on this path.
-    public var put: OperationObject?
-    
-    /// A definition of a POST operation on this path.
-    public var post: OperationObject?
-    
-    /// A definition of a DELETE operation on this path.
-    public var delete: OperationObject?
-    
-    /// A definition of a OPTIONS operation on this path.
-    public var options: OperationObject?
-    
-    /// A definition of a HEAD operation on this path.
-    public var head: OperationObject?
-    
-    /// A definition of a PATCH operation on this path.
-    public var patch: OperationObject?
-    
-    /// A definition of a TRACE operation on this path.
-    public var trace: OperationObject?
+    public var operations: [Key: OperationObject]
     
     /// An alternative server array to service all operations in this path.
     public var servers: [ServerObject]?
@@ -42,64 +20,126 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
     public init(
         summary: String? = nil,
         description: String? = nil,
-        get: OperationObject? = nil,
-        put: OperationObject? = nil,
-        post: OperationObject? = nil,
-        delete: OperationObject? = nil,
-        options: OperationObject? = nil,
-        head: OperationObject? = nil,
-        patch: OperationObject? = nil,
-        trace: OperationObject? = nil,
         servers: [ServerObject]? = nil,
-        parameters: [ReferenceOr<ParameterObject>]? = nil
+        parameters: [ReferenceOr<ParameterObject>]? = nil,
+        _ operations: [PathItemObject.Key: OperationObject]
     ) {
         self.summary = summary
         self.description = description
-        self.get = get
-        self.put = put
-        self.post = post
-        self.delete = delete
-        self.options = options
-        self.head = head
-        self.patch = patch
-        self.trace = trace
+        self.operations = operations
         self.servers = servers
         self.parameters = parameters
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        summary = try container.decodeIfPresent(String.self, forKey: .field(.summary))
+        description = try container.decodeIfPresent(String.self, forKey: .field(.description))
+        servers = try container.decodeIfPresent([ServerObject].self, forKey: .field(.servers))
+        parameters = try container.decodeIfPresent([ReferenceOr<ParameterObject>].self, forKey: .field(.parameters))
+        operations = [:]
+        
+        for method in container.allKeys.compactMap(\.method) {
+            operations[method] = try container.decodeIfPresent(OperationObject.self, forKey: .method(method))
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(summary, forKey: .field(.summary))
+        try container.encodeIfPresent(description, forKey: .field(.description))
+        try container.encodeIfPresent(servers, forKey: .field(.servers))
+        try container.encodeIfPresent(parameters, forKey: .field(.parameters))
+        for (method, operation) in operations {
+            try container.encode(operation, forKey: .method(method))
+        }
+    }
+    
+    public enum CodingKeys: CodingKey {
+        
+        case field(Field)
+        case method(Method)
+        
+        public var stringValue: String {
+            switch self {
+            case let .field(field):
+                return field.rawValue
+            case let .method(method):
+                return method.rawValue
+            }
+        }
+        
+        public var method: Method? {
+            switch self {
+            case .field:
+                return  nil
+            case let .method(method):
+                return method
+            }
+        }
+        
+        public var intValue: Int? { nil }
+        
+        public init?(stringValue: String) {
+            if let field = Field(rawValue: stringValue) {
+                self = .field(field)
+            } else {
+                self = .method(PathItemObject.Method(rawValue: stringValue))
+            }
+        }
+        
+        public init?(intValue: Int) {
+            return nil
+        }
+    
+        public enum Field: String {
+            
+            case summary
+            case description
+            case servers
+            case parameters
+        }
     }
 }
 
 extension PathItemObject: ExpressibleByDictionary {
     
+    public typealias Key = Method
     public typealias Value = OperationObject
     
     public init(dictionaryElements elements: [(Key, Value)]) {
-        self.init()
-        for (key, element) in elements {
-            self[keyPath: key.keyPath] = element
-        }
+        self.init(Dictionary(elements) { _, new in new })
     }
     
-    public enum Key: String, Codable {
+    public struct Method: LosslessStringConvertible, RawRepresentable, Codable, Hashable {
         
-        case get, put, post, delete, options, head, patch, trace
+        public let rawValue: String
+        public var description: String { rawValue }
         
-        public var keyPath: WritableKeyPath<PathItemObject, OperationObject?> {
-            switch self {
-            case .get: return \.get
-            case .put: return \.put
-            case .post: return \.post
-            case .delete: return \.delete
-            case .options: return \.options
-            case .head: return \.head
-            case .patch: return \.patch
-            case .trace: return \.trace
-            }
+        public init(_ description: String) {
+            rawValue = description.lowercased()
         }
-    }
-    
-    public subscript(_ key: Key) -> OperationObject? {
-        get { self[keyPath: key.keyPath] }
-        set { self[keyPath: key.keyPath] = newValue }
+        
+        public init(rawValue: String) {
+            self.init(rawValue)
+        }
+        
+        public init(from decoder: Decoder) throws {
+            try self.init(String(from: decoder))
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            try rawValue.encode(to: encoder)
+        }
+        
+        public static let get = Method("get")
+        public static let put = Method("put")
+        public static let post = Method("post")
+        public static let delete = Method("delete")
+        public static let options = Method("options")
+        public static let head = Method("head")
+        public static let patch = Method("patch")
+        public static let trace = Method("trace")
     }
 }
 
@@ -132,7 +172,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, get: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.get: operation]))
     }
     
     /// A definition of a PUT operation on this path.
@@ -143,7 +183,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, put: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.put: operation]))
     }
     
     /// A definition of a POST operation on this path.
@@ -154,7 +194,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, post: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.post: operation]))
     }
     
     /// A definition of a DELETE operation on this path.
@@ -165,7 +205,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, delete: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.delete: operation]))
     }
     
     /// A definition of a OPTIONS operation on this path.
@@ -176,7 +216,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, options: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.options: operation]))
     }
     
     /// A definition of a HEAD operation on this path.
@@ -187,7 +227,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, head: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.head: operation]))
     }
     
     /// A definition of a PATCH operation on this path.
@@ -198,7 +238,7 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, patch: operation, servers: servers, parameters: parameters))
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.patch: operation]))
     }
     
     /// A definition of a TRACE operation on this path.
@@ -209,31 +249,6 @@ public extension ExpressibleByPathItemObject {
         parameters: [ReferenceOr<ParameterObject>] = [],
         _ operation: OperationObject
     ) -> Self {
-        Self(pathItemObject: PathItemObject(summary: summary, description: description, trace: operation, servers: servers, parameters: parameters))
-    }
-    
-    init(
-        summary: String? = nil,
-        description: String? = nil,
-        operations: [PathItemObject.Key: OperationObject],
-        servers: [ServerObject] = [],
-        parameters: [ReferenceOr<ParameterObject>] = []
-    ) {
-        self.init(
-            pathItemObject: PathItemObject(
-            		summary: summary,
-                description: description,
-                get: operations[.get],
-                put: operations[.put],
-                post: operations[.post],
-                delete: operations[.delete],
-                options: operations[.options],
-                head: operations[.head],
-                patch: operations[.patch],
-                trace: operations[.trace],
-                servers: servers,
-                parameters: parameters
-            )
-        )
+        Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.trace: operation]))
     }
 }

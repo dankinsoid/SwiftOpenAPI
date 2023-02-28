@@ -126,6 +126,27 @@ public extension ReferenceOr {
     }
 }
 
+public extension ReferenceOr<SchemaObject> {
+    
+    static func ref(schema: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) -> ReferenceOr {
+        _ = try? encode(schema, into: &schemas)
+        return .ref(components: \.schemas, .typeName(type(of: schema)))
+    }
+    
+    static func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr {
+        let encoder = SchemeEncoder()
+        try encoder.encode(value, into: &schemas)
+        return encoder.result
+    }
+    
+    static func encodeWithoutReferences(_ value: Encodable) throws -> ReferenceOr {
+        let encoder = SchemeEncoder(extractReferences: false)
+        var schemas: [String: ReferenceOr<SchemaObject>] = [:]
+        try encoder.encode(value, into: &schemas)
+        return encoder.result
+    }
+}
+
 private var names: [PartialKeyPath<ComponentsObject>: String] = [
     \.schemas: "schemas",
     \.parameters: "parameters",
