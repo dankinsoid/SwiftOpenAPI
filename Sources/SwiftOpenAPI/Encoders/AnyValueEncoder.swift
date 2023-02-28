@@ -53,7 +53,6 @@ private struct AnyValueSingleValueEncodingContainer: SingleValueEncodingContaine
     @Ref var result: AnyValue
     
     mutating func encodeNil() throws {
-        result = .null
     }
     
     mutating func encode(_ value: Bool) throws {
@@ -130,7 +129,7 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
     }
     
     mutating func encodeNil(forKey key: Key) throws {
-        result[str(key)] = .null
+        result[str(key)] = nil
     }
     
     mutating func encode(_ value: Bool, forKey key: Key) throws {
@@ -296,7 +295,6 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
     
     mutating func encodeNil() throws {
-        result.append(.null)
     }
     
     mutating func superEncoder() -> Encoder {

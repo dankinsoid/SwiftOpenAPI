@@ -1,8 +1,9 @@
 import Foundation
 
-public struct ContentObject<Value: Codable & Equatable>: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
+public struct ContentObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
     
     public typealias Key = MediaType
+    public typealias Value = MediaTypeObject
     
     public var value: [Key: Value]
 

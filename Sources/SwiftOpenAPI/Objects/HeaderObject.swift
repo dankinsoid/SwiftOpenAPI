@@ -30,12 +30,12 @@ public struct HeaderObject: Codable, Equatable, SpecificationExtendable {
     public var example: AnyValue?
     
     /// Examples of the parameter's potential value. Each example SHOULD contain a value in the correct format as specified in the parameter encoding. The examples field is mutually exclusive of the example field. Furthermore, if referencing a schema that contains an example, the examples value SHALL override the example provided by the schema.
-    public var examples: ContentObject<ReferenceOr<ExampleObject>>?
+    public var examples: [String: ReferenceOr<ExampleObject>]?
     
     /// A map containing the representations for the parameter. The key is the media type and the value describes it. The map MUST only contain one entry.
-    public var content: ContentObject<MediaTypeObject>?
+    public var content: ContentObject?
     
-    public init(description: String? = nil, `required`: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: ContentObject<ReferenceOr<ExampleObject>>? = nil, content: ContentObject<MediaTypeObject>? = nil) {
+    public init(description: String? = nil, `required`: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: [String: ReferenceOr<ExampleObject>]? = nil, content: ContentObject? = nil) {
         self.description = description
         self.`required` = `required`
         self.deprecated = deprecated

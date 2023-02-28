@@ -109,7 +109,7 @@ public extension ReferenceOr {
         } else {
             var object = ComponentsObject()
             object[keyPath: keyPath] = [:]
-            let anyValue = AnyValue.encode(object)
+            let anyValue = try? AnyValue.encode(object)
             switch anyValue {
             case .object(let dictionary):
                 path = dictionary.keys.first ?? "schemas"
