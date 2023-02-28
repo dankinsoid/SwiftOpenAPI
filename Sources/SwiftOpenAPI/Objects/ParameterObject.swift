@@ -90,3 +90,17 @@ public extension ParameterObject {
         case deepObject
     }
 }
+
+public extension [ReferenceOr<ParameterObject>] {
+    
+    static func encode(
+        _ value: Encodable,
+        in: ParameterObject.In,
+        schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> [ReferenceOr<ParameterObject>] {
+        try ParametersEncoder(in: `in`).encode(value, schemas: &schemas).map {
+            .value($0)
+        }
+    }
+}
+ 

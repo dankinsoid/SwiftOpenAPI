@@ -9,7 +9,6 @@ public enum AnyValue: Codable, Equatable {
     case double(Double)
 		case object([String: AnyValue])
     case array([AnyValue])
-    case null
     
     public init(from decoder: Decoder) throws {
         do {
@@ -27,16 +26,7 @@ public enum AnyValue: Codable, Equatable {
                         do {
                             self = try .object([String: AnyValue](from: decoder))
                         } catch {
-                            do {
-                                self = try .array([AnyValue](from: decoder))
-                            } catch {
-                                let container = try decoder.singleValueContainer()
-                                if container.decodeNil() {
-                                    self = .null
-                                } else {
-                                    throw error
-                                }
-                            }
+                            self = try .array([AnyValue](from: decoder))
                         }
                     }
                 }
@@ -52,9 +42,6 @@ public enum AnyValue: Codable, Equatable {
         case let .double(value): try value.encode(to: encoder)
         case let .object(value): try value.encode(to: encoder)
         case let .array(value): try value.encode(to: encoder)
-        case .null:
-            var container = encoder.singleValueContainer()
-            try container.encodeNil()
         }
     }
     
@@ -87,6 +74,17 @@ public enum AnyValue: Codable, Equatable {
             return value.indices.contains(index) ? value[index] : nil
         default:
             return nil
+        }
+    }
+    
+    public var dataType: DataType {
+        switch self {
+        case .string: return .string
+        case .bool: return .boolean
+        case .int: return .integer
+        case .double: return .number
+        case .object: return .object
+        case .array: return .array
         }
     }
 }
@@ -146,9 +144,9 @@ extension AnyValue: ExpressibleByFloatLiteral {
 
 extension AnyValue {
     
-    public static func encode(_ value: some Encodable) -> AnyValue {
+    public static func encode(_ value: Encodable) throws -> AnyValue {
         let encoder = AnyValueEncoder()
-        try? value.encode(to: encoder)
+        try value.encode(to: encoder)
         return encoder.result
     }
 }
