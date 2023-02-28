@@ -9,13 +9,13 @@ public struct ResponseObject: Codable, Equatable, SpecificationExtendable {
     public var headers: [String: ReferenceOr<HeaderObject>]?
     
     /// A map containing descriptions of potential response payloads. The key is a media type or media type range and the value describes it. For responses that match multiple keys, only the most specific key is applicable. e.g. text/plain overrides text/*
-    public var content: [MediaType: MediaTypeObject]?
+    public var content: ContentObject<MediaTypeObject>?
     
     /// A map of operations links that can be followed from the response. The key of the map is a short name for the link, following the naming constraints of the names for Component Objects.
     public var links: [String: ReferenceOr<LinkObject>]?
     
     
-    public init(description: String, headers: [String: ReferenceOr<HeaderObject>]? = nil, content: [MediaType : MediaTypeObject]? = nil, links: [String: ReferenceOr<LinkObject>]? = nil) {
+    public init(description: String, headers: [String: ReferenceOr<HeaderObject>]? = nil, content: ContentObject<MediaTypeObject>? = nil, links: [String: ReferenceOr<LinkObject>]? = nil) {
         self.description = description
         self.headers = headers
         self.content = content

@@ -25,7 +25,7 @@ final class SchemeEncoder: Encoder {
                 guard
                     case let .object(properties, _, _, _) = result
                 else { return [:] }
-                return properties
+                return properties ?? [:]
             } set: { [self] newValue in
                 switch result {
                 case let .object(_, required, additionalProperties, xml):
@@ -186,7 +186,7 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
                 guard
                     case let .value(.object(properties, _, _, _)) = $result.wrappedValue
                 else { return [:] }
-                return properties
+                return properties ?? [:]
             } set: { [$result] newValue in
                 switch $result.wrappedValue {
                 case let .value(.object(_, required, additionalProperties, xml)):
@@ -238,23 +238,7 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
     }
     
     private var nestedPath: [CodingKey] {
-        isSingle ? codingPath : codingPath + [Key(intValue: count)]
-    }
-    
-    private struct Key: CodingKey {
-        
-        var stringValue: String {
-            "\(intValue ?? 0)"
-        }
-        var intValue: Int?
-        
-        init(intValue: Int) {
-            self.intValue = intValue
-        }
-        
-        init?(stringValue: String) {
-            return nil
-        }
+        isSingle ? codingPath : codingPath + [IntKey(intValue: count)]
     }
 }
 
@@ -422,7 +406,7 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
                 guard
                     case let .value(.object(properties, _, _, _)) = $result.wrappedValue[strKey]
                 else { return [:] }
-                return properties
+                return properties ?? [:]
             } set: { [$result] newValue in
                 switch $result.wrappedValue[strKey] {
                 case let .value(.object(_, required, additional, xml)):

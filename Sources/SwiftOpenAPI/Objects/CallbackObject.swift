@@ -20,9 +20,9 @@ public struct CallbackObject: Codable, Equatable, SpecificationExtendable, Expre
     }
     
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: Key.self)
+        let container = try decoder.container(keyedBy: StringKey<Key>.self)
         let pairs = try container.allKeys.map {
-            try ($0, container.decode(Value.self, forKey: $0))
+            try ($0.value, container.decode(Value.self, forKey: $0))
         }
         self = Self.init(
             Dictionary(pairs) { _, second in
@@ -32,9 +32,14 @@ public struct CallbackObject: Codable, Equatable, SpecificationExtendable, Expre
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: Key.self)
+        var container = encoder.container(keyedBy: StringKey<Key>.self)
         for (key, object) in value {
-            try container.encode(object, forKey: key)
+            try container.encode(object, forKey: StringKey(key))
         }
+    }
+    
+    public subscript(_ key: Key) -> Value? {
+        get { value[key] }
+        set { value[key] = newValue }
     }
 }

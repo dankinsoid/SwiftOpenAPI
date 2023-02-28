@@ -1,15 +1,14 @@
 import Foundation
 
-public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpolation, RawRepresentable, CodingKey {
+public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpolation, RawRepresentable, LosslessStringConvertible {
     
     public var rawValue: String
-    
-    public var stringValue: String { rawValue }
-    public var intValue: Int? { nil }
     
     public var surrounded: String {
         "{\(rawValue)}"
     }
+    
+    public var description: String { surrounded }
     
     public init(rawValue: String) {
         self.rawValue = rawValue.trimmingCharacters(in: ["{", "}"])
@@ -23,12 +22,8 @@ public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpola
         self.init(rawValue: String(stringInterpolation: value))
     }
     
-    public init?(stringValue: String) {
+    public init(_ stringValue: String) {
         self.init(rawValue: stringValue)
-    }
-    
-    public init?(intValue: Int) {
-        return nil
     }
     
     public init(from decoder: Decoder) throws {

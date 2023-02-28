@@ -250,7 +250,7 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     @Ref var result: [AnyValue]
     
     private var nestedPath: [CodingKey] {
-        codingPath + [Key(intValue: codingPath.count)]
+        codingPath + [IntKey(intValue: codingPath.count)]
     }
     
     mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
@@ -363,21 +363,5 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
         let encoder = AnyValueEncoder(codingPath: nestedPath)
         try value.encode(to: encoder)
         result.append(encoder.result)
-    }
-    
-    private struct Key: CodingKey {
-        
-        var stringValue: String {
-            "\(intValue ?? 0)"
-        }
-        var intValue: Int?
-        
-        init(intValue: Int) {
-            self.intValue = intValue
-        }
-        
-        init?(stringValue: String) {
-            return nil
-        }
     }
 }

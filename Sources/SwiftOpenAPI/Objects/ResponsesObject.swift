@@ -36,6 +36,11 @@ public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, Expr
             try container.encode(object, forKey: key)
         }
     }
+    
+    public subscript(_ key: Key) -> Value? {
+        get { value[key] }
+        set { value[key] = newValue }
+    }
 }
 
 public extension ResponsesObject {

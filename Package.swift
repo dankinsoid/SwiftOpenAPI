@@ -8,13 +8,13 @@ let package = Package(
     products: [
         .library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
     ],
-    dependencies: [
-    ],
+    dependencies: [],
     targets: [
-        .target(
-            name: "SwiftOpenAPI",
-            dependencies: [
-            ]
+        .target(name: "SwiftOpenAPI", dependencies: []),
+        .testTarget(
+            name: "SwiftOpenAPITests",
+            dependencies: ["SwiftOpenAPI"],
+            exclude: ["Mocks/"]
         )
     ]
 )

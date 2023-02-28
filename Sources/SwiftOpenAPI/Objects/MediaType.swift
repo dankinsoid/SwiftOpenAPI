@@ -1,6 +1,6 @@
 import Foundation
 
-public struct MediaType: Codable, Hashable, RawRepresentable, ExpressibleByStringLiteral {
+public struct MediaType: Codable, Hashable, RawRepresentable, ExpressibleByStringLiteral, LosslessStringConvertible {
     
     public typealias RawValue = String
     public typealias StringLiteralType = String
@@ -14,6 +14,8 @@ public struct MediaType: Codable, Hashable, RawRepresentable, ExpressibleByStrin
             self = MediaType(rawValue: newValue)
         }
     }
+    
+    public var description: String { rawValue }
     
     public var type: String
     public var subtype: String
@@ -71,6 +73,10 @@ public struct MediaType: Codable, Hashable, RawRepresentable, ExpressibleByStrin
     
     public init(stringLiteral value: String) {
         self.init(rawValue: value)
+    }
+    
+    public init(_ stringValue: String) {
+        self.init(rawValue: stringValue)
     }
     
     public init(from decoder: Decoder) throws {

@@ -11,10 +11,13 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
     
     case any
     
-    case primitive(PrimitiveDataType)
+    case primitive(
+        PrimitiveDataType,
+        format: String? = nil
+    )
     
     case object(
-        [String: ReferenceOr<SchemaObject>],
+        [String: ReferenceOr<SchemaObject>]?,
         required: Set<String>?,
         additionalProperties: ReferenceOr<SchemaObject>? = nil,
         xml: XMLObject? = nil
@@ -35,6 +38,7 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case type
         case items
         case required
+        case format
         case properties
         case discriminator
         case xml
@@ -55,7 +59,7 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
             self = .array(items)
             
         case .object:
-            let properties = try container.decode([String: ReferenceOr<SchemaObject>].self, forKey: .properties)
+            let properties = try container.decodeIfPresent([String: ReferenceOr<SchemaObject>].self, forKey: .properties)
             let xml = try container.decodeIfPresent(XMLObject.self, forKey: .xml)
         		let required = try container.decodeIfPresent(Set<String>.self, forKey: .required)
         		let additionalProperties = try container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .additionalProperties)
@@ -82,7 +86,8 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
             }
             
         case let .some(type):
-            self = .primitive(PrimitiveDataType(rawValue: type.rawValue) ?? .string)
+            let format = try container.decodeIfPresent(String.self, forKey: .format)
+            self = .primitive(PrimitiveDataType(rawValue: type.rawValue) ?? .string, format: format)
         }
     }
     
@@ -92,8 +97,9 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case .any:
             break
             
-        case let .primitive(type):
+        case let .primitive(type, format):
             try container.encodeIfPresent(type, forKey: .type)
+            try container.encodeIfPresent(format, forKey: .format)
             
         case let .object(
             properties,
@@ -103,7 +109,7 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         ):
             try container.encodeIfPresent(DataType.object, forKey: .type)
             try container.encodeIfPresent(xml, forKey: .xml)
-            try container.encode(properties, forKey: .properties)
+            try container.encodeIfPresent(properties, forKey: .properties)
             try container.encodeIfPresent(required, forKey: .required)
             try container.encodeIfPresent(additionalProperties, forKey: .additionalProperties)
             

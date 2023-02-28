@@ -1,16 +1,18 @@
 import Foundation
 
-public struct Path: Hashable, ExpressibleByStringInterpolation, CodingKey, ExpressibleByArray {
+public struct Path: Hashable, ExpressibleByStringInterpolation, LosslessStringConvertible, ExpressibleByArray {
     
     public typealias ArrayLiteralElement = PathElement
     
     public var path: [PathElement]
-    public var intValue: Int? { nil }
     public var stringValue: String {
         "/" + path.map(\.string).joined(separator: "/")
     }
+    public var description: String {
+        stringValue
+    }
     
-    public init(stringValue: String) {
+    public init(_ stringValue: String) {
         self.path = stringValue
             .components(separatedBy: ["/"])
             .lazy
@@ -20,16 +22,12 @@ public struct Path: Hashable, ExpressibleByStringInterpolation, CodingKey, Expre
             }
     }
     
-    public init?(intValue: Int) {
-        return nil
-    }
-    
     public init(_ path: [PathElement]) {
         self.path = path
     }
     
     public init(stringLiteral value: String) {
-        self.init(stringValue: value)
+        self.init(value)
     }
     
     public init(arrayElements elements: [PathElement]) {
@@ -37,7 +35,7 @@ public struct Path: Hashable, ExpressibleByStringInterpolation, CodingKey, Expre
     }
     
     public init(stringInterpolation value: DefaultStringInterpolation) {
-        self.init(stringValue: String(stringInterpolation: value))
+        self.init(String(stringInterpolation: value))
     }
 }
 

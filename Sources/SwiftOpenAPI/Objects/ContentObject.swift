@@ -1,12 +1,11 @@
 import Foundation
 
-public struct PathsObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
+public struct ContentObject<Value: Codable & Equatable>: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
     
-    public typealias Key = Path
-    public typealias Value = ReferenceOr<PathItemObject>
+    public typealias Key = MediaType
     
     public var value: [Key: Value]
-    
+
     public init(_ value: [Key: Value] = [:]) {
         self.value = value
     }
@@ -31,15 +30,15 @@ public struct PathsObject: Codable, Equatable, SpecificationExtendable, Expressi
         )
     }
     
+    public subscript(_ key: Key) -> Value? {
+        get { value[key] }
+        set { value[key] = newValue }
+    }
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StringKey<Key>.self)
         for (key, object) in value {
             try container.encode(object, forKey: StringKey(key))
         }
-    }
-    
-    public subscript(_ key: Key) -> Value? {
-        get { value[key] }
-        set { value[key] = newValue }
     }
 }

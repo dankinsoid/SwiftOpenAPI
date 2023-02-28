@@ -33,8 +33,18 @@ public struct OpenAPIObject: Codable, Equatable, SpecificationExtendable {
     /// Additional external documentation.
     public var externalDocs: ExternalDocumentationObject?
     
-    public init(openapi: Version, info: InfoObject, jsonSchemaDialect: URL? = nil, servers: [ServerObject]? = nil, paths: PathsObject? = nil, webhooks: [String : ReferenceOr<PathItemObject>]? = nil, components: ComponentsObject? = nil, security: [SecurityRequirementObject]? = nil, tags: [TagObject]? = nil, externalDocs: ExternalDocumentationObject? = nil) {
-        self.openapi = openapi
+    public init(
+        info: InfoObject,
+        jsonSchemaDialect: URL? = nil,
+        servers: [ServerObject]? = nil,
+        paths: PathsObject? = nil,
+        webhooks: [String : ReferenceOr<PathItemObject>]? = nil,
+        components: ComponentsObject? = nil,
+        security: [SecurityRequirementObject]? = nil,
+        tags: [TagObject]? = nil,
+        externalDocs: ExternalDocumentationObject? = nil
+    ) {
+        self.openapi = Version(3, 1, 0)
         self.info = info
         self.jsonSchemaDialect = jsonSchemaDialect
         self.servers = servers

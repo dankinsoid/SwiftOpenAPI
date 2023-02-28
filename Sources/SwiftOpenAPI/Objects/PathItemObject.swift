@@ -34,10 +34,10 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
     public var trace: OperationObject?
     
     /// An alternative server array to service all operations in this path.
-    public var servers: [ServerObject]
+    public var servers: [ServerObject]?
     
     /// A list of parameters that are applicable for all the operations described under this path. These parameters can be overridden at the operation level, but cannot be removed there. The list MUST NOT include duplicated parameters. A unique parameter is defined by a combination of a name and location. The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.
-    public var parameters: [ReferenceOr<ParameterObject>]
+    public var parameters: [ReferenceOr<ParameterObject>]?
     
     public init(
         summary: String? = nil,
@@ -50,8 +50,8 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
         head: OperationObject? = nil,
         patch: OperationObject? = nil,
         trace: OperationObject? = nil,
-        servers: [ServerObject] = [],
-        parameters: [ReferenceOr<ParameterObject>] = []
+        servers: [ServerObject]? = nil,
+        parameters: [ReferenceOr<ParameterObject>]? = nil
     ) {
         self.summary = summary
         self.description = description
@@ -95,6 +95,11 @@ extension PathItemObject: ExpressibleByDictionary {
             case .trace: return \.trace
             }
         }
+    }
+    
+    public subscript(_ key: Key) -> OperationObject? {
+        get { self[keyPath: key.keyPath] }
+        set { self[keyPath: key.keyPath] = newValue }
     }
 }
 
