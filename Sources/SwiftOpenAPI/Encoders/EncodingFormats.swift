@@ -25,7 +25,7 @@ public extension DateEncodingFormat {
         }
     }
     
-    /// full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21
+    /// the interval between the date value and 00:00:00 UTC on 1 January 1970.
     static var timestamp: DateEncodingFormat {
         DateEncodingFormat(dataFormat: "timestamp") { date, encoder in
             try encoder.encode(date.timeIntervalSince1970)

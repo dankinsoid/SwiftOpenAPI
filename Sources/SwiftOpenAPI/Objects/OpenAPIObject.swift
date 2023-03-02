@@ -34,6 +34,7 @@ public struct OpenAPIObject: Codable, Equatable, SpecificationExtendable {
     public var externalDocs: ExternalDocumentationObject?
     
     public init(
+        openapi: Version = Version(3, 0, 1),
         info: InfoObject,
         jsonSchemaDialect: URL? = nil,
         servers: [ServerObject]? = nil,
@@ -44,7 +45,7 @@ public struct OpenAPIObject: Codable, Equatable, SpecificationExtendable {
         tags: [TagObject]? = nil,
         externalDocs: ExternalDocumentationObject? = nil
     ) {
-        self.openapi = Version(3, 1, 0)
+        self.openapi = openapi
         self.info = info
         self.jsonSchemaDialect = jsonSchemaDialect
         self.servers = servers
