@@ -94,12 +94,18 @@ final class SchemeEncoder: Encoder {
     @discardableResult
     func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr<SchemaObject> {
         switch value {
-        case let date as Date:
-            dateFormatter.string(from: date)
-            let schema = SchemaObject.primitive(.string, format: dateFormat.dataFormat)
-            result = .value(schema)
+        case is Date:
+            result = .value(.primitive(.string, format: dateFormat.dataFormat))
             return result
-        
+            
+        case is URL:
+            result = .value(.primitive(.string, format: .uri))
+            return result
+            
+        case is Data:
+            result = .value(.primitive(.string, format: .binary))
+            return result
+            
         default:
             break
         }
@@ -434,7 +440,7 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
     private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
         let encoder = SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
         let stringKey = str(key)
-        result[stringKey] = try encoder.encode(value, into: &references)
+        result[stringKey] = value.flatMap { try? encoder.encode($0, into: &references) }
         if optional {
             required.remove(stringKey)
         } else {
@@ -583,5 +589,3 @@ private struct SchemeDecodingContainer<Key: CodingKey>: KeyedDecodingContainerPr
 
 private struct AnyError: Error {
 }
-
-private let dateFormatter = ISO8601DateFormatter()

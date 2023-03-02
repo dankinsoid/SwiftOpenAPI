@@ -60,6 +60,9 @@ final class AnyValueEncoder: Encoder {
             var container = singleValueContainer()
             try dateFormat.encode(date, &container)
             
+        case let url as URL:
+            try url.absoluteString.encode(to: self)
+            
         default:
             try value.encode(to: self)
         }

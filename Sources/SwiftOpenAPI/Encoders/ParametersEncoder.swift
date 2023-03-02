@@ -196,7 +196,7 @@ private struct ParametersKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCo
                 name: str(key),
                 in: location,
                 required: !optional,
-                schema: try? encoder.encode(value, into: &references),
+                schema: value.flatMap { try? encoder.encode($0, into: &references) },
                 example: value.flatMap { try? .encode($0, dateFormat: dateFormat) }
             )
         )
