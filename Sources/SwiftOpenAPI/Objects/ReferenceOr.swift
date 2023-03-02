@@ -177,19 +177,19 @@ public extension ReferenceOr {
 
 public extension ReferenceOr<SchemaObject> {
     
-    static func ref(schema: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) -> ReferenceOr {
-        _ = try? encode(schema, into: &schemas)
+    static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) -> ReferenceOr {
+        _ = try? encode(schema, dateFormat: dateFormat, into: &schemas)
         return .ref(components: \.schemas, .typeName(type(of: schema)))
     }
     
-    static func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr {
-        let encoder = SchemeEncoder()
+    static func encode(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr {
+        let encoder = SchemeEncoder(dateFormat: dateFormat)
         try encoder.encode(value, into: &schemas)
         return encoder.result
     }
     
-    static func encodeWithoutReferences(_ value: Encodable) throws -> ReferenceOr {
-        let encoder = SchemeEncoder(extractReferences: false)
+    static func encodeWithoutReferences(_ value: Encodable, dateFormat: DateEncodingFormat = .default) throws -> ReferenceOr {
+        let encoder = SchemeEncoder(extractReferences: false, dateFormat: dateFormat)
         var schemas: [String: ReferenceOr<SchemaObject>] = [:]
         try encoder.encode(value, into: &schemas)
         return encoder.result

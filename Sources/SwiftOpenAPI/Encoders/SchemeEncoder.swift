@@ -8,14 +8,20 @@ final class SchemeEncoder: Encoder {
     var required: Bool
     var references: [String: ReferenceOr<SchemaObject>]
     var extractReferences: Bool
+    var dateFormat: DateEncodingFormat
     
-    init(codingPath: [CodingKey] = [], extractReferences: Bool = true) {
+    init(
+        codingPath: [CodingKey] = [],
+        extractReferences: Bool = true,
+        dateFormat: DateEncodingFormat
+    ) {
         self.codingPath = codingPath
         self.userInfo = [:]
         self.result = .value(.any)
         self.required = true
         self.references = [:]
         self.extractReferences = extractReferences
+        self.dateFormat = dateFormat
     }
     
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
@@ -48,6 +54,7 @@ final class SchemeEncoder: Encoder {
                 }
             },
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: Ref(self, \.references)
         )
         return KeyedEncodingContainer(container)
@@ -67,6 +74,7 @@ final class SchemeEncoder: Encoder {
             },
             required: .constant(true),
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: Ref(self, \.references)
         )
     }
@@ -78,37 +86,49 @@ final class SchemeEncoder: Encoder {
             result: Ref(self, \.result),
             required: Ref(self, \.required),
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: Ref(self, \.references)
         )
     }
     
     @discardableResult
     func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr<SchemaObject> {
-        try value.encode(to: self)
-        schemas.merge(references) { _, new in new }
+        switch value {
+        case let date as Date:
+            dateFormatter.string(from: date)
+            let schema = SchemaObject.primitive(.string, format: dateFormat.dataFormat)
+            result = .value(schema)
+            return result
+        
+        default:
+            break
+        }
         
         let type = type(of: value)
-        switch result {
-        case let .value(.object(properties, _, _, xml)):
-            if let decodable = type as? Decodable.Type {
+        
+        if let scheme = (type as? OpenAPIType.Type)?.openAPISchema {
+            result = .value(scheme)
+        } else {
+            try value.encode(to: self)
+            schemas.merge(references) { _, new in new }
+            
+            switch (result, type) {
+            case let (.value(.object(properties, _, _, xml)), decodable as Decodable.Type):
                 let decoder = SchemeDecoder()
                 _ = try? decodable.init(from: decoder)
                 if decoder.isAdditional, let property = properties?.first?.value {
                     result = .value(.object(nil, required: nil, additionalProperties: property, xml: xml))
                 }
-            }
-            
-        case let .value(.primitive(dataType, format)):
-            if let iterable = type as? any CaseIterable.Type {
+                
+            case let (.value(.primitive(dataType, _, _)), iterable as any CaseIterable.Type):
                 let allCases = iterable.allCases as any Collection
                 result = .value(.enum(dataType, allCases: allCases.map { "\($0)" }))
-            } else if let primitive = type as? OpenAPIPrimitive.Type {
-                result = .value(.primitive(dataType, format: format ?? primitive.openAPIFormat))
+                
+            default:
+                break
             }
-            
-        default:
-            break
         }
+        
         if extractReferences, result.isReferenceable, isReferenceable(type: type) {
             let name = String.typeName(type)
             schemas[name] = result
@@ -119,7 +139,7 @@ final class SchemeEncoder: Encoder {
     }
     
     private func isReferenceable(type: Any.Type) -> Bool {
-        !(type is OpenAPIPrimitive.Type)
+        (type as? OpenAPIType.Type)?.isPrimitive != true
     }
 }
 
@@ -131,6 +151,7 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
     @Ref var result: ReferenceOr<SchemaObject>
     @Ref var required: Bool
     let extractReferences: Bool
+    let dateFormat: DateEncodingFormat
     @Ref var references: [String: ReferenceOr<SchemaObject>]
     
     mutating func encodeNil() throws {
@@ -196,7 +217,8 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
     mutating func encode<T>(_ value: T) throws where T : Encodable {
         result = try SchemeEncoder(
             codingPath: nestedPath,
-            extractReferences: extractReferences
+            extractReferences: extractReferences,
+            dateFormat: dateFormat
         )
         .encode(value, into: &references)
     }
@@ -236,6 +258,7 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
                 }
             },
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: $references
         )
         return KeyedEncodingContainer(container)
@@ -256,12 +279,13 @@ private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer,
             },
             required: .constant(true),
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: $references
         )
     }
     
     mutating func superEncoder() -> Encoder {
-        SchemeEncoder(codingPath: codingPath)
+        SchemeEncoder(codingPath: codingPath, dateFormat: dateFormat)
     }
     
     private var nestedPath: [CodingKey] {
@@ -275,6 +299,7 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
     @Ref var result: [String: ReferenceOr<SchemaObject>]
     @Ref var required: Set<String>
     let extractReferences: Bool
+    let dateFormat: DateEncodingFormat
     @Ref var references: [String: ReferenceOr<SchemaObject>]
     
     @inline(__always)
@@ -407,7 +432,7 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
     }
     
     private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
-        let encoder = SchemeEncoder(codingPath: nestedPath(for: key))
+        let encoder = SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
         let stringKey = str(key)
         result[stringKey] = try encoder.encode(value, into: &references)
         if optional {
@@ -454,6 +479,7 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
                 }
             },
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: $references
         )
         result[strKey] = .value(.object([:], required: []))
@@ -475,6 +501,7 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
             },
             required: .constant(true),
             extractReferences: extractReferences,
+            dateFormat: dateFormat,
             references: $references
         )
         result[strKey] = .value(.array(.value(.any)))
@@ -482,12 +509,12 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
     }
     
     mutating func superEncoder() -> Encoder {
-        SchemeEncoder(codingPath: codingPath, extractReferences: extractReferences)
+        SchemeEncoder(codingPath: codingPath, extractReferences: extractReferences, dateFormat: dateFormat)
     }
     
     mutating func superEncoder(forKey key: Key) -> Encoder {
         result[str(key)] = .value(.array(.value(.any)))
-        return SchemeEncoder(codingPath: nestedPath(for: key), extractReferences: extractReferences)
+        return SchemeEncoder(codingPath: nestedPath(for: key), extractReferences: extractReferences, dateFormat: dateFormat)
     }
     
     private func nestedPath(for key: Key) -> [CodingKey] {
@@ -556,3 +583,5 @@ private struct SchemeDecodingContainer<Key: CodingKey>: KeyedDecodingContainerPr
 
 private struct AnyError: Error {
 }
+
+private let dateFormatter = ISO8601DateFormatter()

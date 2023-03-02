@@ -6,15 +6,18 @@ final class HeadersEncoder: Encoder {
     var userInfo: [CodingUserInfoKey: Any] = [:]
     var result: [String: HeaderObject] = [:]
     var schemas: [String: ReferenceOr<SchemaObject>] = [:]
+    let dateFormat: DateEncodingFormat
     private var notKeyed = false
     
-    init() {
+    init(dateFormat: DateEncodingFormat) {
+        self.dateFormat = dateFormat
     }
     
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
         KeyedEncodingContainer(
             HeadersKeyedEncodingContainer(
                 codingPath: codingPath,
+                dateFormat: dateFormat,
                 result: Ref(self, \.result),
                 references: Ref(self, \.schemas)
             )
@@ -23,12 +26,12 @@ final class HeadersEncoder: Encoder {
     
     func unkeyedContainer() -> UnkeyedEncodingContainer {
         notKeyed = true
-        return AnyValueEncoder().unkeyedContainer()
+        return AnyValueEncoder(dateFormat: dateFormat).unkeyedContainer()
     }
     
     func singleValueContainer() -> SingleValueEncodingContainer {
         notKeyed = true
-        return AnyValueEncoder().singleValueContainer()
+        return AnyValueEncoder(dateFormat: dateFormat).singleValueContainer()
     }
     
     func encode(
@@ -50,6 +53,7 @@ final class HeadersEncoder: Encoder {
 private struct HeadersKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     
     var codingPath: [CodingKey]
+    let dateFormat: DateEncodingFormat
     @Ref var result: [String: HeaderObject]
     @Ref var references: [String: ReferenceOr<SchemaObject>]
     
@@ -182,28 +186,30 @@ private struct HeadersKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingConta
     }
     
     private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
-        let encoder = SchemeEncoder(codingPath: nestedPath(for: key))
+        let encoder = SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
         result[str(key)] = HeaderObject(
             required: !optional,
             schema: try? encoder.encode(value, into: &references),
-            example: value.flatMap { try? .encode($0) }
+            example: value.flatMap { try? .encode($0, dateFormat: dateFormat) }
         )
     }
     
     mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-        SchemeEncoder(codingPath: nestedPath(for: key)).container(keyedBy: NestedKey.self)
+        SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
+            .container(keyedBy: NestedKey.self)
     }
     
     mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-        SchemeEncoder(codingPath: nestedPath(for: key)).unkeyedContainer()
+        SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
+            .unkeyedContainer()
     }
     
     mutating func superEncoder() -> Encoder {
-        SchemeEncoder(codingPath: codingPath, extractReferences: false)
+        SchemeEncoder(codingPath: codingPath, extractReferences: false, dateFormat: dateFormat)
     }
     
     mutating func superEncoder(forKey key: Key) -> Encoder {
-        SchemeEncoder(codingPath: codingPath, extractReferences: false)
+        SchemeEncoder(codingPath: codingPath, extractReferences: false, dateFormat: dateFormat)
     }
     
     private func nestedPath(for key: Key) -> [CodingKey] {

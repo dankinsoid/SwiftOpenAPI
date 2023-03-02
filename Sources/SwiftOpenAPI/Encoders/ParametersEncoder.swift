@@ -3,21 +3,24 @@ import Foundation
 final class ParametersEncoder: Encoder {
     
     var codingPath: [CodingKey] = []
-    var `in`: ParameterObject.In
+    let dateFormat: DateEncodingFormat
+    var location: ParameterObject.Location
     var userInfo: [CodingUserInfoKey: Any] = [:]
     var result: [ParameterObject] = []
     var schemas: [String: ReferenceOr<SchemaObject>] = [:]
     private var notKeyed = false
     
-    init(in: ParameterObject.In) {
-        self.in = `in`
+    init(in location: ParameterObject.Location, dateFormat: DateEncodingFormat) {
+        self.location = location
+        self.dateFormat = dateFormat
     }
     
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
         KeyedEncodingContainer(
             ParametersKeyedEncodingContainer(
                 codingPath: codingPath,
-                in: `in`,
+                dateFormat: dateFormat,
+                location: location,
                 result: Ref(self, \.result),
                 references: Ref(self, \.schemas)
             )
@@ -26,12 +29,12 @@ final class ParametersEncoder: Encoder {
     
     func unkeyedContainer() -> UnkeyedEncodingContainer {
         notKeyed = true
-        return AnyValueEncoder().unkeyedContainer()
+        return AnyValueEncoder(dateFormat: dateFormat).unkeyedContainer()
     }
     
     func singleValueContainer() -> SingleValueEncodingContainer {
         notKeyed = true
-        return AnyValueEncoder().singleValueContainer()
+        return AnyValueEncoder(dateFormat: dateFormat).singleValueContainer()
     }
     
     func encode(
@@ -53,7 +56,8 @@ final class ParametersEncoder: Encoder {
 private struct ParametersKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     
     var codingPath: [CodingKey]
-    var `in`: ParameterObject.In
+    let dateFormat: DateEncodingFormat
+    var location: ParameterObject.Location
     @Ref var result: [ParameterObject]
     @Ref var references: [String: ReferenceOr<SchemaObject>]
     
@@ -186,32 +190,34 @@ private struct ParametersKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCo
     }
     
     private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
-        let encoder = SchemeEncoder(codingPath: nestedPath(for: key))
+        let encoder = SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
         result.append(
             ParameterObject(
                 name: str(key),
-                in: `in`,
+                in: location,
                 required: !optional,
                 schema: try? encoder.encode(value, into: &references),
-                example: value.flatMap { try? .encode($0) }
+                example: value.flatMap { try? .encode($0, dateFormat: dateFormat) }
             )
         )
     }
     
     mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-        SchemeEncoder(codingPath: nestedPath(for: key)).container(keyedBy: NestedKey.self)
+        SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
+            .container(keyedBy: NestedKey.self)
     }
     
     mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-        SchemeEncoder(codingPath: nestedPath(for: key)).unkeyedContainer()
+        SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
+            .unkeyedContainer()
     }
     
     mutating func superEncoder() -> Encoder {
-        SchemeEncoder(codingPath: codingPath, extractReferences: false)
+        SchemeEncoder(codingPath: codingPath, extractReferences: false, dateFormat: dateFormat)
     }
     
     mutating func superEncoder(forKey key: Key) -> Encoder {
-        SchemeEncoder(codingPath: codingPath, extractReferences: false)
+        SchemeEncoder(codingPath: codingPath, extractReferences: false, dateFormat: dateFormat)
     }
     
     private func nestedPath(for key: Key) -> [CodingKey] {
@@ -223,7 +229,7 @@ private struct ParametersKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCo
         result.append(
         		ParameterObject(
                 name: str(key),
-                in: `in`,
+                in: location,
                 required: !optional,
                 schema: .value(.primitive(example.dataType.asPrimitive ?? .string)),
                 example: example

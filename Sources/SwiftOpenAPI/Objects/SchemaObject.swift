@@ -13,7 +13,8 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
     
     case primitive(
         PrimitiveDataType,
-        format: String? = nil
+        format: DataFormat? = nil,
+        pattern: String? = nil
     )
     
     case object(
@@ -45,6 +46,7 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case required
         case format
         case properties
+        case pattern
         case discriminator
         case xml
         case `enum`
@@ -96,8 +98,9 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
             if let allCases = try container.decodeIfPresent([String].self, forKey: .enum) {
                 self = .enum(dataType, allCases: allCases)
             } else {
-                let format = try container.decodeIfPresent(String.self, forKey: .format)
-                self = .primitive(dataType, format: format)
+                let format = try container.decodeIfPresent(DataFormat.self, forKey: .format)
+                let pattern = try container.decodeIfPresent(String.self, forKey: .pattern)
+                self = .primitive(dataType, format: format, pattern: pattern)
             }
         }
     }
@@ -108,9 +111,10 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         case .any:
             break
             
-        case let .primitive(type, format):
+        case let .primitive(type, format, pattern):
             try container.encodeIfPresent(type, forKey: .type)
             try container.encodeIfPresent(format, forKey: .format)
+            try container.encodeIfPresent(pattern, forKey: .pattern)
             
         case let .object(
             properties,
@@ -251,8 +255,12 @@ extension ReferenceOr<SchemaObject> {
 
 public extension SchemaObject {
     
-    static func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws {
-        let encoder = SchemeEncoder()
+    static func encode(
+        _ value: Encodable,
+        dateFormat: DateEncodingFormat = .default,
+        into schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws {
+        let encoder = SchemeEncoder(dateFormat: dateFormat)
         try encoder.encode(value, into: &schemas)
     }
 }

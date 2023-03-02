@@ -20,7 +20,7 @@ public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
     public var name: String
     
     /// The location of the parameter. Possible values are "query", "header", "path" or "cookie".
-    public var `in`: In
+    public var `in`: Location
     
     /// A brief description of the parameter. This could contain examples of use. CommonMark syntax MAY be used for rich text representation.
     public var description: String?
@@ -55,7 +55,7 @@ public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
     /// A map containing the representations for the parameter. The key is the media type and the value describes it. The map MUST only contain one entry.
     public var content: ContentObject?
     
-    public init(name: String, `in`: ParameterObject.In, description: String? = nil, `required`: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue?, examples: [String: ReferenceOr<ExampleObject>]? = nil, content: ContentObject? = nil) {
+    public init(name: String, `in`: ParameterObject.Location, description: String? = nil, `required`: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue?, examples: [String: ReferenceOr<ExampleObject>]? = nil, content: ContentObject? = nil) {
         self.name = name
         self.`in` = `in`
         self.description = description
@@ -74,7 +74,7 @@ public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
 
 public extension ParameterObject {
     
-    enum In: String, Codable, Equatable {
+    enum Location: String, Codable, Equatable {
         
         case query, header, path, cookie
     }
@@ -95,10 +95,11 @@ public extension [ReferenceOr<ParameterObject>] {
     
     static func encode(
         _ value: Encodable,
-        in: ParameterObject.In,
+        in location: ParameterObject.Location,
+        dateFormat: DateEncodingFormat = .default,
         schemas: inout [String: ReferenceOr<SchemaObject>]
     ) throws -> [ReferenceOr<ParameterObject>] {
-        try ParametersEncoder(in: `in`).encode(value, schemas: &schemas).map {
+        try ParametersEncoder(in: location, dateFormat: dateFormat).encode(value, schemas: &schemas).map {
             .value($0)
         }
     }

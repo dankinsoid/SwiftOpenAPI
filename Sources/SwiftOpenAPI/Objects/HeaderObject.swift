@@ -54,9 +54,10 @@ public extension [String: ReferenceOr<HeaderObject>] {
     
     static func encode(
         _ value: Encodable,
+        dateFormat: DateEncodingFormat = .default,
         schemas: inout [String: ReferenceOr<SchemaObject>]
     ) throws -> [String: ReferenceOr<HeaderObject>] {
-        try HeadersEncoder().encode(value, schemas: &schemas).mapValues {
+        try HeadersEncoder(dateFormat: dateFormat).encode(value, schemas: &schemas).mapValues {
             .value($0)
         }
     }

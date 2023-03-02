@@ -15,7 +15,7 @@ public struct SecuritySchemeObject: Codable, Equatable, SpecificationExtendable 
     public var name: String?
     
     ///  The location of the API key
-    public var `in`: In?
+    public var `in`: Location?
     
     /// The name of the HTTP Authorization scheme to be used in the Authorization header as defined in RFC7235. The values used SHOULD be registered in the IANA Authentication Scheme registry.
     public var scheme: HTTPAuthScheme?
@@ -33,7 +33,7 @@ public struct SecuritySchemeObject: Codable, Equatable, SpecificationExtendable 
         type: SecuritySchemeObjectType,
         description: String? = nil,
         name: String? = nil,
-        `in`: SecuritySchemeObject.In? = nil,
+        in location: SecuritySchemeObject.Location? = nil,
         scheme: HTTPAuthScheme? = nil,
         bearerFormat: String? = nil,
         flows: OAuthFlowsObject? = nil,
@@ -42,7 +42,7 @@ public struct SecuritySchemeObject: Codable, Equatable, SpecificationExtendable 
         self.type = type
         self.description = description
         self.name = name
-        self.`in` = `in`
+        self.`in` = location
         self.scheme = scheme
         self.bearerFormat = bearerFormat
         self.flows = flows
@@ -52,7 +52,7 @@ public struct SecuritySchemeObject: Codable, Equatable, SpecificationExtendable 
 
 extension SecuritySchemeObject {
     
-    public enum In: String, Codable {
+    public enum Location: String, Codable {
         
         case query, header, cookie
     }
