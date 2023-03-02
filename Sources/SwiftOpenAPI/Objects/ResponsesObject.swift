@@ -45,7 +45,7 @@ public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, Expr
 
 public extension ResponsesObject {
     
-    enum Key: Hashable, Codable, Equatable, RawRepresentable, CodingKey, ExpressibleByIntegerLiteral {
+    enum Key: Hashable, Codable, Equatable, RawRepresentable, CodingKey, ExpressibleByIntegerLiteral, LosslessStringConvertible {
         
         case code(Int)
         case `default`
@@ -60,6 +60,7 @@ public extension ResponsesObject {
         }
         
         public var stringValue: String { rawValue }
+        public var description: String { rawValue }
         
         public var intValue: Int? {
             if case .code(let int) = self {
@@ -88,6 +89,10 @@ public extension ResponsesObject {
         
         public init?(stringValue: String) {
             self.init(rawValue: stringValue)
+        }
+        
+        public init?(_ description: String) {
+            self.init(rawValue: rawValue)
         }
         
         public init(from decoder: Decoder) throws {
