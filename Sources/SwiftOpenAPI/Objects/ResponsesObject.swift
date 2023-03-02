@@ -92,7 +92,7 @@ public extension ResponsesObject {
         }
         
         public init?(_ description: String) {
-            self.init(rawValue: rawValue)
+            self.init(rawValue: description)
         }
         
         public init(from decoder: Decoder) throws {
