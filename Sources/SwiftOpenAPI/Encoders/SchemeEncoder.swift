@@ -93,6 +93,14 @@ final class SchemeEncoder: Encoder {
     
     @discardableResult
     func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr<SchemaObject> {
+        let type = type(of: value)
+        let name = String.typeName(type)
+        
+        if let value = schemas[name] {
+            result = value
+            return .ref(components: \.schemas, name)
+        }
+        
         switch value {
         case is Date:
             result = .value(.primitive(.string, format: dateFormat.dataFormat))
@@ -110,8 +118,6 @@ final class SchemeEncoder: Encoder {
             break
         }
         
-        let type = type(of: value)
-        
         if let scheme = (type as? OpenAPIType.Type)?.openAPISchema {
             result = .value(scheme)
         } else {
@@ -120,7 +126,7 @@ final class SchemeEncoder: Encoder {
             
             switch (result, type) {
             case let (.value(.object(properties, _, _, xml)), decodable as Decodable.Type):
-                let decoder = SchemeDecoder()
+                let decoder = CheckAllKeysDecoder()
                 _ = try? decodable.init(from: decoder)
                 if decoder.isAdditional, let property = properties?.first?.value {
                     result = .value(.object(nil, required: nil, additionalProperties: property, xml: xml))
@@ -136,7 +142,6 @@ final class SchemeEncoder: Encoder {
         }
         
         if extractReferences, result.isReferenceable, isReferenceable(type: type) {
-            let name = String.typeName(type)
             schemas[name] = result
             return .ref(components: \.schemas, name)
         } else {
@@ -537,55 +542,4 @@ private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContai
             required.insert(stringKey)
         }
     }
-}
-
-private final class SchemeDecoder: Decoder {
-    
-    var codingPath: [CodingKey] = []
-    var userInfo: [CodingUserInfoKey: Any] = [:]
-    var isAdditional = false
-    
-    func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
-        KeyedDecodingContainer(
-            SchemeDecodingContainer(isAdditional: Ref(self, \.isAdditional))
-        )
-    }
-    
-    func unkeyedContainer() throws -> UnkeyedDecodingContainer { throw AnyError() }
-    func singleValueContainer() throws -> SingleValueDecodingContainer { throw AnyError() }
-}
-
-private struct SchemeDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
-    
-    var allKeys: [Key] {
-        isAdditional = true
-        return []
-    }
-    @Ref var isAdditional: Bool
-    
-    var codingPath: [CodingKey] { [] }
-    func contains(_ key: Key) -> Bool { false }
-    func decodeNil(forKey key: Key) throws -> Bool { throw AnyError() }
-    func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool { throw AnyError() }
-    func decode(_ type: String.Type, forKey key: Key) throws -> String { throw AnyError() }
-    func decode(_ type: Double.Type, forKey key: Key) throws -> Double { throw AnyError() }
-    func decode(_ type: Float.Type, forKey key: Key) throws -> Float { throw AnyError() }
-    func decode(_ type: Int.Type, forKey key: Key) throws -> Int { throw AnyError() }
-    func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 { throw AnyError() }
-    func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 { throw AnyError() }
-    func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 { throw AnyError() }
-    func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 { throw AnyError() }
-    func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt { throw AnyError() }
-    func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 { throw AnyError() }
-    func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 { throw AnyError() }
-    func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 { throw AnyError() }
-    func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 { throw AnyError() }
-    func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable { throw AnyError() }
-    func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> { throw AnyError() }
-    func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer { throw AnyError() }
-    func superDecoder() throws -> Decoder { throw AnyError() }
-    func superDecoder(forKey key: Key) throws -> Decoder { throw AnyError() }
-}
-
-private struct AnyError: Error {
 }
