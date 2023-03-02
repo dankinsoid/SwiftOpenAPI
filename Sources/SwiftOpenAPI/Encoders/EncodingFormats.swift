@@ -54,16 +54,6 @@ public extension DateEncodingFormat {
         		try encoder.encode(formatter.string(from: date))
     		}
     }
-   
-    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-    static func custom(
-        _ dataFormat: DataFormat,
-        style: Date.FormatStyle
-    ) -> DateEncodingFormat {
-        DateEncodingFormat(dataFormat: dataFormat) { date, encoder in
-            try encoder.encode(date.formatted(style))
-        }
-    }
 }
 
 private let isoFormatter = ISO8601DateFormatter()

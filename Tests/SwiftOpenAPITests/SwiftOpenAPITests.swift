@@ -59,6 +59,7 @@ struct LoginBody: Codable {
     var tags: Set<String>?
     var comments: [String: String]?
     var enumValue: SomeEnum?
+    var nested: NestedStruct?
     var id: UUID
     
     static let example = LoginBody(
@@ -67,6 +68,7 @@ struct LoginBody: Codable {
         tags: ["tag"],
         comments: ["Danil": "Comment"],
         enumValue: .first,
+        nested: .example,
         id: UUID()
     )
     
