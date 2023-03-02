@@ -21,6 +21,34 @@ public enum ReferenceOr<Object: Codable & Equatable>: Equatable, Codable {
             try referenceObject.encode(to: encoder)
         }
     }
+    
+    public var ref: ReferenceObject? {
+        get {
+            if case let .ref(referenceObject) = self {
+                return referenceObject
+            }
+            return nil
+        }
+        set {
+            if let newValue {
+                self = .ref(newValue)
+            }
+        }
+    }
+    
+    public var object: Object? {
+        get {
+            if case let .value(value) = self {
+                return value
+            }
+            return nil
+        }
+        set {
+            if let newValue {
+                self = .value(newValue)
+            }
+        }
+    }
 }
 
 extension ReferenceOr: ExpressibleByUnicodeScalarLiteral where Object: ExpressibleByUnicodeScalarLiteral {
@@ -90,6 +118,27 @@ extension ReferenceOr: ExpressibleByDictionaryLiteral where Object: ExpressibleB
     
     public init(dictionaryLiteral elements: (Object.Key, Object.Value)...) {
         self = .value(Object(dictionaryElements: elements))
+    }
+}
+
+extension ReferenceOr: MutableDictionary where Object: MutableDictionary {
+    
+    public typealias Key = Object.Key
+    public typealias Value = Object.Value
+    
+    public subscript(key: Object.Key) -> Object.Value? {
+        get {
+            if case let .value(object) = self {
+                return object[key]
+            }
+            return nil
+        }
+        set {
+            if case var .value(object) = self {
+                object[key] = newValue
+                self = .value(object)
+            }
+        }
     }
 }
 

@@ -12,7 +12,18 @@ extension ExpressibleByArrayLiteral where Self: ExpressibleByArray {
     }
 }
 
-public protocol ExpressibleByDictionary<Key, Value>: ExpressibleByDictionaryLiteral {
+public protocol MutableDictionary<Key, Value> {
+    
+    associatedtype Key: Hashable
+    associatedtype Value
+    
+    subscript(_ key: Key) -> Value? { get set }
+}
+
+extension Dictionary: MutableDictionary {
+}
+
+public protocol ExpressibleByDictionary<Key, Value>: ExpressibleByDictionaryLiteral, MutableDictionary {
     
     init(dictionaryElements elements: [(Key, Value)])
 }

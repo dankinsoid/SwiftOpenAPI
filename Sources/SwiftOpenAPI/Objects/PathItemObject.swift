@@ -111,6 +111,15 @@ extension PathItemObject: ExpressibleByDictionary {
         self.init(Dictionary(elements) { _, new in new })
     }
     
+    public subscript(key: Method) -> OperationObject? {
+        get {
+            operations[key]
+        }
+        set {
+            operations[key] = newValue
+        }
+    }
+    
     public struct Method: LosslessStringConvertible, RawRepresentable, Codable, Hashable {
         
         public let rawValue: String

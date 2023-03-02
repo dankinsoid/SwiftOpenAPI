@@ -206,6 +206,21 @@ extension SchemaObject: ExpressibleByDictionary {
             xml: nil
         )
     }
+    
+    public subscript(key: String) -> ReferenceOr<SchemaObject>? {
+        get {
+            if case let .object(dictionary, _, _, _) = self {
+                return dictionary?[key]
+            }
+            return nil
+        }
+        set {
+            if case .object(var dictionary, let required, let additionalProperties, let xml) = self {
+                dictionary?[key] = newValue
+                self = .object(dictionary, required: required, additionalProperties: additionalProperties, xml: xml)
+            }
+        }
+    }
 }
 
 extension SchemaObject {

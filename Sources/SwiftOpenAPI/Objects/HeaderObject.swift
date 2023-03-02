@@ -49,3 +49,15 @@ public struct HeaderObject: Codable, Equatable, SpecificationExtendable {
         self.content = content
     }
 }
+
+public extension [String: ReferenceOr<HeaderObject>] {
+    
+    static func encode(
+        _ value: Encodable,
+        schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> [String: ReferenceOr<HeaderObject>] {
+        try HeadersEncoder().encode(value, schemas: &schemas).mapValues {
+            .value($0)
+        }
+    }
+}
