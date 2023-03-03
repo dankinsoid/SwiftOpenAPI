@@ -186,13 +186,6 @@ public extension ReferenceOr<SchemaObject> {
         let encoder = SchemeEncoder(dateFormat: dateFormat)
         return try encoder.encode(value, into: &schemas)
     }
-    
-    static func encodeWithoutReferences(_ value: Encodable, dateFormat: DateEncodingFormat = .default) throws -> ReferenceOr {
-        let encoder = SchemeEncoder(extractReferences: false, dateFormat: dateFormat)
-        var schemas: [String: ReferenceOr<SchemaObject>] = [:]
-        try encoder.encode(value, into: &schemas)
-        return encoder.result
-    }
 }
 
 private var names: [PartialKeyPath<ComponentsObject>: String] = [

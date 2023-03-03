@@ -99,7 +99,7 @@ public extension [ReferenceOr<ParameterObject>] {
         dateFormat: DateEncodingFormat = .default,
         schemas: inout [String: ReferenceOr<SchemaObject>]
     ) throws -> [ReferenceOr<ParameterObject>] {
-        try ParametersEncoder(in: location, dateFormat: dateFormat).encode(value, schemas: &schemas).map {
+        try ParametersEncoder(location: location, dateFormat: dateFormat).encode(value, schemas: &schemas).map {
             .value($0)
         }
     }

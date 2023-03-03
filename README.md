@@ -12,7 +12,7 @@ SwiftOpenAPI is a Swift library which can generate output compatible with [OpenA
 ## Example
 ```swift
 OpenAPIObject(
-    openapi: "1.3.0",
+    openapi: "1.4.0",
     info: InfoObject(
         title: "Example API",
         version: "0.1.0"
@@ -88,7 +88,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "1.3.0")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "1.4.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])

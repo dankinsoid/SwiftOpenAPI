@@ -233,10 +233,12 @@ extension SchemaObject {
         switch self {
         case .any, .array:
             return false
-        case .composite, .primitive, .enum:
+        case let .primitive(_, format, _):
+        		return format != nil
+        case .composite, .enum:
             return true
-        case let .object(properties, _, _, _):
-            return properties?.isEmpty == false
+        case let .object(_, _, additional, _):
+            return additional == nil
         }
     }
 }

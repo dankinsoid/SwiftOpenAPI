@@ -1,145 +1,85 @@
 import Foundation
 
-final class SchemeEncoder: Encoder {
+struct SchemeEncoder {
     
-    var codingPath: [CodingKey]
-    var userInfo: [CodingUserInfoKey: Any]
-    var result: ReferenceOr<SchemaObject>
-    var required: Bool
-    var references: [String: ReferenceOr<SchemaObject>]
-    var extractReferences: Bool
+    var extractReferences = true
     var dateFormat: DateEncodingFormat
     
-    init(
-        codingPath: [CodingKey] = [],
-        extractReferences: Bool = true,
-        dateFormat: DateEncodingFormat
-    ) {
-        self.codingPath = codingPath
-        self.userInfo = [:]
-        self.result = .value(.any)
-        self.required = true
-        self.references = [:]
-        self.extractReferences = extractReferences
-        self.dateFormat = dateFormat
-    }
-    
-    func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
-        let container = SchemeKeyedEncodingContainer<Key>(
-            codingPath: codingPath,
-            result: Ref { [self] in
-                guard
-                    case let .value(.object(properties, _, _, _)) = result
-                else { return [:] }
-                return properties ?? [:]
-            } set: { [self] newValue in
-                switch result {
-                case let .value(.object(_, required, additionalProperties, xml)):
-                    result = .value(.object(newValue, required: required, additionalProperties: additionalProperties, xml: xml))
-                default:
-                    result = .value(.object(newValue, required: []))
-                }
-            },
-            required: Ref { [self] in
-                guard
-                    case let .value(.object(_, required, _, _)) = result
-                else { return [] }
-                return required ?? []
-            } set: { [self] newValue in
-                switch result {
-                case let .value(.object(properties, _, additionalProperties, xml)):
-                    result = .value(.object(properties, required: newValue, additionalProperties: additionalProperties, xml: xml))
-                default:
-                    result = .value(.object([:], required: newValue))
-                }
-            },
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: Ref(self, \.references)
-        )
-        return KeyedEncodingContainer(container)
-    }
-    
-    func unkeyedContainer() -> UnkeyedEncodingContainer {
-        SchemeSingleValueEncodingContainer(
-            isSingle: false,
-            codingPath: codingPath,
-            result: Ref { [self] in
-                if case let .value(.array(value)) = result {
-                    return value
-                }
-                return .value(.any)
-            } set: { [self] newValue in
-                result = .value(.array(newValue))
-            },
-            required: .constant(true),
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: Ref(self, \.references)
-        )
-    }
-    
-    func singleValueContainer() -> SingleValueEncodingContainer {
-        SchemeSingleValueEncodingContainer(
-            isSingle: true,
-            codingPath: codingPath,
-            result: Ref(self, \.result),
-            required: Ref(self, \.required),
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: Ref(self, \.references)
-        )
-    }
-    
     @discardableResult
-    func encode(_ value: Encodable, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> ReferenceOr<SchemaObject> {
-        let type = type(of: value)
+    func encode(
+        _ value: Encodable,
+        into schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> ReferenceOr<SchemaObject> {
+        let type = Swift.type(of: value)
+       	return try parse(
+            value: TypeRevision().describeType(of: value),
+            type: type,
+            into: &schemas
+        )
+    }
+    
+    func parse(
+        value: CodableContainerValue,
+        type: Any.Type,
+        into schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> ReferenceOr<SchemaObject> {
         let name = String.typeName(type)
+        let result: ReferenceOr<SchemaObject>
         
-        if let value = schemas[name] {
-            result = value
-            return .ref(components: \.schemas, name)
-        }
-        
-        switch value {
-        case is Date:
+        switch type {
+        case is Date.Type:
             result = .value(.primitive(.string, format: dateFormat.dataFormat))
-            return result
             
-        case is URL:
+        case is URL.Type:
             result = .value(.primitive(.string, format: .uri))
-            return result
             
-        case is Data:
+        case is Data.Type:
             result = .value(.primitive(.string, format: .binary))
-            return result
+            
+        case let openAPI as OpenAPIType.Type:
+            result = .value(openAPI.openAPISchema)
             
         default:
-            break
-        }
-        
-        if let scheme = (type as? OpenAPIType.Type)?.openAPISchema {
-            result = .value(scheme)
-        } else {
-            try value.encode(to: self)
-            schemas.merge(references) { _, new in new }
-            
-            switch (result, type) {
-            case let (.value(.object(properties, _, _, xml)), decodable as Decodable.Type):
-                let decoder = CheckAllKeysDecoder()
-                _ = try? decodable.init(from: decoder)
-                if decoder.isAdditional, let property = properties?.first?.value {
-                    result = .value(.object(nil, required: nil, additionalProperties: property, xml: xml))
+            switch value {
+            case .single(let codableValues):
+                let dataType = try parse(value: codableValues)
+                if let iterable = type as? any CaseIterable.Type {
+                    let allCases = iterable.allCases as any Collection
+                    result = .value(.enum(dataType, allCases: allCases.map { "\($0)" }))
+                } else {
+                    result = .value(.primitive(dataType))
                 }
                 
-            case let (.value(.primitive(dataType, _, _)), iterable as any CaseIterable.Type):
-                let allCases = iterable.allCases as any Collection
-                result = .value(.enum(dataType, allCases: allCases.map { "\($0)" }))
+            case .keyed(let keyedInfo):
+                switch keyedInfo.isFixed {
+                case true:
+                    let schema = try SchemaObject.object(
+                        keyedInfo.fields.mapValues {
+                            try parse(value: $0.container, type: $0.type, into: &schemas)
+                        },
+                        required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
+                    )
+                    result = .value(schema)
+                    
+                case false:
+                    let schema = try SchemaObject.object(
+                        nil,
+                        required: nil,
+                        additionalProperties: (keyedInfo.fields.first?.value).map {
+                            try parse(value: $0.container, type: $0.type, into: &schemas)
+                        }
+                    )
+                    result = .value(schema)
+                }
                 
-            default:
-                break
+            case .unkeyed(let typeInfo):
+                let schema = try SchemaObject.array(
+                    parse(value: typeInfo.container, type: typeInfo.type, into: &schemas)
+                )
+                result = .value(schema)
             }
         }
+        
         
         if extractReferences, result.isReferenceable, isReferenceable(type: type) {
             schemas[name] = result
@@ -149,397 +89,24 @@ final class SchemeEncoder: Encoder {
         }
     }
     
+    private func parse(
+        value: CodableValues
+    ) throws -> PrimitiveDataType {
+        switch value {
+        case .int, .int8, .int16, .int32, .int64, .uint, .uint8, .uint16, .uint32, .uint64:
+            return .integer
+        case .double, .float:
+            return .number
+        case .bool:
+            return .boolean
+        case .string:
+            return .string
+        case .null:
+            return .string
+        }
+    }
+    
     private func isReferenceable(type: Any.Type) -> Bool {
         (type as? OpenAPIType.Type)?.isPrimitive != true
-    }
-}
-
-private struct SchemeSingleValueEncodingContainer: SingleValueEncodingContainer, UnkeyedEncodingContainer {
-    
-    var count: Int { 1 }
-    let isSingle: Bool
-    var codingPath: [CodingKey]
-    @Ref var result: ReferenceOr<SchemaObject>
-    @Ref var required: Bool
-    let extractReferences: Bool
-    let dateFormat: DateEncodingFormat
-    @Ref var references: [String: ReferenceOr<SchemaObject>]
-    
-    mutating func encodeNil() throws {
-        required = false
-    }
-    
-    mutating func encode(_: Bool) throws {
-        result = .value(.primitive(.boolean))
-    }
-    
-    mutating func encode(_: String) throws {
-        result = .value(.primitive(.string))
-    }
-    
-    mutating func encode(_: Double) throws {
-        result = .value(.primitive(.number))
-    }
-    
-    mutating func encode(_: Float) throws {
-        result = .value(.primitive(.number))
-    }
-    
-    mutating func encode(_: Int) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: Int8) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: Int16) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: Int32) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: Int64) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: UInt) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: UInt8) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: UInt16) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: UInt32) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode(_: UInt64) throws {
-        result = .value(.primitive(.integer))
-    }
-    
-    mutating func encode<T>(_ value: T) throws where T : Encodable {
-        result = try SchemeEncoder(
-            codingPath: nestedPath,
-            extractReferences: extractReferences,
-            dateFormat: dateFormat
-        )
-        .encode(value, into: &references)
-    }
-    
-    mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-        result = .value(.object([:], required: []))
-        let container = SchemeKeyedEncodingContainer<NestedKey>(
-            codingPath: nestedPath,
-            result: Ref { [$result] in
-                guard
-                    case let .value(.object(properties, _, _, _)) = $result.wrappedValue
-                else { return [:] }
-                return properties ?? [:]
-            } set: { [$result] newValue in
-                switch $result.wrappedValue {
-                case let .value(.object(_, required, additionalProperties, xml)):
-                    $result.wrappedValue = .value(
-                        .object(newValue, required: required, additionalProperties: additionalProperties, xml: xml)
-                    )
-                default:
-                    $result.wrappedValue = .value(.object(newValue, required: []))
-                }
-            },
-            required: Ref { [$result] in
-                guard
-                    case let .value(.object(_, required, _, _)) = $result.wrappedValue
-                else { return [] }
-                return required ?? []
-            } set: { [$result] newValue in
-                switch $result.wrappedValue {
-                case let .value(.object(properties, _, additionalProperties, xml)):
-                    $result.wrappedValue = .value(
-                        .object(properties, required: newValue, additionalProperties: additionalProperties, xml: xml)
-                    )
-                default:
-                    $result.wrappedValue = .value(.object([:], required: newValue))
-                }
-            },
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: $references
-        )
-        return KeyedEncodingContainer(container)
-    }
-    
-    mutating func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-        result = .value(.array(.value(.any)))
-        return SchemeSingleValueEncodingContainer(
-            isSingle: false,
-            codingPath: nestedPath,
-            result: Ref { [$result] in
-                guard
-                    case let .value(.array(value)) = $result.wrappedValue
-                else { return .value(.any) }
-                return value
-            } set: { [$result] newValue in
-                $result.wrappedValue = .value(.array(newValue))
-            },
-            required: .constant(true),
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: $references
-        )
-    }
-    
-    mutating func superEncoder() -> Encoder {
-        SchemeEncoder(codingPath: codingPath, dateFormat: dateFormat)
-    }
-    
-    private var nestedPath: [CodingKey] {
-        isSingle ? codingPath : codingPath + [IntKey(intValue: count)]
-    }
-}
-
-private struct SchemeKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
-    
-    var codingPath: [CodingKey]
-    @Ref var result: [String: ReferenceOr<SchemaObject>]
-    @Ref var required: Set<String>
-    let extractReferences: Bool
-    let dateFormat: DateEncodingFormat
-    @Ref var references: [String: ReferenceOr<SchemaObject>]
-    
-    @inline(__always)
-    private func str(_ key: Key) -> String {
-        key.stringValue
-    }
-    
-    mutating func encodeNil(forKey key: Key) throws {
-        required.remove(key.stringValue)
-    }
-    
-    mutating func encode(_: Bool, forKey key: Key) throws {
-        try encode(.boolean, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_: Bool?, forKey key: Key) throws {
-        try encode(.boolean, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: String, forKey key: Key) throws {
-        try encode(.string, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: String?, forKey key: Key) throws {
-        try encode(.string, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Double, forKey key: Key) throws {
-        try encode(.number, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Double?, forKey key: Key) throws {
-        try encode(.number, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Float, forKey key: Key) throws {
-        try encode(.number, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Float?, forKey key: Key) throws {
-        try encode(.number, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Int, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Int?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Int8, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Int8?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Int16, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Int16?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Int32, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Int32?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: Int64, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: Int64?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: UInt, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: UInt?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: UInt8, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: UInt8?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: UInt16, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: UInt16?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: UInt32, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: UInt32?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode(_: UInt64, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent(_ value: UInt64?, forKey key: Key) throws {
-        try encode(.integer, forKey: key, optional: true)
-    }
-    
-    mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-        try encode(value, forKey: key, optional: false)
-    }
-    
-    mutating func encodeIfPresent<T>(_ value: T?, forKey key: Key) throws where T : Encodable {
-        try encode(value, forKey: key, optional: true)
-    }
-    
-    private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
-        let encoder = SchemeEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
-        let stringKey = str(key)
-        result[stringKey] = value.flatMap { try? encoder.encode($0, into: &references) }
-        if optional {
-            required.remove(stringKey)
-        } else {
-            required.insert(stringKey)
-        }
-    }
-    
-    mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-        let strKey = str(key)
-        let container = SchemeKeyedEncodingContainer<NestedKey>(
-            codingPath: nestedPath(for: key),
-            result: Ref { [$result] in
-                guard
-                    case let .value(.object(properties, _, _, _)) = $result.wrappedValue[strKey]
-                else { return [:] }
-                return properties ?? [:]
-            } set: { [$result] newValue in
-                switch $result.wrappedValue[strKey] {
-                case let .value(.object(_, required, additional, xml)):
-                    $result.wrappedValue[strKey] = .value(
-                        .object(newValue, required: required, additionalProperties: additional, xml: xml)
-                    )
-                    
-                default:
-                    $result.wrappedValue[strKey] = .value(.object(newValue, required: nil))
-                }
-            },
-            required: Ref { [$result] in
-                guard
-                    case let .value(.object(_, required, _, _)) = $result.wrappedValue[strKey]
-                else { return [] }
-                return required ?? []
-            } set: { [$result] newValue in
-                switch $result.wrappedValue[strKey] {
-                case let .value(.object(properties, _, additional, xml)):
-                    $result.wrappedValue[strKey] = .value(
-                        .object(properties, required: newValue, additionalProperties: additional, xml: xml)
-                    )
-                    
-                default:
-                    $result.wrappedValue[strKey] = .value(.object([:], required: newValue))
-                }
-            },
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: $references
-        )
-        result[strKey] = .value(.object([:], required: []))
-        return KeyedEncodingContainer(container)
-    }
-    
-    mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-        let strKey = str(key)
-        let container = SchemeSingleValueEncodingContainer(
-            isSingle: false,
-            codingPath: nestedPath(for: key),
-            result: Ref { [$result] in
-                guard
-                    case let .value(.array(value)) = $result.wrappedValue[strKey]
-                else { return .value(.array(.value(.any))) }
-                return value
-            } set: { [$result] newValue in
-                $result.wrappedValue[strKey] = .value(.array(newValue))
-            },
-            required: .constant(true),
-            extractReferences: extractReferences,
-            dateFormat: dateFormat,
-            references: $references
-        )
-        result[strKey] = .value(.array(.value(.any)))
-        return container
-    }
-    
-    mutating func superEncoder() -> Encoder {
-        SchemeEncoder(codingPath: codingPath, extractReferences: extractReferences, dateFormat: dateFormat)
-    }
-    
-    mutating func superEncoder(forKey key: Key) -> Encoder {
-        result[str(key)] = .value(.array(.value(.any)))
-        return SchemeEncoder(codingPath: nestedPath(for: key), extractReferences: extractReferences, dateFormat: dateFormat)
-    }
-    
-    private func nestedPath(for key: Key) -> [CodingKey] {
-        codingPath + [key]
-    }
-    
-    @inline(__always)
-    private mutating func encode(_ type: PrimitiveDataType, forKey key: Key, optional: Bool) throws {
-        let stringKey = str(key)
-        result[stringKey] = .value(.primitive(type))
-        if optional {
-            required.remove(stringKey)
-        } else {
-            required.insert(stringKey)
-        }
     }
 }
