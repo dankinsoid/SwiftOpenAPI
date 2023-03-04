@@ -53,8 +53,8 @@ final class TypeRevisionEncoder: Encoder {
     func encode(_ value: Encodable?, type: Encodable.Type) throws -> TypeInfo {
         if path.contains(where: { path in path.type == type }) {
             result.container = .recursive
-        } else if let result = context.customDescription(type, value) {
-            self.result = TypeInfo(type: type, isOptional: value == nil, container: result)
+        } else if let container = context.customDescription(type, value) {
+        		result = TypeInfo(type: type, isOptional: value == nil, container: container)
         } else if let value {
             try value.encode(to: self)
             if case .keyed = result.container, let decodable = type as? Decodable.Type {
@@ -65,9 +65,9 @@ final class TypeRevisionEncoder: Encoder {
         } else if let decodable = type as? Decodable.Type {
             let decoder = TypeRevisionDecoder(path: path, context: context)
             _ = try? decoder.decode(decodable)
-            self.result = decoder.result
+            result = decoder.result
         } else {
-            self.result.container = .single(.null)
+            result.container = .single(.null)
         }
         result.type = type
         return result
