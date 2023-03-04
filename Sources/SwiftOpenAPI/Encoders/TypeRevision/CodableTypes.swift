@@ -25,6 +25,7 @@ indirect enum CodableContainerValue {
     case single(CodableValues)
     case keyed(KeyedInfo)
     case unkeyed(TypeInfo)
+    case recursive
     
     var keyed: KeyedInfo {
         get {
@@ -134,6 +135,9 @@ extension CodableContainerValue {
             
         case .unkeyed(let typeInfo):
             return typeInfo.container.anyValue.map { .array([$0]) }
+            
+        case .recursive:
+            return nil
         }
     }
 }

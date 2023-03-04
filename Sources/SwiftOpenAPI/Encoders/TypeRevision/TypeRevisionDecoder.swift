@@ -4,16 +4,17 @@ final class TypeRevisionDecoder: Decoder {
     
     typealias Cache = [ObjectIdentifier: (TypeInfo, Decodable)]
     
-    var codingPath: [CodingKey]
+    var path: [TypePath]
+    var codingPath: [CodingKey] { path.map(\.key) }
     var userInfo: [CodingUserInfoKey: Any]
     var result: TypeInfo
     var context: TypeRevision
     
     init(
-        codingPath: [CodingKey] = [],
+        path: [TypePath] = [],
     		context: TypeRevision
     ) {
-        self.codingPath = codingPath
+        self.path = path
         self.userInfo = [:]
         self.result = .any
         self.context = context
@@ -22,7 +23,7 @@ final class TypeRevisionDecoder: Decoder {
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
         result.container.keyed = KeyedInfo()
         let container = TypeRevisionKeyedDecodingContainer<Key>(
-            codingPath: codingPath,
+            path: path,
             decoder: self,
             result: Ref(self, \.result.container.keyed)
         )
@@ -33,7 +34,7 @@ final class TypeRevisionDecoder: Decoder {
         result.container.unkeyed = .any
         return TypeRevisionSingleValueDecodingContainer(
             isSingle: false,
-            codingPath: codingPath,
+            path: path,
             decoder: self,
             result: Ref { [self] in
                 result.container.unkeyed ?? .any
@@ -47,7 +48,7 @@ final class TypeRevisionDecoder: Decoder {
         var wasSetted = false
         return TypeRevisionSingleValueDecodingContainer(
             isSingle: true,
-            codingPath: codingPath,
+            path: path,
             decoder: self,
             result: Ref { [self] in
                 wasSetted ? result : nil
@@ -62,6 +63,11 @@ final class TypeRevisionDecoder: Decoder {
     
     @discardableResult
     func decode(_ type: Decodable.Type) throws -> Decodable {
+        guard !path.contains(where: { path in path.type == type }) else {
+            result.container = .recursive
+            result.type = type
+            throw AnyError()
+        }
         let decodable = try? type.init(from: self)
         if let custom = context.customDescription(type, nil) {
             result.container = custom
@@ -96,7 +102,8 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
         result == nil ? 0 : 1
     }
     let isSingle: Bool
-    var codingPath: [CodingKey]
+    var path: [TypePath]
+    var codingPath: [CodingKey] { path.map(\.key) }
     var decoder: TypeRevisionDecoder
     @Ref var result: TypeInfo?
     
@@ -177,10 +184,10 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
     
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
         let decoder = TypeRevisionDecoder(
-            codingPath: nestedPath,
+            path: nestedPath(for: type),
             context: decoder.context
         )
-        let decodable = try decoder.decode(type)
+        let decodable = try? decoder.decode(type)
         var value = decoder.result
         value.type = type
         result = value
@@ -193,7 +200,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
     func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
         result[or: .any].container.keyed = KeyedInfo()
         let container = TypeRevisionKeyedDecodingContainer<NestedKey>(
-            codingPath: nestedPath,
+            path: nestedPath(for: [String: Any].self),
             decoder: decoder,
             result: Ref { [$result] in
                 $result.wrappedValue[or: .any].container.keyed
@@ -208,7 +215,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
         result[or: .any].container.unkeyed = .any
         return TypeRevisionSingleValueDecodingContainer(
             isSingle: false,
-            codingPath: nestedPath,
+            path: nestedPath(for: [Any].self),
             decoder: decoder,
             result: Ref { [$result] in
                 $result.wrappedValue[or: .any].container.unkeyed ?? .any
@@ -219,11 +226,11 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
     }
     
     func superDecoder() -> Decoder {
-        TypeRevisionDecoder(codingPath: codingPath, context: decoder.context)
+        TypeRevisionDecoder(path: path, context: decoder.context)
     }
     
-    private var nestedPath: [CodingKey] {
-        isSingle ? codingPath : codingPath + [IntKey(intValue: 0)]
+    private func nestedPath(for type: Any.Type) -> [TypePath] {
+        isSingle ? path : path + [TypePath(type: type, key: IntKey(intValue: 0))]
     }
 }
 
@@ -237,7 +244,8 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
         return Key(stringValue: "").map { [$0] } ?? []
     }
     
-    var codingPath: [CodingKey]
+    var path: [TypePath]
+    var codingPath: [CodingKey] { path.map(\.key) }
     var decoder: TypeRevisionDecoder
     @Ref var result: KeyedInfo
     
@@ -254,142 +262,142 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
     }
     
     func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
-        try decode(.bool(nil), forKey: key, optional: false)
+        decode(.bool(nil), forKey: key, optional: false)
         return true
     }
     
     func decodeIfPresent(_ type: Bool.Type, forKey key: Key) throws -> Bool? {
-        try decode(.bool(nil), forKey: key, optional: true)
+        decode(.bool(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: String.Type, forKey key: Key) throws -> String {
-        try decode(.string(nil), forKey: key, optional: false)
+        decode(.string(nil), forKey: key, optional: false)
         return ""
     }
     
     func decodeIfPresent(_ type: String.Type, forKey key: Key) throws -> String? {
-        try decode(.string(nil), forKey: key, optional: true)
+        decode(.string(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
-        try decode(.double(nil), forKey: key, optional: false)
+        decode(.double(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Double.Type, forKey key: Key) throws -> Double? {
-        try decode(.double(nil), forKey: key, optional: true)
+        decode(.double(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
-        try decode(.float(nil), forKey: key, optional: false)
+        decode(.float(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Float.Type, forKey key: Key) throws -> Float? {
-        try decode(.float(nil), forKey: key, optional: true)
+        decode(.float(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Int.Type, forKey key: Key) throws -> Int {
-        try decode(.int(nil), forKey: key, optional: false)
+        decode(.int(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Int.Type, forKey key: Key) throws -> Int? {
-        try decode(.int(nil), forKey: key, optional: true)
+        decode(.int(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 {
-        try decode(.int8(nil), forKey: key, optional: false)
+        decode(.int8(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Int8.Type, forKey key: Key) throws -> Int8? {
-        try decode(.int8(nil), forKey: key, optional: true)
+        decode(.int8(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 {
-        try decode(.int16(nil), forKey: key, optional: false)
+        decode(.int16(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Int16.Type, forKey key: Key) throws -> Int16? {
-        try decode(.int16(nil), forKey: key, optional: true)
+        decode(.int16(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 {
-        try decode(.int32(nil), forKey: key, optional: false)
+        decode(.int32(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Int32.Type, forKey key: Key) throws -> Int32? {
-        try decode(.int32(nil), forKey: key, optional: true)
+        decode(.int32(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 {
-        try decode(.int64(nil), forKey: key, optional: false)
+        decode(.int64(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: Int64.Type, forKey key: Key) throws -> Int64? {
-        try decode(.int64(nil), forKey: key, optional: true)
+        decode(.int64(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt {
-        try decode(.uint(nil), forKey: key, optional: false)
+        decode(.uint(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: UInt.Type, forKey key: Key) throws -> UInt? {
-        try decode(.uint(nil), forKey: key, optional: true)
+        decode(.uint(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 {
-        try decode(.uint8(nil), forKey: key, optional: false)
+        decode(.uint8(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: UInt8.Type, forKey key: Key) throws -> UInt8? {
-        try decode(.uint8(nil), forKey: key, optional: true)
+        decode(.uint8(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 {
-        try decode(.uint16(nil), forKey: key, optional: false)
+        decode(.uint16(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: UInt16.Type, forKey key: Key) throws -> UInt16? {
-        try decode(.uint16(nil), forKey: key, optional: true)
+        decode(.uint16(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 {
-        try decode(.uint32(nil), forKey: key, optional: false)
+        decode(.uint32(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: UInt32.Type, forKey key: Key) throws -> UInt32? {
-        try decode(.uint32(nil), forKey: key, optional: true)
+        decode(.uint32(nil), forKey: key, optional: true)
         return nil
     }
     
     func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 {
-        try decode(.uint64(nil), forKey: key, optional: false)
+        decode(.uint64(nil), forKey: key, optional: false)
         return 0
     }
     
     func decodeIfPresent(_ type: UInt64.Type, forKey key: Key) throws -> UInt64? {
-        try decode(.uint64(nil), forKey: key, optional: true)
+        decode(.uint64(nil), forKey: key, optional: true)
         return nil
     }
     
@@ -398,12 +406,12 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
     }
     
     func decodeIfPresent<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
-        try decode(type, forKey: key, optional: true)
+        try? decode(type, forKey: key, optional: true)
     }
     
     private func decode<T: Decodable>(_ type: T.Type, forKey key: Key, optional: Bool) throws -> T {
-        let decoder = TypeRevisionDecoder(codingPath: nestedPath(for: key), context: decoder.context)
-        let decodable = try decoder.decode(type)
+        let decoder = TypeRevisionDecoder(path: nestedPath(for: key, type), context: decoder.context)
+        let decodable = try? decoder.decode(type)
         var value = decoder.result
         value.type = type
         value.isOptional = optional
@@ -417,7 +425,7 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
     func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedDecodingContainer<NestedKey> {
         let strKey = str(key)
         let container = TypeRevisionKeyedDecodingContainer<NestedKey>(
-            codingPath: nestedPath(for: key),
+            path: nestedPath(for: key, [String: Any].self),
             decoder: decoder,
             result: Ref(self, \.result[strKey].container.keyed)
         )
@@ -429,7 +437,7 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
         let strKey = str(key)
         let container = TypeRevisionSingleValueDecodingContainer(
             isSingle: false,
-            codingPath: nestedPath(for: key),
+            path: nestedPath(for: key, [Any].self),
             decoder: decoder,
             result: Ref { [$result] in
                 $result.wrappedValue[strKey].container.unkeyed ?? .any
@@ -442,19 +450,19 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
     }
     
     func superDecoder() -> Decoder {
-        TypeRevisionDecoder(codingPath: codingPath, context: decoder.context)
+        TypeRevisionDecoder(path: path, context: decoder.context)
     }
     
     func superDecoder(forKey key: Key) -> Decoder {
-        TypeRevisionDecoder(codingPath: nestedPath(for: key), context: decoder.context)
+        TypeRevisionDecoder(path: nestedPath(for: key, Any.self), context: decoder.context)
     }
     
-    private func nestedPath(for key: Key) -> [CodingKey] {
-        codingPath + [key]
+    private func nestedPath(for key: Key, _ type: Any.Type) -> [TypePath] {
+        path + [TypePath(type: type, key: key)]
     }
     
     @inline(__always)
-    private func decode(_ value: CodableValues, forKey key: Key, optional: Bool) throws {
+    private func decode(_ value: CodableValues, forKey key: Key, optional: Bool) {
         result[str(key)] = TypeInfo(type: value.type, isOptional: optional, container: .single(value))
     }
 }
@@ -468,4 +476,10 @@ private extension Optional {
         get { self ?? value }
         set { self = value }
     }
+}
+
+struct TypePath {
+    
+    var type: Any.Type
+    var key: CodingKey
 }

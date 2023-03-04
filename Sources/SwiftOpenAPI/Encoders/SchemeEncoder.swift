@@ -77,11 +77,14 @@ struct SchemeEncoder {
                     parse(value: typeInfo.container, type: typeInfo.type, into: &schemas)
                 )
                 result = .value(schema)
+                
+            case .recursive:
+                result = .ref(components: \.schemas, name)
             }
         }
         
         
-        if extractReferences, result.isReferenceable, isReferenceable(type: type) {
+        if extractReferences, result.isReferenceable {
             schemas[name] = result
             return .ref(components: \.schemas, name)
         } else {
@@ -104,9 +107,5 @@ struct SchemeEncoder {
         case .null:
             return .string
         }
-    }
-    
-    private func isReferenceable(type: Any.Type) -> Bool {
-        (type as? OpenAPIType.Type)?.isPrimitive != true
     }
 }

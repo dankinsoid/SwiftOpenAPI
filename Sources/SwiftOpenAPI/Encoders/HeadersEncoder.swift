@@ -27,7 +27,7 @@ struct HeadersEncoder {
             
         default:
             switch value {
-            case .single, .unkeyed:
+            case .single, .unkeyed, .recursive:
                 throw InvalidType()
                 
             case .keyed(let keyedInfo):

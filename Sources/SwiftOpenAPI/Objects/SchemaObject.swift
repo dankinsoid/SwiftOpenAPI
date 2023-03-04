@@ -231,10 +231,8 @@ extension SchemaObject {
     
     var isReferenceable: Bool {
         switch self {
-        case .any, .array:
+        case .any, .array, .primitive:
             return false
-        case let .primitive(_, format, _):
-        		return format != nil
         case .composite, .enum:
             return true
         case let .object(_, _, additional, _):

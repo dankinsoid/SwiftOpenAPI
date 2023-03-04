@@ -26,6 +26,7 @@ final class SwiftOpenAPITests: XCTestCase {
                             "password": .value(.primitive(.string)),
                             "tags": .value(.array(.value(.primitive(.string)))),
                             "id": .value(.primitive(.string, format: "uuid")),
+                            "url": .value(.primitive(.string, format: "uri")),
                             "enumValue": .ref(components: \.schemas, "SomeEnum"),
                             "comments": .value(
                                 .object(nil, required: nil, additionalProperties: .value(.primitive(.string)))
@@ -58,6 +59,7 @@ struct LoginBody: Codable {
     var tags: Set<String>?
     var comments: [String: String]?
     var enumValue: SomeEnum?
+    var url: URL?
     var id: UUID
     
     static let example = LoginBody(

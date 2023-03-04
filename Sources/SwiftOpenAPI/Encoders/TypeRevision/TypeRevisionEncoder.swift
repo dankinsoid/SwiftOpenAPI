@@ -2,16 +2,17 @@ import Foundation
 
 final class TypeRevisionEncoder: Encoder {
     
-    var codingPath: [CodingKey]
+    var path: [TypePath]
+    var codingPath: [CodingKey] { path.map(\.key) }
     var userInfo: [CodingUserInfoKey: Any]
     var result: TypeInfo
     var context: TypeRevision
     
     init(
-        codingPath: [CodingKey] = [],
+        path: [TypePath] = [],
         context: TypeRevision
     ) {
-        self.codingPath = codingPath
+        self.path = path
         self.context = context
         self.userInfo = [:]
         self.result = TypeInfo(type: Any.self, isOptional: false, container: .single(.null))
@@ -19,7 +20,7 @@ final class TypeRevisionEncoder: Encoder {
     
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
         let container = TypeRevisionKeyedEncodingContainer<Key>(
-            codingPath: codingPath,
+            path: path,
             encoder: self,
             result: Ref(self, \.result.container.keyed)
         )
@@ -29,7 +30,7 @@ final class TypeRevisionEncoder: Encoder {
     func unkeyedContainer() -> UnkeyedEncodingContainer {
         TypeRevisionSingleValueEncodingContainer(
             isSingle: false,
-            codingPath: codingPath,
+            path: path,
             encoder: self,
             result: Ref { [self] in
                 result.container.unkeyed ?? .any
@@ -42,7 +43,7 @@ final class TypeRevisionEncoder: Encoder {
     func singleValueContainer() -> SingleValueEncodingContainer {
         TypeRevisionSingleValueEncodingContainer(
             isSingle: true,
-            codingPath: codingPath,
+            path: path,
             encoder: self,
             result: Ref(self, \.result)
         )
@@ -60,7 +61,7 @@ final class TypeRevisionEncoder: Encoder {
                 result.container.keyed.isFixed = !decoder.isAdditional
             }
         } else if let decodable = type as? Decodable.Type {
-            let decoder = TypeRevisionDecoder(codingPath: codingPath, context: context)
+            let decoder = TypeRevisionDecoder(path: path, context: context)
             _ = try? decoder.decode(decodable)
             self.result = decoder.result
         } else {
@@ -75,7 +76,8 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
     
     var count: Int { 1 }
     let isSingle: Bool
-    var codingPath: [CodingKey]
+    var path: [TypePath]
+    var codingPath: [CodingKey] { path.map(\.key) }
     var encoder: TypeRevisionEncoder
     @Ref var result: TypeInfo
     
@@ -141,7 +143,7 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
     
     mutating func encode<T>(_ value: T) throws where T : Encodable {
         result = try TypeRevisionEncoder(
-            codingPath: nestedPath,
+            path: nestedPath(for: T.self),
             context: encoder.context
         )
         .encode(value, type: T.self)
@@ -150,7 +152,7 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
     mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
         result.container = .keyed(KeyedInfo())
         let container = TypeRevisionKeyedEncodingContainer<NestedKey>(
-            codingPath: nestedPath,
+            path: nestedPath(for: [String: Any].self),
             encoder: encoder,
             result: Ref(self, \.result.container.keyed)
         )
@@ -161,7 +163,7 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
         result.container = .unkeyed(.any)
         return TypeRevisionSingleValueEncodingContainer(
             isSingle: false,
-            codingPath: nestedPath,
+            path: nestedPath(for: [Any].self),
             encoder: encoder,
             result: Ref { [$result] in
                 return $result.wrappedValue.container.unkeyed ?? .any
@@ -172,17 +174,18 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
     }
     
     mutating func superEncoder() -> Encoder {
-        TypeRevisionEncoder(codingPath: codingPath, context: encoder.context)
+        TypeRevisionEncoder(path: path, context: encoder.context)
     }
     
-    private var nestedPath: [CodingKey] {
-        isSingle ? codingPath : codingPath + [IntKey(intValue: count)]
+    private func nestedPath(for type: Any.Type) -> [TypePath] {
+        isSingle ? path : path + [TypePath(type: type, key: IntKey(intValue: count))]
     }
 }
 
 private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     
-    var codingPath: [CodingKey]
+    var path: [TypePath]
+    var codingPath: [CodingKey] { path.map(\.key) }
     var encoder: TypeRevisionEncoder
     @Ref var result: KeyedInfo
     
@@ -317,7 +320,7 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
     
     private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T : Encodable {
         let encoder = TypeRevisionEncoder(
-            codingPath: nestedPath(for: key),
+            path: nestedPath(for: key, T.self),
             context: encoder.context
         )
         var info = try encoder.encode(value, type: T.self)
@@ -329,7 +332,7 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
     mutating func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
         let strKey = str(key)
         let container = TypeRevisionKeyedEncodingContainer<NestedKey>(
-            codingPath: nestedPath(for: key),
+            path: nestedPath(for: key, [String: Any].self),
             encoder: encoder,
             result: Ref(self, \.result[strKey].container.keyed)
         )
@@ -341,7 +344,7 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
         let strKey = str(key)
         let container = TypeRevisionSingleValueEncodingContainer(
             isSingle: false,
-            codingPath: nestedPath(for: key),
+            path: nestedPath(for: key, [Any].self),
             encoder: encoder,
             result: Ref { [$result] in
                 $result.wrappedValue[strKey].container.unkeyed ?? .any
@@ -354,15 +357,15 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
     }
     
     mutating func superEncoder() -> Encoder {
-        TypeRevisionEncoder(codingPath: codingPath, context: encoder.context)
+        TypeRevisionEncoder(path: path, context: encoder.context)
     }
     
     mutating func superEncoder(forKey key: Key) -> Encoder {
-        TypeRevisionEncoder(codingPath: codingPath, context: encoder.context)
+        TypeRevisionEncoder(path: path, context: encoder.context)
     }
     
-    private func nestedPath(for key: Key) -> [CodingKey] {
-        codingPath + [key]
+    private func nestedPath(for key: Key, _ type: Any.Type) -> [TypePath] {
+        path + [TypePath(type: type, key: key)]
     }
     
     @inline(__always)
