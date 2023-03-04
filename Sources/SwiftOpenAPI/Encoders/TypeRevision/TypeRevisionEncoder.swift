@@ -51,7 +51,7 @@ final class TypeRevisionEncoder: Encoder {
     
     @discardableResult
     func encode(_ value: Encodable?, type: Encodable.Type) throws -> TypeInfo {
-        if path.contains(where: { path in path.type == type }) {
+        if !path.isEmpty, path.dropLast().contains(where: { path in path.type == type }) {
             result.container = .recursive
         } else if let container = context.customDescription(type, value) {
         		result = TypeInfo(type: type, isOptional: value == nil, container: container)

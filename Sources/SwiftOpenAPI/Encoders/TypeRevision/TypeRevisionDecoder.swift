@@ -63,7 +63,7 @@ final class TypeRevisionDecoder: Decoder {
     
     @discardableResult
     func decode(_ type: Decodable.Type) throws -> Decodable {
-        guard !path.contains(where: { path in path.type == type }) else {
+        guard path.isEmpty || !path.dropLast().contains(where: { path in path.type == type }) else {
             result.container = .recursive
             result.type = type
             throw AnyError()
