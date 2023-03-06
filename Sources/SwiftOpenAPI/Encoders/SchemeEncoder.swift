@@ -56,8 +56,8 @@ struct SchemeEncoder {
                     let schema = try SchemaObject.object(
                         keyedInfo.fields.mapValues {
                             try parse(value: $0.container, type: $0.type, into: &schemas)
-                        },
-                        required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
+                        }.nilIfEmpty,
+                        required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys).nilIfEmpty
                     )
                     result = .value(schema)
                     
