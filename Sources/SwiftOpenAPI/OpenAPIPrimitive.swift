@@ -95,6 +95,11 @@ extension Date: OpenAPIType {
     public static var openAPISchema: SchemaObject { .primitive(.string, format: .dateTime) }
 }
 
+extension Data: OpenAPIType {
+    
+    public static var openAPISchema: SchemaObject { .primitive(.string, format: .binary) }
+}
+
 extension UUID: OpenAPIType {
     
     public static var openAPISchema: SchemaObject { .primitive(.string, format: .uuid) }
