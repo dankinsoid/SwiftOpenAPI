@@ -19,7 +19,7 @@ struct SchemeEncoder {
     }
     
     func parse(
-        value: CodableContainerValue,
+        value: @autoclosure () throws -> CodableContainerValue,
         type: Any.Type,
         into schemas: inout [String: ReferenceOr<SchemaObject>]
     ) throws -> ReferenceOr<SchemaObject> {
@@ -30,17 +30,11 @@ struct SchemeEncoder {
         case is Date.Type:
             result = .value(.primitive(.string, format: dateFormat.dataFormat))
             
-        case is URL.Type:
-            result = .value(.primitive(.string, format: .uri))
-            
-        case is Data.Type:
-            result = .value(.primitive(.string, format: .binary))
-            
         case let openAPI as OpenAPIType.Type:
             result = .value(openAPI.openAPISchema)
             
         default:
-            switch value {
+            switch try value() {
             case .single(let codableValues):
                 let dataType = try parse(value: codableValues)
                 if let iterable = type as? any CaseIterable.Type {
@@ -56,8 +50,8 @@ struct SchemeEncoder {
                     let schema = try SchemaObject.object(
                         keyedInfo.fields.mapValues {
                             try parse(value: $0.container, type: $0.type, into: &schemas)
-                        },
-                        required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
+                        }.nilIfEmpty,
+                        required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys).nilIfEmpty
                     )
                     result = .value(schema)
                     

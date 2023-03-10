@@ -146,7 +146,6 @@ extension AnyValue {
     
     public static func encode(_ value: Encodable, dateFormat: DateEncodingFormat = .default) throws -> AnyValue {
         let encoder = AnyValueEncoder(dateFormat: dateFormat)
-        try value.encode(to: encoder)
-        return encoder.result
+        return try encoder.encode(value)
     }
 }

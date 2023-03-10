@@ -95,9 +95,19 @@ extension Date: OpenAPIType {
     public static var openAPISchema: SchemaObject { .primitive(.string, format: .dateTime) }
 }
 
+extension Data: OpenAPIType {
+    
+    public static var openAPISchema: SchemaObject { .primitive(.string, format: .byte) }
+}
+
 extension UUID: OpenAPIType {
     
     public static var openAPISchema: SchemaObject { .primitive(.string, format: .uuid) }
+}
+
+extension URL: OpenAPIType {
+    
+    public static var openAPISchema: SchemaObject { .primitive(.string, format: .uri) }
 }
 
 extension Optional: OpenAPIType where Wrapped: OpenAPIType {
