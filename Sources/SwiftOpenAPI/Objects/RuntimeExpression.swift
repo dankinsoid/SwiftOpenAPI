@@ -31,6 +31,6 @@ public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpola
     }
     
     public func encode(to encoder: Encoder) throws {
-        try surrounded.encode(to: encoder)
+        try rawValue.encode(to: encoder)
     }
 }
