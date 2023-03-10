@@ -32,12 +32,12 @@ extension Int: OpenAPIType {
 
 extension Int8: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int8") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int32") }
 }
 
 extension Int16: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int16") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int32") }
 }
 
 extension Int32: OpenAPIType {
@@ -52,27 +52,27 @@ extension Int64: OpenAPIType {
 
 extension UInt: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "uint64") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int64") }
 }
 
 extension UInt8: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "uint8") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int32") }
 }
 
 extension UInt16: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "uint16") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int32") }
 }
 
 extension UInt32: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "uint32") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int32") }
 }
 
 extension UInt64: OpenAPIType {
     
-    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "uint64") }
+    public static var openAPISchema: SchemaObject { .primitive(.integer, format: "int64") }
 }
 
 extension Double: OpenAPIType {

@@ -36,12 +36,12 @@ struct SchemeEncoder {
         default:
             switch try value() {
             case .single(let codableValues):
-                let dataType = try parse(value: codableValues)
+                let (dataType, format) = try parse(value: codableValues)
                 if let iterable = type as? any CaseIterable.Type {
                     let allCases = iterable.allCases as any Collection
                     result = .value(.enum(dataType, allCases: allCases.map { "\($0)" }))
                 } else {
-                    result = .value(.primitive(dataType))
+                    result = .value(.primitive(dataType, format: format))
                 }
                 
             case .keyed(let keyedInfo):
@@ -88,18 +88,20 @@ struct SchemeEncoder {
     
     private func parse(
         value: CodableValues
-    ) throws -> PrimitiveDataType {
+    ) throws -> (PrimitiveDataType, DataFormat?) {
         switch value {
-        case .int, .int8, .int16, .int32, .int64, .uint, .uint8, .uint16, .uint32, .uint64:
-            return .integer
-        case .double, .float:
-            return .number
+        case .int8, .int16, .int32, .uint8, .uint16, .uint32:
+            return (.integer, "int32")
+        case .int, .int64, .uint, .uint64:
+            return (.integer, "int64")
+        case .double:
+            return (.number, "double")
+        case .float:
+            return (.number, "float")
         case .bool:
-            return .boolean
-        case .string:
-            return .string
-        case .null:
-            return .string
+            return (.boolean, nil)
+        case .string, .null:
+            return (.string, nil)
         }
     }
 }
