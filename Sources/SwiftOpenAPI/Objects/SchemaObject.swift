@@ -124,8 +124,13 @@ public indirect enum SchemaObject: Equatable, Codable, SpecificationExtendable {
         ):
             try container.encodeIfPresent(DataType.object, forKey: .type)
             try container.encodeIfPresent(xml, forKey: .xml)
-            try container.encodeIfPresent(properties, forKey: .properties)
-            try container.encodeIfPresent(required, forKey: .required)
+            if let properties {
+                var nested = container.nestedContainer(keyedBy: StringKey<String>.self, forKey: .properties)
+                try properties.sorted { $0.key < $1.key }.forEach { key, value in
+                    try nested.encode(value, forKey: StringKey(key))
+                }
+            }
+            try container.encodeIfPresent(required?.sorted(), forKey: .required)
             try container.encodeIfPresent(additionalProperties, forKey: .additionalProperties)
             
         case let .array(schemaObject):
