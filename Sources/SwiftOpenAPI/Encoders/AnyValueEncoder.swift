@@ -78,6 +78,12 @@ final class AnyValueEncoder: Encoder {
         case let url as URL?:
             try url?.absoluteString.encode(to: self)
             
+        case let decimal as Decimal:
+            try decimal.description.encode(to: self)
+            
+        case let decimal as Decimal?:
+            try decimal?.description.encode(to: self)
+            
         default:
             try value.encode(to: self)
         }
