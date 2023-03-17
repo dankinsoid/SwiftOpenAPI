@@ -28,7 +28,7 @@ struct SchemeEncoder {
         
         switch type {
         case is Date.Type:
-            result = .value(.primitive(.string, format: dateFormat.dataFormat))
+            result = .value(dateFormat.schema)
             
         case let openAPI as OpenAPIType.Type:
             result = .value(openAPI.openAPISchema)
