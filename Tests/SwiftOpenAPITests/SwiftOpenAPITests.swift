@@ -41,15 +41,19 @@ final class SwiftOpenAPITests: XCTestCase {
     }
 }
 
-func prettyPrint(_ value: some Encodable) throws {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .prettyPrinted
-    try print(
-        String(
-            data: encoder.encode(value),
-            encoding: .utf8
-        ) ?? ""
-    )
+func prettyPrint(_ value: some Encodable) {
+    do {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        try print(
+            String(
+                data: encoder.encode(value),
+                encoding: .utf8
+            ) ?? ""
+        )
+    } catch {
+        print(value)
+    }
 }
 
 
