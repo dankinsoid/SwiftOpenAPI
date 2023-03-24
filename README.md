@@ -80,6 +80,7 @@ OpenAPIObject(
 1. URI type
 2. [Specification Extensions](https://swagger.io/specification/#specification-extensions)
 3. `description` in SchemeObject
+4. `refactor` method on `OpenAPIDocument`
  
 ## Installation
 
