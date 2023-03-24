@@ -23,3 +23,22 @@ public struct ExampleObject: Codable, Equatable, SpecificationExtendable {
 		self.externalValue = externalValue
 	}
 }
+
+extension ExampleObject: ExpressibleByDictionary {
+	
+	public typealias Key = String
+	public typealias Value = AnyValue
+	
+	public subscript(_ key: String) -> AnyValue? {
+		get {
+			value?[key]
+		}
+		set {
+			value?[key] = newValue
+		}
+	}
+	
+	public init(dictionaryElements elements: [(String, AnyValue)]) {
+		self.init(value: .object(Dictionary(elements) { _, s in s }))
+	}
+}

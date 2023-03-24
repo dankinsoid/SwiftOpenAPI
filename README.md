@@ -50,14 +50,10 @@ OpenAPIObject(
             ]
         ],
         examples: [
-            "LoginBody": .value(
-                ExampleObject(
-                    value: [
-                        "username": "SomeUser",
-                        "password": "12345678"
-                    ]
-                )
-            )
+            "LoginBody": [
+								"username": "SomeUser",
+								"password": "12345678"
+						]
         ],
         requestBodies: [
             "LoginRequest": .value(
