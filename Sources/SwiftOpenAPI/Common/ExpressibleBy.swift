@@ -1,36 +1,30 @@
 import Foundation
 
 public protocol ExpressibleByArray<ArrayLiteralElement>: ExpressibleByArrayLiteral {
-    
-    init(arrayElements elements: [ArrayLiteralElement])
+	init(arrayElements elements: [ArrayLiteralElement])
 }
 
-extension ExpressibleByArrayLiteral where Self: ExpressibleByArray {
-    
-    public init(arrayLiteral elements: ArrayLiteralElement...) {
-        self.init(arrayElements: elements)
-    }
+public extension ExpressibleByArrayLiteral where Self: ExpressibleByArray {
+	init(arrayLiteral elements: ArrayLiteralElement...) {
+		self.init(arrayElements: elements)
+	}
 }
 
 public protocol MutableDictionary<Key, Value> {
-    
-    associatedtype Key: Hashable
-    associatedtype Value
-    
-    subscript(_ key: Key) -> Value? { get set }
+	associatedtype Key: Hashable
+	associatedtype Value
+
+	subscript(_: Key) -> Value? { get set }
 }
 
-extension Dictionary: MutableDictionary {
-}
+extension Dictionary: MutableDictionary {}
 
 public protocol ExpressibleByDictionary<Key, Value>: ExpressibleByDictionaryLiteral, MutableDictionary {
-    
-    init(dictionaryElements elements: [(Key, Value)])
+	init(dictionaryElements elements: [(Key, Value)])
 }
 
-extension ExpressibleByDictionaryLiteral where Self: ExpressibleByDictionary {
-    
-    public init(dictionaryLiteral elements: (Key, Value)...) {
-        self.init(dictionaryElements: elements)
-    }
+public extension ExpressibleByDictionaryLiteral where Self: ExpressibleByDictionary {
+	init(dictionaryLiteral elements: (Key, Value)...) {
+		self.init(dictionaryElements: elements)
+	}
 }

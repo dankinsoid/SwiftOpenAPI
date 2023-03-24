@@ -4,15 +4,17 @@ import Foundation
 ///
 /// When using the discriminator, inline schemas will not be considered.
 public struct DiscriminatorObject: Codable, Equatable, SpecificationExtendable {
-    
-    /// The name of the property in the payload that will hold the discriminator value.
-    public var propertyName: String
-    
-    /// An object to hold mappings between payload values and schema names or references.
-    public var mapping: [String: String]?
-    
-    public init(propertyName: String, mapping: [String: String]? = nil) {
-        self.propertyName = propertyName
-        self.mapping = mapping
-    }
+
+	/// The name of the property in the payload that will hold the discriminator value.
+	public var propertyName: String
+
+	/// An object to hold mappings between payload values and schema names or references.
+	public var mapping: [String: String]?
+
+	public var specificationExtensions: SpecificationExtensions? = nil
+
+	public init(propertyName: String, mapping: [String: String]? = nil) {
+		self.propertyName = propertyName
+		self.mapping = mapping
+	}
 }
