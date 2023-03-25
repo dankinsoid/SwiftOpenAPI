@@ -97,11 +97,7 @@ let petsSwagger = OpenAPIObject(
 					),
 				],
 				responses: [
-					400: .value(
-						ResponseObject(
-							description: "Invalid tag value"
-						)
-					),
+					400: "Invalid tag value",
 					200: .value(
 						ResponseObject(
 							description: "successful operation",
