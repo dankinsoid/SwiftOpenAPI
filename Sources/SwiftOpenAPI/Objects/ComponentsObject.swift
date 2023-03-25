@@ -33,7 +33,7 @@ public struct ComponentsObject: Codable, Equatable, SpecificationExtendable {
 	/// An object to hold reusable Path Item Object.
 	public var pathItems: [String: ReferenceOr<PathItemObject>]?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		schemas: [String: ReferenceOr<SchemaObject>]? = nil,
@@ -45,8 +45,8 @@ public struct ComponentsObject: Codable, Equatable, SpecificationExtendable {
 		securitySchemes: [String: ReferenceOr<SecuritySchemeObject>]? = nil,
 		links: [String: ReferenceOr<LinkObject>]? = nil,
 		callbacks: [String: ReferenceOr<CallbackObject>]? = nil,
-		pathItems: [String: ReferenceOr<PathItemObject>]? = nil,
-		specificationExtensions: SpecificationExtensions = [:]
+		pathItems: [String: ReferenceOr<PathItemObject>]? = nil
+//		specificationExtensions: SpecificationExtensions = [:]
 	) {
 		self.schemas = schemas
 		self.responses = responses
@@ -58,6 +58,6 @@ public struct ComponentsObject: Codable, Equatable, SpecificationExtendable {
 		self.links = links
 		self.callbacks = callbacks
 		self.pathItems = pathItems
-		self.specificationExtensions = specificationExtensions
+//		self.specificationExtensions = specificationExtensions
 	}
 }

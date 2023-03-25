@@ -24,7 +24,7 @@ public struct InfoObject: Codable, Equatable, SpecificationExtendable {
 	/// The version of the OpenAPI document (which is distinct from the OpenAPI Specification version or the API implementation version).
 	public var version: Version
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(title: String, summary: String? = nil, description: String? = nil, termsOfService: URL? = nil, contact: ContactObject? = nil, license: LicenseObject? = nil, version: Version) {
 		self.title = title

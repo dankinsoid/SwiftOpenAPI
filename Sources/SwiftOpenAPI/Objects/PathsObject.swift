@@ -6,7 +6,7 @@ public struct PathsObject: Codable, Equatable, SpecificationExtendable, Expressi
 	public typealias Value = ReferenceOr<PathItemObject>
 
 	public var value: [Key: Value]
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(_ value: [Key: Value] = [:]) {
 		self.value = value
@@ -21,11 +21,11 @@ public struct PathsObject: Codable, Equatable, SpecificationExtendable, Expressi
 	}
 
 	public init(from decoder: Decoder) throws {
-		(value, specificationExtensions) = try decoder.decodeDictionary(of: [Key: Value].self)
+		value = try decoder.decodeDictionary(of: [Key: Value].self)
 	}
 
 	public func encode(to encoder: Encoder) throws {
-		try encoder.encodeDictionary(value, specs: specificationExtensions)
+		try encoder.encodeDictionary(value)
 	}
 
 	public subscript(_ key: Key) -> Value? {

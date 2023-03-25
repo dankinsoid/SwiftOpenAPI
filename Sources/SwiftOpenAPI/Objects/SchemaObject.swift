@@ -17,7 +17,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 	/// Deprecated: The example property has been deprecated in favor of the JSON Schema examples keyword. Use of example is discouraged, and later versions of this specification may remove it.
 	public var example: AnyValue?
 	public var schema: Schema
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public enum CodingKeys: String, CodingKey {
 
@@ -45,14 +45,14 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		schema: SchemaObject.Schema,
 		description: String? = nil,
 		externalDocs: ExternalDocumentationObject? = nil,
-		example: AnyValue? = nil,
-		specificationExtensions: SpecificationExtensions? = nil
+		example: AnyValue? = nil
+//		specificationExtensions: SpecificationExtensions? = nil
 	) {
 		self.description = description
 		self.externalDocs = externalDocs
 		self.example = example
 		self.schema = schema
-		self.specificationExtensions = specificationExtensions
+//		self.specificationExtensions = specificationExtensions
 	}
 
 	public init(from decoder: Decoder) throws {
@@ -62,7 +62,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		description = try container.decodeIfPresent(String.self, forKey: .description)
 		externalDocs = try container.decodeIfPresent(ExternalDocumentationObject.self, forKey: .externalDocs)
 		example = try container.decodeIfPresent(AnyValue.self, forKey: .example)
-		specificationExtensions = try SpecificationExtensions(from: decoder)
+//		specificationExtensions = try SpecificationExtensions(from: decoder)
 
 		switch type {
 		case .array:
@@ -109,7 +109,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 	}
 
 	public func encode(to encoder: Encoder) throws {
-		try specificationExtensions?.encode(to: encoder)
+//		try specificationExtensions?.encode(to: encoder)
 
 		var container = encoder.container(keyedBy: CodingKeys.self)
 

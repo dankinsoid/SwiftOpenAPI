@@ -13,7 +13,7 @@ public struct TagObject: Codable, Equatable, SpecificationExtendable, Identifiab
 	/// Additional external documentation for this tag.
 	public var externalDocs: ExternalDocumentationObject?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(name: String, description: String? = nil, externalDocs: ExternalDocumentationObject? = nil) {
 		self.name = name

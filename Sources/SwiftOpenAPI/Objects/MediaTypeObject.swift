@@ -15,7 +15,7 @@ public struct MediaTypeObject: Codable, Equatable, SpecificationExtendable {
 	/// A map between a property name and its encoding information. The key, being the property name, MUST exist in the schema as a property. The encoding object SHALL only apply to requestBody objects when the media type is multipart or application/x-www-form-urlencoded.
 	public var encoding: [String: EncodingObject]?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		schema: ReferenceOr<SchemaObject>? = nil,

@@ -14,7 +14,7 @@ public struct ResponseObject: Codable, Equatable, SpecificationExtendable, Expre
 	/// A map of operations links that can be followed from the response. The key of the map is a short name for the link, following the naming constraints of the names for Component Objects.
 	public var links: [String: ReferenceOr<LinkObject>]?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		description: String,

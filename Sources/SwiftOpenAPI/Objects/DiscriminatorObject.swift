@@ -11,7 +11,7 @@ public struct DiscriminatorObject: Codable, Equatable, SpecificationExtendable {
 	/// An object to hold mappings between payload values and schema names or references.
 	public var mapping: [String: String]?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(propertyName: String, mapping: [String: String]? = nil) {
 		self.propertyName = propertyName

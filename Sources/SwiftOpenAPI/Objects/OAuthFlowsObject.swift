@@ -14,7 +14,7 @@ public struct OAuthFlowsObject: Codable, Equatable, SpecificationExtendable {
 	/// Configuration for the OAuth Authorization Code flow. Previously called accessCode in OpenAPI 2.0.
 	public var authorizationCode: OAuthFlowObject?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(implicit: OAuthFlowObject? = nil, password: OAuthFlowObject? = nil, clientCredentials: OAuthFlowObject? = nil, authorizationCode: OAuthFlowObject? = nil) {
 		self.implicit = implicit

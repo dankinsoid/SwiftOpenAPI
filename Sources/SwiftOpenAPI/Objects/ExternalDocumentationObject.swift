@@ -3,7 +3,7 @@ import Foundation
 /// Allows referencing an external resource for extended documentation.
 public struct ExternalDocumentationObject: Codable, Equatable, SpecificationExtendable {
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	/// A description of the target documentation. CommonMark syntax MAY be used for rich text representation.
 	public var description: String?

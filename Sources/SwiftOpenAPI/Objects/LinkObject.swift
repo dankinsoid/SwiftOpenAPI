@@ -24,7 +24,7 @@ public struct LinkObject: Equatable, Codable, SpecificationExtendable {
 	/// A server object to be used by the target operation.
 	public var server: ServerObject?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(operationRef: String? = nil, operationId: String? = nil, parameters: [String: RuntimeExpressionOr<AnyValue>]? = nil, requestBody: RuntimeExpressionOr<AnyValue>? = nil, description: String? = nil, server: ServerObject? = nil) {
 		self.operationRef = operationRef

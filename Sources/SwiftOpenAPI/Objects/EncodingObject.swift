@@ -17,7 +17,7 @@ public struct EncodingObject: Codable, Equatable, SpecificationExtendable {
 	/// Determines whether the parameter value SHOULD allow reserved characters, as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included without percent-encoding. The default value is false. This property SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
 	public var allowReserved: Bool?
 
-	public var specificationExtensions: SpecificationExtensions? = nil
+	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(contentType: MediaType? = nil, headers: [String: ReferenceOr<HeaderObject>]? = nil, style: String? = nil, explode: Bool? = nil, allowReserved: Bool? = nil) {
 		self.contentType = contentType

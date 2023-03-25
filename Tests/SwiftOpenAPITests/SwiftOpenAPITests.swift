@@ -7,11 +7,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testDecoding() async throws {
 		let file = try Mocks.petsSwagger.getData()
 		let decoder = JSONDecoder()
-		let document = try decoder.decode(OpenAPIObject.self, from: file)
-		XCTAssertEqual(
-			document.components?.schemas?["Pet"]?.object?.specificationExtensions?["x-test"],
-			"test"
-		)
+		let _ = try decoder.decode(OpenAPIObject.self, from: file)
 	}
 
 	func testSchemeEncoding() throws {
