@@ -1,7 +1,7 @@
 import Foundation
 
 /// Describes a single response from an API Operation, including design-time, static links to operations based on the response.
-public struct ResponseObject: Codable, Equatable, SpecificationExtendable {
+public struct ResponseObject: Codable, Equatable, SpecificationExtendable, ExpressibleByStringLiteral {
 	/// A description of the response. CommonMark syntax MAY be used for rich text representation.
 	public var description: String
 
@@ -26,5 +26,9 @@ public struct ResponseObject: Codable, Equatable, SpecificationExtendable {
 		self.headers = headers
 		self.content = content
 		self.links = links
+	}
+
+	public init(stringLiteral value: String) {
+		self.init(description: value)
 	}
 }

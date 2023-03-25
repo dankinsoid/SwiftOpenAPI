@@ -104,6 +104,7 @@ public extension MediaType {
 		public static let schemaJson: Application = "schema+json"
 		public static let schemaInstanceJson: Application = "schema-instance+json"
 		public static let xml: Application = "xml"
+		public static let octetStream: Application = "octet-stream"
 		public static let urlEncoded: Application = "x-www-form-urlencoded"
 	}
 

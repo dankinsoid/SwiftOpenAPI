@@ -25,10 +25,10 @@ public struct ExampleObject: Codable, Equatable, SpecificationExtendable {
 }
 
 extension ExampleObject: ExpressibleByDictionary {
-	
+
 	public typealias Key = String
 	public typealias Value = AnyValue
-	
+
 	public subscript(_ key: String) -> AnyValue? {
 		get {
 			value?[key]
@@ -37,7 +37,7 @@ extension ExampleObject: ExpressibleByDictionary {
 			value?[key] = newValue
 		}
 	}
-	
+
 	public init(dictionaryElements elements: [(String, AnyValue)]) {
 		self.init(value: .object(Dictionary(elements) { _, s in s }))
 	}

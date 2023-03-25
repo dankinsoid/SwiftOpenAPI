@@ -9,17 +9,17 @@
 ## Description
 SwiftOpenAPI is a Swift library which can generate output compatible with [OpenAPI](https://swagger.io/specification/) version 3.1.0. You can describe your API using `OpenAPIObject` type.
 
-## Example
+## Short example
 ```swift
-OpenAPIObject(
+try OpenAPIObject(
     openapi: "3.0.1",
     info: InfoObject(
         title: "Example API",
         version: "0.1.0"
     ),
     servers: [
-        ServerObject(url: "https://example-server.com"),
-        ServerObject(url: "https://example-server-test.com")
+        "https://example-server.com",
+        "https://example-server-test.com"
     ],
     paths: [
         "services": .get(
@@ -47,13 +47,17 @@ OpenAPIObject(
             "LoginBody": [
                 "username": .string,
                 "password": .string
-            ]
+            ],
+            "LoginResponse": .value(.encode(LoginResponse.example))
         ],
         examples: [
             "LoginBody": [
-								"username": "SomeUser",
-								"password": "12345678"
-						]
+                "username": "SomeUser",
+                "password": "12345678"
+            ],
+            "LoginResponse": .value(
+            	ExampleObject(value: .encode(LoginResponse.example))
+            )
         ],
         requestBodies: [
             "LoginRequest": .value(
@@ -69,13 +73,17 @@ OpenAPIObject(
         ]
     )
 )
-
 ```
+## Pets store example
+[PetsSwagger.swift](Tests/SwiftOpenAPITests/Mocks/PetsSwagger.swift)
+It's too large for compilator, but it demonstrates syntaxis well
 
 ## TODO
-1. URI type
-4. `refactor` method on `OpenAPIObject`
- 
+1. `URI` type instead of `String`
+2. `refactor` method on `OpenAPIObject`
+3. Extend `RuntimeExpression` type
+4. `DataEncodingFormat`
+
 ## Installation
 
 1. [Swift Package Manager](https://github.com/apple/swift-package-manager)
@@ -88,7 +96,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.0.0")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.1.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])

@@ -56,7 +56,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 		for (method, operation) in operations {
 			try container.encode(operation, forKey: .method(method))
 		}
-		try specificationExtensions.encode(to: encoder)
+		try specificationExtensions?.encode(to: encoder)
 	}
 
 	public enum CodingKeys: CodingKey {

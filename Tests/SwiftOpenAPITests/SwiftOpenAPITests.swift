@@ -1,5 +1,6 @@
 import Foundation
 @testable import SwiftOpenAPI
+import SwiftPrettyPrint
 import XCTest
 
 final class SwiftOpenAPITests: XCTestCase {

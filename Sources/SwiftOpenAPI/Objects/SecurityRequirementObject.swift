@@ -6,7 +6,7 @@ import Foundation
 /// This enables support for scenarios where multiple query parameters or HTTP headers are required to convey security information.
 ///
 /// When a list of Security Requirement Objects is defined on the OpenAPI Object or Operation Object, only one of the Security Requirement Objects in the list needs to be satisfied to authorize the request.
-public struct SecurityRequirementObject: Codable, Equatable, SpecificationExtendable {
+public struct SecurityRequirementObject: Codable, Equatable, SpecificationExtendable, ExpressibleByStringLiteral {
 	/// Each name MUST correspond to a security scheme which is declared in the Security Schemes under the ```ComponentsObject```. If the security scheme is of type "oauth2" or "openIdConnect", then the value is a list of scope names required for the execution, and the list MAY be empty if authorization does not require a specified scope. For other security scheme types, the array MAY contain a list of role names which are required for the execution, but are not otherwise defined or exchanged in-band.
 	public var name: String
 	public var values: [String]
@@ -28,14 +28,18 @@ public struct SecurityRequirementObject: Codable, Equatable, SpecificationExtend
 
 	public init(
 		_ name: String,
-		_ values: [String]
+		_ values: [String] = []
 	) {
 		self.name = name
 		self.values = values
 	}
 
+	public init(stringLiteral value: String) {
+		self.init(value)
+	}
+
 	public func encode(to encoder: Encoder) throws {
 		try [name: values].encode(to: encoder)
-		try specificationExtensions.encode(to: encoder)
+		try specificationExtensions?.encode(to: encoder)
 	}
 }

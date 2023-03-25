@@ -6,6 +6,7 @@ import Foundation
 ///
 /// Unless stated otherwise, the property definitions follow those of JSON Schema and do not add any additional semantics. Where JSON Schema indicates that behavior is defined by the application (e.g. for annotations), OAS also defers the definition of semantics to the application consuming the OpenAPI document.
 public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
+
 	public var description: String?
 
 	/// Additional external documentation for this schema.
@@ -15,12 +16,11 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 	/// To represent examples that cannot be naturally represented in JSON or YAML, a string value can be used to contain the example with escaping where necessary.
 	/// Deprecated: The example property has been deprecated in favor of the JSON Schema examples keyword. Use of example is discouraged, and later versions of this specification may remove it.
 	public var example: AnyValue?
-
 	public var schema: Schema
-
 	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public enum CodingKeys: String, CodingKey {
+
 		case description
 		case externalDocs
 		case example
@@ -45,12 +45,14 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		schema: SchemaObject.Schema,
 		description: String? = nil,
 		externalDocs: ExternalDocumentationObject? = nil,
-		example: AnyValue? = nil
+		example: AnyValue? = nil,
+		specificationExtensions: SpecificationExtensions? = nil
 	) {
 		self.description = description
 		self.externalDocs = externalDocs
 		self.example = example
 		self.schema = schema
+		self.specificationExtensions = specificationExtensions
 	}
 
 	public init(from decoder: Decoder) throws {
@@ -107,7 +109,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 	}
 
 	public func encode(to encoder: Encoder) throws {
-		try specificationExtensions.encode(to: encoder)
+		try specificationExtensions?.encode(to: encoder)
 
 		var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -191,22 +193,26 @@ public extension SchemaObject {
 }
 
 public protocol ExpressibleBySchemaObject {
+
 	init(schemaObject: SchemaObject)
 }
 
 extension SchemaObject: ExpressibleBySchemaObject {
+
 	public init(schemaObject: SchemaObject) {
 		self = schemaObject
 	}
 }
 
-extension ReferenceOr: ExpressibleBySchemaObject where Object: ExpressibleBySchemaObject {
+extension ReferenceOr<SchemaObject>: ExpressibleBySchemaObject {
+
 	public init(schemaObject: SchemaObject) {
-		self = .value(Object(schemaObject: schemaObject))
+		self = .value(schemaObject)
 	}
 }
 
 public extension ExpressibleBySchemaObject {
+
 	static var any: Self { Self(schemaObject: SchemaObject(schema: .any)) }
 
 	static func primitive(
@@ -232,6 +238,12 @@ public extension ExpressibleBySchemaObject {
 				schema: .object(properties, required: required, additionalProperties: additionalProperties, xml: xml)
 			)
 		)
+	}
+
+	static func dictionary(
+		of properties: ReferenceOr<SchemaObject>
+	) -> Self {
+		.object(nil, required: nil, additionalProperties: properties)
 	}
 
 	static func array(of item: ReferenceOr<SchemaObject>) -> Self {
@@ -296,9 +308,12 @@ public extension ExpressibleBySchemaObject {
 	static var float: Self { Self(schemaObject: .primitive(.number, format: .float)) }
 	static var integer: Self { Self(schemaObject: .primitive(.integer, format: .int64)) }
 	static var boolean: Self { Self(schemaObject: .primitive(.boolean)) }
+	static func integer(_ format: DataFormat) -> Self { Self(schemaObject: .primitive(.integer, format: format)) }
+	static func string(_ format: DataFormat) -> Self { Self(schemaObject: .primitive(.string, format: format)) }
 }
 
 extension SchemaObject: ExpressibleByDictionary {
+
 	public typealias Key = String
 	public typealias Value = ReferenceOr<SchemaObject>
 
@@ -328,6 +343,7 @@ extension SchemaObject: ExpressibleByDictionary {
 }
 
 extension SchemaObject {
+
 	var isReferenceable: Bool {
 		switch schema {
 		case .any, .array, .primitive:
@@ -341,6 +357,7 @@ extension SchemaObject {
 }
 
 extension ReferenceOr<SchemaObject> {
+
 	var isReferenceable: Bool {
 		switch self {
 		case let .value(object):
@@ -352,6 +369,7 @@ extension ReferenceOr<SchemaObject> {
 }
 
 public extension SchemaObject {
+
 	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
