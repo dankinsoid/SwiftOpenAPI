@@ -7,7 +7,7 @@
 
 
 ## Description
-SwiftOpenAPI is a Swift library which can generate output compatible with [OpenAPI](https://swagger.io/specification/) version 3.1.0. You can describe your API using `OpenAPIObject` type.
+SwiftOpenAPI is a Swift library which can generate output compatible with [OpenAPI](https://swagger.io/specification/) version 3.1.0. You can describe your API using `OpenAPIObject` type.\
 The main accent in the library is on simplifying the syntax: the active use of literals (array, dictionary, string etc) and static methods greatly simplifies writing and reading `OpenAPI` docs in `Swift`. The generation of schemes and examples with codeble instances is also implemented:
 ```swift
 let loginBodyScheme: SchemeObject = try .encode(LoginBody.example)
