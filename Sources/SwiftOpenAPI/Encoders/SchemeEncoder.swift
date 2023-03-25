@@ -38,7 +38,7 @@ struct SchemeEncoder {
 				let (dataType, format) = try parse(value: codableValues)
 				if let iterable = type as? any CaseIterable.Type {
 					let allCases = iterable.allCases as any Collection
-					result = .value(.enum(of: dataType, allCases: allCases.map { "\($0)" }))
+					result = .value(.enum(of: dataType, cases: allCases.map { "\($0)" }))
 				} else {
 					result = .value(.primitive(dataType, format: format))
 				}

@@ -255,12 +255,22 @@ public extension ExpressibleBySchemaObject {
 	}
 
 	static func `enum`(
-		of type: PrimitiveDataType,
-		allCases: [String]
+		of type: PrimitiveDataType = .string,
+		cases allCases: [String]
 	) -> Self {
 		Self(
 			schemaObject: SchemaObject(
 				schema: .enum(type, allCases: allCases)
+			)
+		)
+	}
+	
+	static func `enum`<T: CaseIterable & RawRepresentable>(
+		_ type: T.Type
+	) -> Self where T.RawValue == String {
+		Self(
+			schemaObject: SchemaObject(
+				schema: .enum(.string, allCases: T.allCases.map(\.rawValue))
 			)
 		)
 	}

@@ -41,8 +41,7 @@ let petsSwagger = OpenAPIObject(
 							required: false,
 							explode: true,
 							schema: .enum(
-								of: .string,
-								allCases: [
+								cases: [
 									"available",
 									"pending",
 									"sold",
@@ -57,12 +56,8 @@ let petsSwagger = OpenAPIObject(
 						ResponseObject(
 							description: "successful operation",
 							content: [
-								.application(.json): MediaTypeObject(
-									schema: .array(of: .ref(components: \.schemas, "Pet"))
-								),
-								.application(.xml): MediaTypeObject(
-									schema: .array(of: .ref(components: \.schemas, "Pet"))
-								),
+								.application(.json): .array(of: .ref(components: \.schemas, "Pet")),
+								.application(.xml): .array(of: .ref(components: \.schemas, "Pet")),
 							]
 						)
 					),
@@ -102,12 +97,8 @@ let petsSwagger = OpenAPIObject(
 						ResponseObject(
 							description: "successful operation",
 							content: [
-								.application(.json): MediaTypeObject(
-									schema: .array(of: .ref(components: \.schemas, "Pet"))
-								),
-								.application(.xml): MediaTypeObject(
-									schema: .array(of: .ref(components: \.schemas, "Pet"))
-								),
+								.application(.json): .array(of: .ref(components: \.schemas, "Pet")),
+								.application(.xml): .array(of: .ref(components: \.schemas, "Pet")),
 							]
 						)),
 				],
@@ -150,9 +141,7 @@ let petsSwagger = OpenAPIObject(
 				],
 				requestBody: .value(RequestBodyObject(
 					content: [
-						.application(.octetStream): MediaTypeObject(
-							schema: .string(.binary)
-						),
+						.application(.octetStream): .string(.binary),
 					]
 				)),
 				responses: [
@@ -160,9 +149,7 @@ let petsSwagger = OpenAPIObject(
 						ResponseObject(
 							description: "successful operation",
 							content: [
-								.application(.json): MediaTypeObject(
-									schema: .ref(components: \.schemas, "ApiResponse")
-								),
+								.application(.json): .ref(components: .schemas, "ApiResponse"),
 							]
 						)
 					),
@@ -235,12 +222,8 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Pet")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Pet")
-							),
+							.application(.json): .ref(components: .schemas, "Pet"),
+							.application(.xml): .ref(components: .schemas, "Pet"),
 						]
 					)),
 				],
@@ -304,15 +287,9 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Create a new pet in the store",
 					content: [
-						.application(.json): MediaTypeObject(
-							schema: .ref(components: \.schemas, "Pet")
-						),
-						.application(.xml): MediaTypeObject(
-							schema: .ref(components: \.schemas, "Pet")
-						),
-						.application(.urlEncoded): MediaTypeObject(
-							schema: .ref(components: \.schemas, "Pet")
-						),
+						.application(.json): .ref(components: .schemas, "Pet"),
+						.application(.xml): .ref(components: .schemas, "Pet"),
+						.application(.urlEncoded): .ref(components: .schemas, "Pet"),
 					],
 					required: true
 				)),
@@ -321,12 +298,8 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "Successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Pet")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Pet")
-							),
+							.application(.json): .ref(components: .schemas, "Pet"),
+							.application(.xml): .ref(components: .schemas, "Pet"),
 						]
 					)),
 				],
@@ -348,15 +321,9 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Update an existent pet in the store",
 					content: [
-						.application(.json): MediaTypeObject(
-							schema: .ref(components: \.schemas, "Pet")
-						),
-						.application(.xml): MediaTypeObject(
-							schema: .ref(components: \.schemas, "Pet")
-						),
-						.application(.urlEncoded): MediaTypeObject(
-							schema: .ref(components: \.schemas, "Pet")
-						),
+						.application(.json): .ref(components: .schemas, "Pet"),
+						.application(.xml): .ref(components: .schemas, "Pet"),
+						.application(.urlEncoded): .ref(components: .schemas, "Pet"),
 					],
 					required: true
 				)),
@@ -367,12 +334,8 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "Successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Pet")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Pet")
-							),
+							.application(.json): .ref(components: .schemas, "Pet"),
+							.application(.xml): .ref(components: .schemas, "Pet"),
 						]
 					)
 					),
@@ -398,9 +361,7 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .dictionary(of: .integer(.int32))
-							),
+							.application(.json): .dictionary(of: .integer(.int32)),
 						]
 					)),
 				],
@@ -446,12 +407,8 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Order")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Order")
-							),
+							.application(.json): .ref(components: .schemas, "Order"),
+							.application(.xml): .ref(components: .schemas, "Order"),
 						]
 					)),
 				]
@@ -464,24 +421,16 @@ let petsSwagger = OpenAPIObject(
 				description: "Place a new order in the store",
 				operationId: "placeOrder",
 				requestBody: [
-					.application(.json): MediaTypeObject(
-						schema: .ref(components: \.schemas, "Order")
-					),
-					.application(.xml): MediaTypeObject(
-						schema: .ref(components: \.schemas, "Order")
-					),
-					.application(.urlEncoded): MediaTypeObject(
-						schema: .ref(components: \.schemas, "Order")
-					),
+					.application(.json): .ref(components: .schemas, "Order"),
+					.application(.xml): .ref(components: .schemas, "Order"),
+					.application(.urlEncoded): .ref(components: .schemas, "Order"),
 				],
 				responses: [
 					400: "Invalid input",
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "Order")
-							),
+							.application(.json): .ref(components: .schemas, "Order"),
 						]
 					)),
 				]
@@ -495,9 +444,7 @@ let petsSwagger = OpenAPIObject(
 				operationId: "createUsersWithListInput",
 				requestBody: .value(RequestBodyObject(
 					content: [
-						.application(.json): MediaTypeObject(
-							schema: .ref(components: \.schema, "User")
-						),
+						.application(.json): .ref(components: \.schema, "User"),
 					]
 				)),
 				responses: [
@@ -505,12 +452,8 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "Successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "User")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "User")
-							),
+							.application(.json): .ref(components: .schemas, "User"),
+							.application(.xml): .ref(components: .schemas, "User"),
 						]
 					)),
 				]
@@ -618,12 +561,8 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "User")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "User")
-							),
+							.application(.json): .ref(components: .schemas, "User"),
+							.application(.xml): .ref(components: .schemas, "User"),
 						]
 					)),
 				]
@@ -647,15 +586,9 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Update an existent user in the store",
 					content: [
-						.application(.json): MediaTypeObject(
-							schema: .ref(components: \.schemas, "User")
-						),
-						.application(.urlEncoded): MediaTypeObject(
-							schema: .ref(components: \.schemas, "User")
-						),
-						.application(.xml): MediaTypeObject(
-							schema: .ref(components: \.schemas, "User")
-						),
+						.application(.json): .ref(components: .schemas, "User"),
+						.application(.urlEncoded): .ref(components: .schemas, "User"),
+						.application(.xml): .ref(components: .schemas, "User"),
 					]
 				)),
 				responses: [.default: "successful operation"]
@@ -670,27 +603,17 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Created user object",
 					content: [
-						.application(.json): MediaTypeObject(
-							schema: .ref(components: \.schemas, "User")
-						),
-						.application(.urlEncoded): MediaTypeObject(
-							schema: .ref(components: \.schemas, "User")
-						),
-						.application(.xml): MediaTypeObject(
-							schema: .ref(components: \.schemas, "User")
-						),
+						.application(.json): .ref(components: .schemas, "User"),
+						.application(.urlEncoded): .ref(components: .schemas, "User"),
+						.application(.xml): .ref(components: .schemas, "User"),
 					]
 				)),
 				responses: [
 					.default: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .ref(components: \.schemas, "User")
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .ref(components: \.schemas, "User")
-							),
+							.application(.json): .ref(components: .schemas, "User"),
+							.application(.xml): .ref(components: .schemas, "User"),
 						]
 					)),
 				]
@@ -775,8 +698,7 @@ let petsSwagger = OpenAPIObject(
 						description: "Order Status",
 						example: "approved",
 						schema: .enum(
-							of: .string,
-							allCases: [
+							cases: [
 								"placed",
 								"approved",
 								"delivered",
@@ -802,8 +724,7 @@ let petsSwagger = OpenAPIObject(
 						"status": .value(SchemaObject(
 							description: "pet status in the store",
 							schema: .enum(
-								of: .string,
-								allCases: [
+								cases: [
 									"available",
 									"pending",
 									"sold",
@@ -870,20 +791,14 @@ let petsSwagger = OpenAPIObject(
 			"Pet": .value(RequestBodyObject(
 				description: "Pet object that needs to be added to the store",
 				content: [
-					.application(.json): MediaTypeObject(
-						schema: .ref(components: \.schemas, "Pet")
-					),
-					.application(.xml): MediaTypeObject(
-						schema: .ref(components: \.schemas, "Pet")
-					),
+					.application(.json): .ref(components: .schemas, "Pet"),
+					.application(.xml): .ref(components: .schemas, "Pet"),
 				]
 			)),
 			"UserArray": .value(RequestBodyObject(
 				description: "List of user object",
 				content: [
-					.application(.json): MediaTypeObject(
-						schema: .ref(components: \.schema, "User")
-					),
+					.application(.json): .ref(components: \.schema, "User"),
 				]
 			)),
 		],

@@ -38,6 +38,20 @@ public struct MediaTypeObject: Codable, Equatable, SpecificationExtendable {
 	}
 }
 
+extension MediaTypeObject: ExpressibleByReferenceOr {
+	
+	public init(referenceOr: ReferenceOr<SchemaObject>) {
+		self.init(schema: referenceOr)
+	}
+}
+
+extension MediaTypeObject: ExpressibleBySchemaObject {
+	
+	public init(schemaObject: SchemaObject) {
+		self.init(schema: .value(schemaObject))
+	}
+}
+
 public extension MediaTypeObject {
 
 	static func encode(

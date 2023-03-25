@@ -21,7 +21,7 @@ final class SwiftOpenAPITests: XCTestCase {
 		XCTAssertEqual(
 			references,
 			[
-				"SomeEnum": .enum(of: .string, allCases: ["first", "second"]),
+				"SomeEnum": .enum(cases: ["first", "second"]),
 				"LoginBody": .object(
 					[
 						"username": .string,
