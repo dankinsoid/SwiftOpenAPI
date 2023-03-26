@@ -5,6 +5,7 @@ public protocol ExpressibleByArray<ArrayLiteralElement>: ExpressibleByArrayLiter
 }
 
 public extension ExpressibleByArrayLiteral where Self: ExpressibleByArray {
+
 	init(arrayLiteral elements: ArrayLiteralElement...) {
 		self.init(arrayElements: elements)
 	}
@@ -24,6 +25,7 @@ public protocol ExpressibleByDictionary<Key, Value>: ExpressibleByDictionaryLite
 }
 
 public extension ExpressibleByDictionaryLiteral where Self: ExpressibleByDictionary {
+
 	init(dictionaryLiteral elements: (Key, Value)...) {
 		self.init(dictionaryElements: elements)
 	}

@@ -1,6 +1,7 @@
 import Foundation
 
 public struct Version: Codable, Comparable, LosslessStringConvertible, ExpressibleByStringInterpolation {
+
 	public static let zero = Version(0, 0, 0)
 
 	/// version when you make incompatible API changes
@@ -145,6 +146,7 @@ public struct Version: Codable, Comparable, LosslessStringConvertible, Expressib
 	}
 
 	public struct StringInterpolation: StringInterpolationProtocol {
+
 		var string: String
 
 		public init(literalCapacity _: Int, interpolationCount _: Int) {

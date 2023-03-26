@@ -52,6 +52,7 @@ func prettyPrint(_ value: some Encodable) {
 }
 
 struct LoginBody: Codable {
+
 	var username: String
 	var password: String
 	var tags: Set<String>?
@@ -73,6 +74,7 @@ struct LoginBody: Codable {
 
 	struct NestedStruct: Codable {
 		public struct VK: Hashable, Codable {
+
 			public var id: Decimal
 			public var ids: String?
 			public var ownerId: Int?
@@ -107,6 +109,7 @@ struct LoginBody: Codable {
 		}
 
 		public struct Apple: Hashable, Codable {
+
 			public var iTunesLink: URL?
 			public var type: SomeEnum?
 
@@ -125,6 +128,7 @@ struct LoginBody: Codable {
 		}
 
 		public struct Spotify: Hashable, Codable {
+
 			public var uri: String
 			public var previewUrl: String?
 			public var albumTitle: String?
@@ -147,6 +151,7 @@ struct LoginBody: Codable {
 		}
 
 		public struct Yandex: Hashable, Codable {
+
 			public var albumTitle: String?
 
 			public init(albumTitle: String) {
@@ -183,5 +188,6 @@ struct LoginBody: Codable {
 }
 
 enum SomeEnum: String, Codable, CaseIterable {
+
 	case first, second
 }

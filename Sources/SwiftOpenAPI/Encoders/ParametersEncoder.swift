@@ -1,6 +1,7 @@
 import Foundation
 
 struct ParametersEncoder {
+
 	var location: ParameterObject.Location
 	var dateFormat: DateEncodingFormat
 

@@ -1,6 +1,7 @@
 import Foundation
 
 // public extension OpenAPIObject {
+
 //
 //    mutating func refactor() {
 //        let base = MutatingRef(\OpenAPIObject.self)
@@ -25,6 +26,7 @@ import Foundation
 // }
 //
 // private extension OpenAPIObject {
+
 //
 //    mutating func refactor<T>(
 //        refs: [MutatingRef<OpenAPIObject, ReferenceOr<T>>],
@@ -36,6 +38,7 @@ import Foundation
 //
 // @dynamicMemberLookup
 // struct MutatingRef<Base, Value> {
+
 //
 //    let get: (Base) -> Value?
 //    let set: (inout Base, Value) -> Void
@@ -83,6 +86,7 @@ import Foundation
 // }
 //
 // extension MutatingRef where Value: MutableCollection {
+
 //
 //    subscript<T>(dynamicMember keyPath: WritableKeyPath<Value.Element, T>) -> MutatingRef<Base, [T]> {
 //        MutatingRef<Base, [T]> { base in
@@ -100,6 +104,7 @@ import Foundation
 // }
 //
 // extension MutatingRef where Value: MutableDictionary {
+
 //
 //    subscript<T>(dynamicMember keyPath: WritableKeyPath<Value.Value, T?>) -> MutatingRef<Base, [Value.Key: T]> {
 //    }
@@ -121,9 +126,11 @@ import Foundation
 // }
 //
 // extension MutatingRef where Value: MutableCollection {
+
 // }
 //
 // extension KeyPath {
+
 //
 //    func callAsFunction<A, T, C>(
 //        _ keys: KeyPath<A, some Collection<T>>,

@@ -1,6 +1,7 @@
 import Foundation
 
 struct TypeInfo {
+
 	static let any = TypeInfo(type: Any.self, container: .single(.null))
 
 	var type: Any.Type
@@ -9,6 +10,7 @@ struct TypeInfo {
 }
 
 struct KeyedInfo {
+
 	var fields: [String: TypeInfo] = [:]
 	var isFixed = true
 
@@ -19,6 +21,7 @@ struct KeyedInfo {
 }
 
 indirect enum CodableContainerValue {
+
 	case single(CodableValues)
 	case keyed(KeyedInfo)
 	case unkeyed(TypeInfo)
@@ -66,6 +69,7 @@ indirect enum CodableContainerValue {
 }
 
 enum CodableValues: Equatable {
+
 	case int(Int?)
 	case int8(Int8?)
 	case int16(Int16?)
@@ -104,6 +108,7 @@ enum CodableValues: Equatable {
 }
 
 extension CodableContainerValue {
+
 	var anyValue: AnyValue? {
 		switch self {
 		case let .single(codableValues):

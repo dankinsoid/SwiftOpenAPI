@@ -89,6 +89,7 @@ public struct MediaType: Codable, Hashable, RawRepresentable, ExpressibleByStrin
 }
 
 public extension MediaType {
+
 	struct Application: RawRepresentable, ExpressibleByStringLiteral {
 		public var rawValue: String
 

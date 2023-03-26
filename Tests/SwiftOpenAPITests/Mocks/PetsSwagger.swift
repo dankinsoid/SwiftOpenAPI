@@ -738,8 +738,7 @@ let petsSwagger = OpenAPIObject(
 						"photoUrls",
 					],
 					xml: XMLObject(name: "pet")
-				),
-				specificationExtensions: ["x-test": "test"]
+				)
 			)),
 			"Tag": .object(
 				[

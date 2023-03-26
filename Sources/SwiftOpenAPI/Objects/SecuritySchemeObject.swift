@@ -60,16 +60,19 @@ public struct SecuritySchemeObject: Codable, Equatable, SpecificationExtendable 
 }
 
 public extension SecuritySchemeObject {
+
 	enum Location: String, Codable {
 		case query, header, cookie
 	}
 }
 
 public enum SecuritySchemeObjectType: String, Codable {
+
 	case apiKey, http, mutualTLS, oauth2, openIdConnect
 }
 
 public struct HTTPAuthScheme: LosslessStringConvertible, ExpressibleByStringLiteral, RawRepresentable, Hashable, Codable {
+
 	public var rawValue: String
 	public var description: String { rawValue }
 
@@ -126,6 +129,7 @@ extension ReferenceOr<SecuritySchemeObject>: ExpressibleBySecuritySchemeObject {
 }
 
 public extension ExpressibleBySecuritySchemeObject {
+
 	/// Basic authentication is a simple authentication scheme built into the HTTP protocol. The client sends HTTP requests with the Authorization header that contains the word Basic word followed by a space and a base64-encoded string username:password. For example, to authorize as demo / p@55w0rd the client would send
 	static var basic: Self {
 		.basic(description: nil)

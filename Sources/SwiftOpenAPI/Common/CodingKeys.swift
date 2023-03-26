@@ -1,6 +1,7 @@
 import Foundation
 
 struct IntKey: CodingKey {
+
 	var intValue: Int?
 	var stringValue: String {
 		"\(intValue ?? 0)"
@@ -16,6 +17,7 @@ struct IntKey: CodingKey {
 }
 
 struct StringKey<Value: LosslessStringConvertible>: CodingKey {
+
 	var stringValue: String { value.description }
 	var intValue: Int? { nil }
 	var value: Value

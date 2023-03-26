@@ -1,6 +1,7 @@
 import Foundation
 
 public enum ReferenceOr<Object: Codable & Equatable>: Equatable, Codable {
+
 	case value(Object)
 	case ref(ReferenceObject)
 

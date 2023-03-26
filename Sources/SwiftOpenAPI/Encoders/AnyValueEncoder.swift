@@ -1,6 +1,7 @@
 import Foundation
 
 final class AnyValueEncoder: Encoder {
+
 	var codingPath: [CodingKey]
 	var userInfo: [CodingUserInfoKey: Any]
 	var result: AnyValue
@@ -91,6 +92,7 @@ final class AnyValueEncoder: Encoder {
 }
 
 private struct AnyValueSingleValueEncodingContainer: SingleValueEncodingContainer {
+
 	var codingPath: [CodingKey]
 	let dateFormat: DateEncodingFormat
 	@Ref var result: AnyValue
@@ -160,6 +162,7 @@ private struct AnyValueSingleValueEncodingContainer: SingleValueEncodingContaine
 }
 
 private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+
 	var codingPath: [CodingKey]
 	let dateFormat: DateEncodingFormat
 	@Ref var result: [String: AnyValue]
@@ -285,6 +288,7 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
 }
 
 private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
+
 	var codingPath: [CodingKey]
 	var count: Int { result.count }
 	let dateFormat: DateEncodingFormat

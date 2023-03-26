@@ -53,6 +53,7 @@ public struct HeaderObject: Codable, Equatable, SpecificationExtendable {
 }
 
 public extension [String: ReferenceOr<HeaderObject>] {
+
 	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,

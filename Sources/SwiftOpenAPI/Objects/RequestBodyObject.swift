@@ -2,6 +2,7 @@ import Foundation
 
 /// Describes a single request body.
 public struct RequestBodyObject: Codable, Equatable, SpecificationExtendable {
+
 	/// A brief description of the request body. This could contain examples of use.  ```CommonMark syntax``` MAY be used for rich text representation.
 	public var description: String?
 

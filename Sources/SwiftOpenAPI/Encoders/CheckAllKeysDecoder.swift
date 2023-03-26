@@ -1,6 +1,7 @@
 import Foundation
 
 final class CheckAllKeysDecoder: Decoder {
+
 	var codingPath: [CodingKey] = []
 	var userInfo: [CodingUserInfoKey: Any] = [:]
 	var isAdditional = false
@@ -16,6 +17,7 @@ final class CheckAllKeysDecoder: Decoder {
 }
 
 private struct CheckAllKeysDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+
 	var allKeys: [Key] {
 		isAdditional = true
 		return []

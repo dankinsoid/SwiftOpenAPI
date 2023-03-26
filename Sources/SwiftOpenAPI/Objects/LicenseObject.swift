@@ -2,6 +2,7 @@ import Foundation
 
 /// License information for the exposed API.
 public struct LicenseObject: Codable, Equatable, SpecificationExtendable {
+
 	/// The license name used for the API.
 	public var name: String
 

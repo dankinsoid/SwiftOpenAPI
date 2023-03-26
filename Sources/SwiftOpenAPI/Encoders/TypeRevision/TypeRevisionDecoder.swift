@@ -1,6 +1,7 @@
 import Foundation
 
 final class TypeRevisionDecoder: Decoder {
+
 	typealias Cache = [ObjectIdentifier: (TypeInfo, Decodable)]
 
 	var path: [TypePath]
@@ -94,6 +95,7 @@ final class TypeRevisionDecoder: Decoder {
 }
 
 private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingContainer, UnkeyedDecodingContainer {
+
 	var count: Int? { 1 }
 	var isAtEnd: Bool { currentIndex == 1 }
 	var currentIndex: Int {
@@ -234,6 +236,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 }
 
 private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+
 	var allKeys: [Key] {
 		if let iterable = Key.self as? any CaseIterable.Type {
 			let array = iterable.allCases as any Collection
@@ -468,6 +471,7 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 private struct AnyError: Error {}
 
 private extension Optional {
+
 	subscript(or value: Wrapped) -> Wrapped {
 		get { self ?? value }
 		set { self = value }
@@ -475,6 +479,7 @@ private extension Optional {
 }
 
 struct TypePath {
+
 	var type: Any.Type
 	var key: CodingKey
 }

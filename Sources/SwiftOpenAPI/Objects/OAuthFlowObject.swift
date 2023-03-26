@@ -1,6 +1,7 @@
 import Foundation
 
 public struct OAuthFlowObject: Codable, Equatable, SpecificationExtendable {
+
 	/// The authorization URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
 	public var authorizationUrl: String?
 

@@ -41,6 +41,7 @@ public struct Path: Hashable, ExpressibleByStringInterpolation, LosslessStringCo
 }
 
 public enum PathElement: Hashable, ExpressibleByStringLiteral {
+
 	case constant(String)
 	case variable(String)
 
@@ -67,5 +68,6 @@ public enum PathElement: Hashable, ExpressibleByStringLiteral {
 }
 
 public extension PathElement {
+
 	static let components: PathElement = "components"
 }

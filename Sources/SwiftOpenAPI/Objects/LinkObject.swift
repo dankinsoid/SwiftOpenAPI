@@ -6,6 +6,7 @@ import Foundation
 ///
 /// For computing links, and providing instructions to execute them, a runtime expression is used for accessing values in an operation and using them as parameters while invoking the linked operation.
 public struct LinkObject: Equatable, Codable, SpecificationExtendable {
+
 	/// A relative or absolute URI reference to an OAS operation. This field is mutually exclusive of the operationId field, and MUST point to an Operation Object. Relative operationRef values MAY be used to locate an existing Operation Object in the OpenAPI definition. See the rules for resolving Relative References.
 	public var operationRef: String?
 

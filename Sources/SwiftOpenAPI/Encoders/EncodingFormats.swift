@@ -1,11 +1,13 @@
 import Foundation
 
 public struct DateEncodingFormat {
+
 	public let schema: SchemaObject
 	public let encode: (Date, inout SingleValueEncodingContainer) throws -> Void
 }
 
 public extension DateEncodingFormat {
+
 	static var `default`: DateEncodingFormat = .dateTime
 
 	/// full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21

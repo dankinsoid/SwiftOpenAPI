@@ -159,7 +159,9 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 }
 
 public extension SchemaObject {
+
 	indirect enum Schema: Equatable {
+
 		case any
 
 		case primitive(

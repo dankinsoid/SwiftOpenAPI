@@ -2,6 +2,7 @@ import Foundation
 
 /// Adds metadata to a single tag that is used by the ```OperationObject```. It is not mandatory to have a Tag Object per tag defined in the Operation Object instances.
 public struct TagObject: Codable, Equatable, SpecificationExtendable, Identifiable {
+
 	///  The name of the tag
 	public var name: String
 
@@ -23,6 +24,7 @@ public struct TagObject: Codable, Equatable, SpecificationExtendable, Identifiab
 }
 
 extension TagObject: ExpressibleByStringLiteral {
+
 	public init(stringLiteral value: String) {
 		self.init(name: value)
 	}

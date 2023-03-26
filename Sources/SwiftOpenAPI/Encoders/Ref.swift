@@ -2,6 +2,7 @@ import Foundation
 
 @propertyWrapper
 struct Ref<Value> {
+
 	let get: () -> Value
 	let set: (Value) -> Void
 
@@ -17,6 +18,7 @@ struct Ref<Value> {
 }
 
 extension Ref {
+
 	static func constant(_ value: Value) -> Ref {
 		self.init {
 			value

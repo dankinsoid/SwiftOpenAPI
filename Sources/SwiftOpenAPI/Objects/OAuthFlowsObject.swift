@@ -2,6 +2,7 @@ import Foundation
 
 /// Allows configuration of the supported OAuth Flows.
 public struct OAuthFlowsObject: Codable, Equatable, SpecificationExtendable {
+
 	/// Configuration for the OAuth Implicit flow
 	public var implicit: OAuthFlowObject?
 

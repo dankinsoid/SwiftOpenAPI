@@ -2,6 +2,7 @@ import Foundation
 
 /// An object representing a Server Variable for server URL template substitution.
 public struct ServerVariableObject: Codable, Equatable, SpecificationExtendable {
+
 	/// An enumeration of string values to be used if the substitution options are from a limited set. The array MUST NOT be empty.
 	public var `enum`: [String]
 
@@ -14,6 +15,7 @@ public struct ServerVariableObject: Codable, Equatable, SpecificationExtendable 
 	//public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(enum: [String], default: String, description: String? = nil) {
+
 		self.enum = `enum`
 		self.default = `default`
 		self.description = description

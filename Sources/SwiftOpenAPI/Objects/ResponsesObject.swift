@@ -1,6 +1,7 @@
 import Foundation
 
 public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, ExpressibleByDictionary {
+
 	public typealias Value = ReferenceOr<ResponseObject>
 
 	public var value: [Key: Value]
@@ -33,6 +34,7 @@ public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, Expr
 }
 
 public extension ResponsesObject {
+
 	enum Key: Hashable, Codable, Equatable, RawRepresentable, CodingKey, ExpressibleByIntegerLiteral, LosslessStringConvertible {
 		case code(Int)
 		case `default`

@@ -2,6 +2,7 @@ import Foundation
 
 @dynamicMemberLookup
 public enum AnyValue: Codable, Equatable {
+
 	case string(String)
 	case bool(Bool)
 	case int(Int)
@@ -89,6 +90,7 @@ public enum AnyValue: Codable, Equatable {
 }
 
 extension AnyValue: ExpressibleByDictionary {
+
 	public typealias Key = String
 	public typealias Value = AnyValue
 
@@ -100,6 +102,7 @@ extension AnyValue: ExpressibleByDictionary {
 }
 
 extension AnyValue: ExpressibleByStringInterpolation {
+
 	public init(stringLiteral value: String) {
 		self = .string(value)
 	}
@@ -110,6 +113,7 @@ extension AnyValue: ExpressibleByStringInterpolation {
 }
 
 extension AnyValue: ExpressibleByArray {
+
 	public typealias ArrayLiteralElement = AnyValue
 
 	public init(arrayElements array: [AnyValue]) {
@@ -118,24 +122,28 @@ extension AnyValue: ExpressibleByArray {
 }
 
 extension AnyValue: ExpressibleByBooleanLiteral {
+
 	public init(booleanLiteral value: Bool) {
 		self = .bool(value)
 	}
 }
 
 extension AnyValue: ExpressibleByIntegerLiteral {
+
 	public init(integerLiteral value: Int) {
 		self = .int(value)
 	}
 }
 
 extension AnyValue: ExpressibleByFloatLiteral {
+
 	public init(floatLiteral value: Double) {
 		self = .double(value)
 	}
 }
 
 public extension AnyValue {
+
 	static func encode(_ value: Encodable, dateFormat: DateEncodingFormat = .default) throws -> AnyValue {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat)
 		return try encoder.encode(value)

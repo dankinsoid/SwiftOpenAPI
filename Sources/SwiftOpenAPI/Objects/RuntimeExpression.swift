@@ -1,6 +1,7 @@
 import Foundation
 
 public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpolation, RawRepresentable, LosslessStringConvertible {
+
 	public var rawValue: String
 
 	public var surrounded: String {

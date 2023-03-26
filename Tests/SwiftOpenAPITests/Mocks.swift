@@ -1,6 +1,7 @@
 import Foundation
 
 enum Mocks: String {
+
 	case petsSwagger = "pets-swagger.json"
 
 	var url: URL {

@@ -60,6 +60,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 	}
 
 	public enum CodingKeys: CodingKey {
+
 		case field(Field)
 		case method(Method)
 
@@ -96,6 +97,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 		}
 
 		public enum Field: String {
+
 			case summary
 			case description
 			case servers
@@ -105,6 +107,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 }
 
 extension PathItemObject: ExpressibleByDictionary {
+
 	public typealias Key = Method
 	public typealias Value = OperationObject
 
@@ -122,6 +125,7 @@ extension PathItemObject: ExpressibleByDictionary {
 	}
 
 	public struct Method: LosslessStringConvertible, RawRepresentable, Codable, Hashable {
+
 		public let rawValue: String
 		public var description: String { rawValue }
 
@@ -157,18 +161,21 @@ public protocol ExpressibleByPathItemObject {
 }
 
 extension PathItemObject: ExpressibleByPathItemObject {
+
 	public init(pathItemObject: PathItemObject) {
 		self = pathItemObject
 	}
 }
 
 extension ReferenceOr<PathItemObject>: ExpressibleByPathItemObject {
+
 	public init(pathItemObject: PathItemObject) {
 		self = .value(pathItemObject)
 	}
 }
 
 public extension ExpressibleByPathItemObject {
+
 	/// A definition of a GET operation on this path.
 	static func get(
 		summary: String? = nil,

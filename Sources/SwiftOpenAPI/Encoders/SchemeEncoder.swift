@@ -1,6 +1,7 @@
 import Foundation
 
 struct SchemeEncoder {
+
 	var extractReferences = true
 	var dateFormat: DateEncodingFormat
 

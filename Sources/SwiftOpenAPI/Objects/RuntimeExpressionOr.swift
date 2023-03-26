@@ -1,6 +1,7 @@
 import Foundation
 
 public enum RuntimeExpressionOr<Value: Codable & Equatable>: Codable, Equatable {
+
 	case expression(RuntimeExpression)
 	case value(Value)
 

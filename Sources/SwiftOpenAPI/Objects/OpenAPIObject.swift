@@ -2,6 +2,7 @@ import Foundation
 
 /// This is the root object of the OpenAPI document.
 public struct OpenAPIObject: Codable, Equatable, SpecificationExtendable {
+
 	/// Version number of the OpenAPI Specification that the OpenAPI document uses. The `openapi` field SHOULD be used by tooling to interpret the OpenAPI document. This is not related to the API info.version string.
 	public var openapi: Version
 

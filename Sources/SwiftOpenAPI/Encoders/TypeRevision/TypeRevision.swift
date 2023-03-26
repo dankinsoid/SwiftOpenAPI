@@ -1,6 +1,7 @@
 import Foundation
 
 struct TypeRevision {
+
 	let customDescription: (Any.Type, Any?) -> CodableContainerValue?
 
 	init(custom: @escaping (Any.Type, Any?) -> CodableContainerValue?) {

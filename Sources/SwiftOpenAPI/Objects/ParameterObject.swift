@@ -12,6 +12,7 @@ import Foundation
 /// - `header` - Custom headers that are expected as part of the request. Note that RFC7230 states header names are case insensitive.
 /// - `cookie` - Used to pass a specific cookie value to the API.
 public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
+
 	/// The name of the parameter. Parameter names are case sensitive.
 	/// - If in is "path", the name field MUST correspond to a template expression occurring within the path field in the Paths Object. See Path Templating for further information.
 	/// - If in is "header" and the name field is "Accept", "Content-Type" or "Authorization", the parameter definition SHALL be ignored.
@@ -74,6 +75,7 @@ public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
 }
 
 public extension ParameterObject {
+
 	enum Location: String, Codable, Equatable {
 		case query, header, path, cookie
 	}
@@ -90,6 +92,7 @@ public extension ParameterObject {
 }
 
 public extension [ReferenceOr<ParameterObject>] {
+
 	static func encode(
 		_ value: Encodable,
 		in location: ParameterObject.Location,

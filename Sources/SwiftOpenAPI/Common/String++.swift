@@ -1,6 +1,7 @@
 import Foundation
 
 extension String {
+
 	static func typeName(_ type: Any.Type) -> String {
 		String(reflecting: type)
 			.components(separatedBy: ["<", ",", " ", ">", ":", "[", "]", "?"])

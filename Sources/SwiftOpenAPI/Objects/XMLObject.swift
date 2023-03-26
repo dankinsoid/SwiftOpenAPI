@@ -4,6 +4,7 @@ import Foundation
 ///
 /// When using arrays, XML element names are not inferred (for singular/plural forms) and the name property SHOULD be used to add that information. See examples for expected behavior.
 public struct XMLObject: Codable, Equatable, SpecificationExtendable {
+
 	/// Replaces the name of the element/attribute used for the described schema property. When defined within items, it will affect the name of the individual XML elements within the list. When defined alongside type being array (outside the items), it will affect the wrapping element and only if wrapped is true. If wrapped is false, it will be ignored.
 	public var name: String?
 

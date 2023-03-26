@@ -1,6 +1,7 @@
 import Foundation
 
 struct HeadersEncoder {
+
 	var dateFormat: DateEncodingFormat
 
 	@discardableResult

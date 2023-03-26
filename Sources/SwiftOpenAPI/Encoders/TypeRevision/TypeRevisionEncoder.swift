@@ -1,6 +1,7 @@
 import Foundation
 
 final class TypeRevisionEncoder: Encoder {
+
 	var path: [TypePath]
 	var codingPath: [CodingKey] { path.map(\.key) }
 	var userInfo: [CodingUserInfoKey: Any]
@@ -74,6 +75,7 @@ final class TypeRevisionEncoder: Encoder {
 }
 
 private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingContainer, UnkeyedEncodingContainer {
+
 	var count: Int { 1 }
 	let isSingle: Bool
 	var path: [TypePath]
@@ -183,6 +185,7 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
 }
 
 private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+
 	var path: [TypePath]
 	var codingPath: [CodingKey] { path.map(\.key) }
 	var encoder: TypeRevisionEncoder
