@@ -209,6 +209,22 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 	}
 }
 
+public extension ExpressibleByReferenceOr<ExampleObject> {
+	
+	static func ref(example: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) -> Self {
+		_ = try? encode(example, dateFormat: dateFormat, into: &examples)
+		return .ref(components: \.examples, .typeName(type(of: example)))
+	}
+	
+	static func encode(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) throws -> Self {
+		let encoder = AnyValueEncoder(dateFormat: dateFormat)
+		let example = try encoder.encode(value)
+		let name = String.typeName(type(of: value))
+		examples[name] = .value(ExampleObject(value: example))
+		return Self(referenceOr: .ref(components: \.examples, name))
+	}
+}
+
 private var names: [PartialKeyPath<ComponentsObject>: String] = [
 	\.schemas: "schemas",
 	\.parameters: "parameters",

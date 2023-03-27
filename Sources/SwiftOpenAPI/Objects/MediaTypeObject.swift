@@ -63,4 +63,15 @@ public extension MediaTypeObject {
 			example: .encode(value)
 		)
 	}
+	
+	static func encode(
+		_ value: Encodable,
+		schemas: inout [String: ReferenceOr<SchemaObject>],
+		examples: inout [String: ReferenceOr<ExampleObject>]
+	) throws -> MediaTypeObject {
+		try MediaTypeObject(
+			schema: .encode(value, into: &schemas),
+			examples: [.typeName(type(of: value)): .encode(value, into: &examples)]
+		)
+	}
 }
