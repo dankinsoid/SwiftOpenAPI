@@ -214,7 +214,13 @@ public extension ExpressibleByReferenceOr<ExampleObject> {
 	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) throws -> Self {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat)
 		let example = try encoder.encode(value)
-		let name = String.typeName(type(of: value))
+		let typeName = String.typeName(type(of: value))
+		var name = typeName
+		var i = 0
+		while let current = examples[name]?.object?.value, current != example {
+			i += 1
+			name = "\(typeName)\(i)"
+		}
 		examples[name] = .value(ExampleObject(value: example))
 		return .ref(components: \.examples, name)
 	}
