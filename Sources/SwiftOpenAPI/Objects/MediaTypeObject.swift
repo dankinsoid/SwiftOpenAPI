@@ -59,7 +59,7 @@ public extension MediaTypeObject {
 		schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> MediaTypeObject {
 		try MediaTypeObject(
-			schema: .encode(value, into: &schemas),
+			schema: .encodeSchema(value, into: &schemas),
 			example: .encode(value)
 		)
 	}
@@ -70,8 +70,8 @@ public extension MediaTypeObject {
 		examples: inout [String: ReferenceOr<ExampleObject>]
 	) throws -> MediaTypeObject {
 		try MediaTypeObject(
-			schema: .encode(value, into: &schemas),
-			examples: [.typeName(type(of: value)): .encode(value, into: &examples)]
+			schema: .encodeSchema(value, into: &schemas),
+			examples: [.typeName(type(of: value)): .ref(example: value, into: &examples)]
 		)
 	}
 }

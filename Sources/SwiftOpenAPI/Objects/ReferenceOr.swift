@@ -199,11 +199,11 @@ public extension ExpressibleByReferenceOr {
 public extension ExpressibleByReferenceOr<SchemaObject> {
 	
 	static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) -> Self {
-		_ = try? encode(schema, dateFormat: dateFormat, into: &schemas)
+		_ = try? encodeSchema(schema, dateFormat: dateFormat, into: &schemas)
 		return .ref(components: \.schemas, .typeName(type(of: schema)))
 	}
-
-	static func encode(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
+	
+	static func encodeSchema(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
 		let encoder = SchemeEncoder(dateFormat: dateFormat)
 		return try Self(referenceOr: encoder.encode(value, into: &schemas))
 	}
@@ -211,17 +211,12 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 
 public extension ExpressibleByReferenceOr<ExampleObject> {
 	
-	static func ref(example: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) -> Self {
-		_ = try? encode(example, dateFormat: dateFormat, into: &examples)
-		return .ref(components: \.examples, .typeName(type(of: example)))
-	}
-	
-	static func encode(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) throws -> Self {
+	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) throws -> Self {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat)
 		let example = try encoder.encode(value)
 		let name = String.typeName(type(of: value))
 		examples[name] = .value(ExampleObject(value: example))
-		return Self(referenceOr: .ref(components: \.examples, name))
+		return .ref(components: \.examples, name)
 	}
 }
 
