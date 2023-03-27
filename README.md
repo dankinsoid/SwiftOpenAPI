@@ -120,7 +120,7 @@ pod 'SwiftOpenAPI'
 ```
 and run `pod update` from the podfile directory first.
 
-## Relative projects
+## Related projects
 - [VaporToOpenAPI](https://github.com/dankinsoid/VaporToOpenAPI.git)
 
 ## Author
