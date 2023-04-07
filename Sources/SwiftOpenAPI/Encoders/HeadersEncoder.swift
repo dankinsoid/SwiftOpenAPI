@@ -16,6 +16,18 @@ struct HeadersEncoder {
 		)
 	}
 
+    @discardableResult
+    func decode(
+        _ type: Decodable.Type,
+        schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> [String: HeaderObject] {
+        try parse(
+            value: TypeRevision().describe(type: type),
+            type: type,
+            into: &schemas
+        )
+    }
+    
 	private func parse(
 		value: CodableContainerValue,
 		type: Any.Type,

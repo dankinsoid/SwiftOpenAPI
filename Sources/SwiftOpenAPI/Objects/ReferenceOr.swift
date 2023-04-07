@@ -207,6 +207,11 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 		let encoder = SchemeEncoder(dateFormat: dateFormat)
 		return try Self(referenceOr: encoder.encode(value, into: &schemas))
 	}
+    
+    static func decodeSchema(_ type: Decodable.Type, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
+        let decoder = SchemeEncoder(dateFormat: dateFormat)
+        return try Self(referenceOr: decoder.decode(type, into: &schemas))
+    }
 }
 
 public extension ExpressibleByReferenceOr<ExampleObject> {

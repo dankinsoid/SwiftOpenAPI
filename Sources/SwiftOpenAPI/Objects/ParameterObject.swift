@@ -103,4 +103,15 @@ public extension [ReferenceOr<ParameterObject>] {
 			.value($0)
 		}
 	}
+    
+    static func decode(
+        _ type: Decodable.Type,
+        in location: ParameterObject.Location,
+        dateFormat: DateEncodingFormat = .default,
+        schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> [ReferenceOr<ParameterObject>] {
+        try ParametersEncoder(location: location, dateFormat: dateFormat).decode(type, schemas: &schemas).map {
+            .value($0)
+        }
+    }
 }

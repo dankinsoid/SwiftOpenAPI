@@ -10,7 +10,8 @@
 SwiftOpenAPI is a Swift library which can generate output compatible with [OpenAPI](https://swagger.io/specification/) version 3.1.0. You can describe your API using `OpenAPIObject` type.\
 The main accent in the library is on simplifying the syntax: the active use of literals (array, dictionary, string etc) and static methods greatly simplifies writing and reading `OpenAPI` docs in `Swift`. The generation of schemes and examples with codeble instances is also implemented:
 ```swift
-let loginBodyScheme: SchemeObject = try .encode(LoginBody.example)
+let loginBodySchemeFromType: SchemeObject = try .decode(LoginBody.self)
+let loginBodySchemeFromInstance: SchemeObject = try .encode(LoginBody.example)
 let loginBodyExample = try ExampleObject(value: .encode(LoginBody.example))
 ```
 
@@ -84,10 +85,11 @@ try OpenAPIObject(
 It's too large for compilator, but it demonstrates syntaxis well
 
 ## TODO
-1. `URI` type instead of `String`
-2. `refactor` method on `OpenAPIObject`
-3. Extend `RuntimeExpression` type
-4. `DataEncodingFormat`
+1. Specification extensions
+2. `URI` type instead of `String`
+3. `refactor` method on `OpenAPIObject`
+4. Extend `RuntimeExpression` type
+5. `DataEncodingFormat`
 
 ## Installation
 
@@ -101,7 +103,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.8.0")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.9.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])

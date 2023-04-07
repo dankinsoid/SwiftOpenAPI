@@ -18,6 +18,18 @@ struct SchemeEncoder {
 		)
 	}
 
+    @discardableResult
+    func decode(
+        _ type: Decodable.Type,
+        into schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> ReferenceOr<SchemaObject> {
+        try parse(
+            value: TypeRevision().describe(type: type),
+            type: type,
+            into: &schemas
+        )
+    }
+    
 	func parse(
 		value: @autoclosure () throws -> CodableContainerValue,
 		type: Any.Type,

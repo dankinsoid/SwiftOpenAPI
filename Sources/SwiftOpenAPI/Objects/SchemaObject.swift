@@ -390,4 +390,13 @@ public extension SchemaObject {
 		let encoder = SchemeEncoder(dateFormat: dateFormat)
 		try encoder.encode(value, into: &schemas)
 	}
+    
+    static func decode(
+        _ type: Decodable.Type,
+        dateFormat: DateEncodingFormat = .default,
+        into schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws {
+        let encoder = SchemeEncoder(dateFormat: dateFormat)
+        try encoder.decode(type, into: &schemas)
+    }
 }

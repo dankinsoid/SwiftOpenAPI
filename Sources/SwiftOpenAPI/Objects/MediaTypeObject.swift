@@ -74,4 +74,14 @@ public extension MediaTypeObject {
 			examples: [.typeName(type(of: value)): .ref(example: value, into: &examples)]
 		)
 	}
+    
+    static func decode(
+        _ type: Decodable.Type,
+        schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> MediaTypeObject {
+        try MediaTypeObject(
+            schema: .decodeSchema(type, into: &schemas),
+            examples: [:]
+        )
+    }
 }

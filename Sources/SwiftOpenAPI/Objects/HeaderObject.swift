@@ -63,4 +63,14 @@ public extension [String: ReferenceOr<HeaderObject>] {
 			.value($0)
 		}
 	}
+    
+    static func decode(
+        _ type: Decodable.Type,
+        dateFormat: DateEncodingFormat = .default,
+        schemas: inout [String: ReferenceOr<SchemaObject>]
+    ) throws -> [String: ReferenceOr<HeaderObject>] {
+        try HeadersEncoder(dateFormat: dateFormat).decode(type, schemas: &schemas).mapValues {
+            .value($0)
+        }
+    }
 }
