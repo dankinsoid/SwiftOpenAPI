@@ -108,10 +108,6 @@ final class TypeRevisionDecoder: Decoder {
 		result.type = type
 		return value
 	}
-
-	private func isReferenceable(type: Any.Type) -> Bool {
-		(type as? OpenAPIType.Type)?.isPrimitive != true
-	}
 }
 
 private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingContainer, UnkeyedDecodingContainer {

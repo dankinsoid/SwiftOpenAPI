@@ -60,20 +60,18 @@ struct SchemeEncoder {
 				switch keyedInfo.isFixed {
 				case true:
 					let schema = try SchemaObject.object(
-						keyedInfo.fields.mapValues {
+                        properties: keyedInfo.fields.mapValues {
 							try parse(value: $0.container, type: $0.type, into: &schemas)
-						}.nilIfEmpty,
-						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys).nilIfEmpty
+						},
+						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
 					)
 					result = .value(schema)
 
 				case false:
-					let schema = try SchemaObject.object(
-						nil,
-						required: nil,
-						additionalProperties: (keyedInfo.fields.first?.value).map {
+					let schema = try SchemaObject.dictionary(
+						of: (keyedInfo.fields.first?.value).map {
 							try parse(value: $0.container, type: $0.type, into: &schemas)
-						}
+                        } ?? .any
 					)
 					result = .value(schema)
 				}
@@ -102,13 +100,13 @@ struct SchemeEncoder {
 	) throws -> (PrimitiveDataType, DataFormat?) {
 		switch value {
 		case .int8, .int16, .int32, .uint8, .uint16, .uint32:
-			return (.integer, "int32")
+			return (.integer, .int32)
 		case .int, .int64, .uint, .uint64:
-			return (.integer, "int64")
+			return (.integer, .int64)
 		case .double:
-			return (.number, "double")
+			return (.number, .double)
 		case .float:
-			return (.number, "float")
+			return (.number, .float)
 		case .bool:
 			return (.boolean, nil)
 		case .string, .null:

@@ -38,6 +38,7 @@ public extension DataFormat {
 	static var int32: DataFormat = "int32"
 	static var double: DataFormat = "double"
 	static var float: DataFormat = "float"
+    static var decimal: DataFormat = "decimal"
 
 	/// full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21
 	static var date: DataFormat = "date"

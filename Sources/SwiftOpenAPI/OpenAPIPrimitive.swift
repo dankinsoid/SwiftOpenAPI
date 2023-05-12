@@ -5,13 +5,13 @@ public protocol OpenAPIType {
 }
 
 extension OpenAPIType {
-
-	static var isPrimitive: Bool {
-		if case .primitive = openAPISchema.schema {
-			return true
-		}
-		return false
-	}
+    
+    static var isPrimitive: Bool {
+        if case .primitive = openAPISchema.type {
+            return true
+        }
+        return false
+    }
 }
 
 extension String: OpenAPIType {
@@ -85,8 +85,8 @@ extension Float: OpenAPIType {
 }
 
 extension Decimal: OpenAPIType {
-
-	public static var openAPISchema: SchemaObject { .primitive(.number, format: "decimal") }
+    
+    public static var openAPISchema: SchemaObject { .decimal }
 }
 
 extension Date: OpenAPIType {
