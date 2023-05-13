@@ -33,6 +33,25 @@ final class SwiftOpenAPITests: XCTestCase {
             ]
         )
     }
+    
+    func testDescriptions() throws {
+        var references: [String: ReferenceOr<SchemaObject>] = [:]
+        try SchemaObject.decode(CardMeta.self, into: &references)
+        guard let schema = references["CardMeta"]?.object else {
+            XCTFail()
+            return
+        }
+        XCTAssertEqual(schema.description, .cardMeta)
+        switch schema.type {
+        case let .object(.some(props), _, _, _):
+            XCTAssertEqual(props["cardNumber"]?.object?.description, .cardNumber)
+            XCTAssertEqual(props["expiryYear"]?.object?.description, .expiryYear)
+            XCTAssertEqual(props["expiryMonth"]?.object?.description, .expiryMonth)
+            XCTAssertEqual(props["cvv"]?.object?.description, .cvv)
+        default:
+            XCTFail()
+        }
+    }
 }
 
 func prettyPrint(_ value: some Encodable) {
@@ -70,124 +89,34 @@ struct LoginBody: Codable {
         id: UUID(),
         int: 12
     )
-    
-    struct NestedStruct: Codable {
-        
-        public struct VK: Hashable, Codable {
-            
-            public var id: Decimal
-            public var ids: String?
-            public var ownerId: Int?
-            public var addHash: String?
-            public var trackCode: String?
-            public var albumTitle: String?
-            
-            public init(
-                id: Decimal,
-                ids: String? = nil,
-                ownerId: Int? = nil,
-                addHash: String? = nil,
-                trackCode: String? = nil,
-                albumTitle: String? = nil
-            ) {
-                self.id = id
-                self.ids = ids
-                self.ownerId = ownerId
-                self.addHash = addHash
-                self.trackCode = trackCode
-                self.albumTitle = albumTitle
-            }
-            
-            public static let example = VK(
-                id: 1,
-                ids: "1_1",
-                ownerId: 1,
-                addHash: "1",
-                trackCode: "1",
-                albumTitle: "1"
-            )
-        }
-        
-        public struct Apple: Hashable, Codable {
-            
-            public var iTunesLink: URL?
-            public var type: SomeEnum?
-            
-            public init(
-                iTunesLink: URL? = nil,
-                type: SomeEnum? = nil
-            ) {
-                self.iTunesLink = iTunesLink
-                self.type = type
-            }
-            
-            public static let example = Apple(
-                iTunesLink: nil,
-                type: .first
-            )
-        }
-        
-        public struct Spotify: Hashable, Codable {
-            
-            public var uri: String
-            public var previewUrl: String?
-            public var albumTitle: String?
-            
-            public init(
-                uri: String,
-                previewUrl: String? = nil,
-                albumTitle: String? = nil
-            ) {
-                self.uri = uri
-                self.previewUrl = previewUrl
-                self.albumTitle = albumTitle
-            }
-            
-            public static let example = Spotify(
-                uri: "spotify:track:1",
-                previewUrl: "https://p.scdn.co/mp3-preview/1",
-                albumTitle: "1"
-            )
-        }
-        
-        public struct Yandex: Hashable, Codable {
-            
-            public var albumTitle: String?
-            
-            public init(albumTitle: String) {
-                self.albumTitle = albumTitle
-            }
-            
-            public static let example = Yandex(albumTitle: "1")
-        }
-        
-        public var vk: VK?
-        public var am: Apple?
-        public var spotify: Spotify?
-        public var ym: Yandex?
-        
-        public init(
-            vk: VK? = nil,
-            am: Apple? = nil,
-            spotify: Spotify? = nil,
-            ym: Yandex? = nil
-        ) {
-            self.vk = vk
-            self.am = am
-            self.spotify = spotify
-            self.ym = ym
-        }
-        
-        public static let example = NestedStruct(
-            vk: .example,
-            am: .example,
-            spotify: .example,
-            ym: .example
-        )
-    }
 }
 
 enum SomeEnum: String, Codable, CaseIterable {
 
 	case first, second
+}
+
+struct CardMeta: Codable, OpenAPIDescriptable {
+    
+    let cardNumber: String
+    let expiryMonth: Int
+    let expiryYear: Int
+    let cvv: String
+    
+    static var openAPIDescription: OpenAPIDescriptionType? {
+        OpenAPIDescription<CodingKeys>(.cardMeta)
+            .add(for: .cardNumber, .cardNumber)
+            .add(for: .expiryYear, .expiryYear)
+            .add(for: .expiryMonth, .expiryMonth)
+            .add(for: .cvv, .cvv)
+    }
+}
+
+private extension String {
+    
+    static let cardMeta = "Card meta information"
+    static let cardNumber = "Card number"
+    static let expiryYear = "Card expiry year"
+    static let expiryMonth = "Card expiry month"
+    static let cvv = "Card CVV"
 }
