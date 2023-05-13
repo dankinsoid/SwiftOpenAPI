@@ -51,6 +51,7 @@ struct HeadersEncoder {
 						example: $0.container.anyValue
 					)
 				}
+                .with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
 			}
 		}
 	}

@@ -1,17 +1,20 @@
 import Foundation
 
-public protocol OpenAPIType {
-	static var openAPISchema: SchemaObject { get }
+public protocol OpenAPIDescriptable {
+    
+    static var openAPIDescription: OpenAPIDescriptionType? { get }
 }
 
-extension OpenAPIType {
+extension OpenAPIDescriptable {
     
-    static var isPrimitive: Bool {
-        if case .primitive = openAPISchema.type {
-            return true
-        }
-        return false
+    public static var openAPIDescription: OpenAPIDescriptionType? {
+        nil
     }
+}
+
+public protocol OpenAPIType: OpenAPIDescriptable {
+    
+	static var openAPISchema: SchemaObject { get }
 }
 
 extension String: OpenAPIType {
@@ -107,6 +110,13 @@ extension UUID: OpenAPIType {
 extension URL: OpenAPIType {
 
 	public static var openAPISchema: SchemaObject { .primitive(.string, format: .uri) }
+}
+
+extension Optional: OpenAPIDescriptable where Wrapped: OpenAPIDescriptable {
+    
+    public static var openAPIDescription: OpenAPIDescriptionType? {
+        Wrapped.openAPIDescription
+    }
 }
 
 extension Optional: OpenAPIType where Wrapped: OpenAPIType {

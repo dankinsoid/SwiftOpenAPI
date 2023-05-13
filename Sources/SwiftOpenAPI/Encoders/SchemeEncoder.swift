@@ -36,7 +36,7 @@ struct SchemeEncoder {
 		into schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> ReferenceOr<SchemaObject> {
 		let name = String.typeName(type)
-		let result: ReferenceOr<SchemaObject>
+		var result: ReferenceOr<SchemaObject>
 
 		switch type {
 		case is Date.Type:
@@ -86,6 +86,10 @@ struct SchemeEncoder {
 				result = .ref(components: \.schemas, name)
 			}
 		}
+        
+        if let descriptable = type as? OpenAPIDescriptable.Type {
+            result = result.with(description: descriptable.openAPIDescription)
+        }
 
 		if extractReferences, result.isReferenceable {
 			schemas[name] = result

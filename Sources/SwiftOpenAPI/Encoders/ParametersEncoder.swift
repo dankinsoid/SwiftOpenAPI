@@ -55,6 +55,7 @@ struct ParametersEncoder {
 					)
 				}
 				.sorted { $0.name < $1.name }
+                .with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
 			}
 		}
 	}

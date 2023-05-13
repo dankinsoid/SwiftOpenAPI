@@ -325,6 +325,9 @@ public extension ExpressibleBySchemaObject {
     }
     
     static var string: Self { primitive(.string) }
+    static func string(format: DataFormat, description: String? = nil) -> Self {
+        .primitive(.string, format: format, description: description)
+    }
     static var number: Self { .primitive(.number) }
     static var integer: Self { .primitive(.integer, format: .int64) }
     static var float: Self { .primitive(.number, format: .float) }
