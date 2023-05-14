@@ -199,8 +199,8 @@ extension ReferenceOr<SchemaObject>: ExpressibleBySchemaObject {
 
 public extension ExpressibleBySchemaObject {
     
-    static func oneOf(
-        _ types: ReferenceOr<SchemaObject>...,
+    static func one(
+        of types: ReferenceOr<SchemaObject>...,
         discriminator: DiscriminatorObject? = nil,
         description: String? = nil,
         externalDocs: ExternalDocumentationObject? = nil
@@ -214,8 +214,8 @@ public extension ExpressibleBySchemaObject {
         )
     }
     
-    static func allOf(
-        _ types: ReferenceOr<SchemaObject>...,
+    static func all(
+        of types: ReferenceOr<SchemaObject>...,
         discriminator: DiscriminatorObject? = nil,
         description: String? = nil,
         externalDocs: ExternalDocumentationObject? = nil
@@ -229,8 +229,8 @@ public extension ExpressibleBySchemaObject {
         )
     }
     
-    static func anyOf(
-        _ types: ReferenceOr<SchemaObject>...,
+    static func any(
+        of types: ReferenceOr<SchemaObject>...,
         discriminator: DiscriminatorObject? = nil,
         description: String? = nil,
         externalDocs: ExternalDocumentationObject? = nil
