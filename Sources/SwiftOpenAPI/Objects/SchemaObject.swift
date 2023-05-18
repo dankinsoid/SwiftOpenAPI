@@ -228,7 +228,7 @@ public extension ExpressibleBySchemaObject {
             )
         )
     }
-    
+	
     static func any(
         of types: ReferenceOr<SchemaObject>...,
         discriminator: DiscriminatorObject? = nil,
@@ -244,6 +244,20 @@ public extension ExpressibleBySchemaObject {
         )
     }
     
+		static func not(
+		    _ type: ReferenceOr<SchemaObject>,
+				description: String? = nil,
+				externalDocs: ExternalDocumentationObject? = nil
+	  ) -> Self {
+			  Self(
+				    schemaObject: SchemaObject(
+					      .composite(.not, [type], discriminator: nil),
+					      description: description,
+					      externalDocs: externalDocs
+				    )
+			  )
+	  }
+	
     static var any: Self {
         Self(schemaObject: SchemaObject(.any))
     }
