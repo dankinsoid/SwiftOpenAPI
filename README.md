@@ -32,8 +32,8 @@ try OpenAPIObject(
                 description: "login",
                 requestBody: .ref(components: \.requestBodies, "LoginRequest"),
                 responses: [
-                    .default: .ref(components: \.responses, "LoginResponse"),
-                    401: .ref(components: \.responses, "ErrorResponse")
+                    .ok: .ref(components: \.responses, "LoginResponse"),
+                    .unauthorized: .ref(components: \.responses, "ErrorResponse")
                 ]
             )
         ),
@@ -127,7 +127,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.14.0")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.14.1")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])
