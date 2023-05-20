@@ -125,6 +125,7 @@ public extension MediaType {
 		}
 
 		public static let plain: Text = "plain"
+        public static let html: Text = "html"
 	}
 
 	static func text(_ subtype: Text, charset: String? = nil) -> MediaType {
