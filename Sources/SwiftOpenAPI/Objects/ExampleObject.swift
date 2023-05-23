@@ -14,7 +14,7 @@ public struct ExampleObject: Codable, Equatable, SpecificationExtendable {
 	/// A URI that points to the literal example. This provides the capability to reference examples that cannot easily be included in JSON or YAML documents. The value field and externalValue field are mutually exclusive. See the rules for resolving Relative References.
 	public var externalValue: String?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(summary: String? = nil, description: String? = nil, value: AnyValue? = nil, externalValue: String? = nil) {
 		self.summary = summary

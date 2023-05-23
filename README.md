@@ -109,11 +109,10 @@ struct Color: Codable, OpenAPIType {
 ```
 
 ## TODO
-1. Specification extensions
-2. `URI` type instead of `String`
-3. `refactor` method on `OpenAPIObject` (?)
-4. Extend `RuntimeExpression` type
-5. `DataEncodingFormat`
+- `URI` type instead of `String`
+- `refactor` method on `OpenAPIObject` (?)
+- Extend `RuntimeExpression` type
+- `DataEncodingFormat`
 
 ## Installation
 
@@ -127,7 +126,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.14.2")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.15.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])

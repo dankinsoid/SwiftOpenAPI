@@ -12,7 +12,7 @@ public struct LicenseObject: Codable, Equatable, SpecificationExtendable {
 	/// A URL to the license used for the API. This MUST be in the form of a URL. The url field is mutually exclusive of the identifier field.
 	public var url: URL?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(name: String, identifier: String? = nil, url: URL? = nil) {
 		self.name = name

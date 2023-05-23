@@ -52,6 +52,61 @@ final class SwiftOpenAPITests: XCTestCase {
             XCTFail()
         }
     }
+	
+	func testSpecificationExtensionsWrapper() throws {
+		var withSpec = WithSpecExtensions(wrappedValue: SchemaObject.string)
+		let key: SpecificationExtensions.Key = "x-some-value"
+		let value: AnyValue = 1
+		withSpec.projectedValue[key] = value
+		let data = try JSONEncoder().encode(withSpec)
+		let decoded = try JSONDecoder().decode(WithSpecExtensions<SchemaObject>.self, from: data)
+		XCTAssertEqual(decoded.projectedValue[key], value)
+	}
+	
+	func testSpecificationExtensionsWrapperWithDictionary0() throws {
+		var withSpec = WithSpecExtensions(wrappedValue: CallbackObject())
+		withSpec.wrappedValue["some"] = .value(.delete(OperationObject(description: "Delete")))
+		let key: SpecificationExtensions.Key = "x-some-value"
+		let value: AnyValue = 1
+		withSpec.projectedValue[key] = value
+		let data = try JSONEncoder().encode(withSpec)
+		let decoded = try JSONDecoder().decode(WithSpecExtensions<CallbackObject>.self, from: data)
+		XCTAssertEqual(decoded.projectedValue[key], value)
+		XCTAssertEqual(decoded.wrappedValue.value.count, 1)
+	}
+	
+	func testSpecificationExtensionsWrapperWithDictionary1() throws {
+		var withSpec = WithSpecExtensions(wrappedValue: ContentObject())
+		withSpec.wrappedValue["some"] = .string
+		let key: SpecificationExtensions.Key = "x-some-value"
+		let value: AnyValue = 1
+		withSpec.projectedValue[key] = value
+		let data = try JSONEncoder().encode(withSpec)
+		let decoded = try JSONDecoder().decode(WithSpecExtensions<ContentObject>.self, from: data)
+		XCTAssertEqual(decoded.projectedValue[key], value)
+		XCTAssertEqual(decoded.wrappedValue.value.count, 1)
+	}
+	
+	func testSpecificationKeys() throws {
+		let value = InfoObject(title: "Title", termsOfService: URL(string: "http://google.com"), version: "1.0.0")
+		let specs = try SpecificationExtensions(from: value)
+		XCTAssertEqual(specs["x-terms-of-service"], "http://google.com")
+		XCTAssertEqual(specs["x-title"], "Title")
+		XCTAssertEqual(specs["x-version"], "1.0.0")
+	}
+	
+	func testSpecificationExtensions() throws {
+		var info = InfoObject(title: "Title", termsOfService: URL(string: "http://google.com"), version: "1.0.0")
+		let key: SpecificationExtensions.Key = "x-some-value"
+		let value: AnyValue = 1
+		info.specificationExtensions = [
+			key: value
+		]
+		let api = OpenAPIObject(info: info)
+		let data = try JSONEncoder().encode(api)
+		let decoded = try JSONDecoder().decode(OpenAPIObject.self, from: data).info
+		XCTAssertEqual(decoded.specificationExtensions?[key], value)
+	}
 }
 
 func prettyPrint(_ value: some Encodable) {

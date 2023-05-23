@@ -8,7 +8,7 @@ public enum RuntimeExpressionOr<Value: Codable & Equatable>: Codable, Equatable 
 	public init(from decoder: Decoder) throws {
 		do {
 			let string = try String(from: decoder)
-			guard string.hasPrefix("{"), string.hasSuffix("}") else {
+			guard let expression = RuntimeExpression(string) else {
 				throw DecodingError.dataCorrupted(
 					DecodingError.Context(
 						codingPath: decoder.codingPath,
@@ -16,9 +16,9 @@ public enum RuntimeExpressionOr<Value: Codable & Equatable>: Codable, Equatable 
 					)
 				)
 			}
-			self = .expression(RuntimeExpression(rawValue: string))
+			self = .expression(expression)
 		} catch {
-			self = try .expression(RuntimeExpression(from: decoder))
+			self = try .value(Value(from: decoder))
 		}
 	}
 

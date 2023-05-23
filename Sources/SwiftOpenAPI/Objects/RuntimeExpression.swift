@@ -10,24 +10,27 @@ public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpola
 
 	public var description: String { surrounded }
 
-	public init(rawValue: String) {
-		self.rawValue = rawValue.trimmingCharacters(in: ["{", "}"])
+	public init?(rawValue: String) {
+		self.init(rawValue)
 	}
 
 	public init(stringLiteral value: String) {
-		self.init(rawValue: value)
+		self.rawValue = value.trimmingCharacters(in: ["{", "}"])
 	}
 
 	public init(stringInterpolation value: DefaultStringInterpolation) {
-		self.init(rawValue: String(stringInterpolation: value))
+		self.init(stringLiteral: String(stringInterpolation: value))
 	}
 
-	public init(_ stringValue: String) {
-		self.init(rawValue: stringValue)
+	public init?(_ stringValue: String) {
+		guard stringValue.hasPrefix("{"), stringValue.hasSuffix("}") else {
+			return nil
+		}
+		self.init(stringLiteral: stringValue)
 	}
 
 	public init(from decoder: Decoder) throws {
-		try self.init(rawValue: String(from: decoder))
+		try self.init(stringLiteral: String(from: decoder))
 	}
 
 	public func encode(to encoder: Encoder) throws {

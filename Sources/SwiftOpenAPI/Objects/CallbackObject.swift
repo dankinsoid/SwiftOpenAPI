@@ -6,7 +6,7 @@ public struct CallbackObject: Codable, Equatable, SpecificationExtendable, Expre
 	public typealias Value = ReferenceOr<PathItemObject>
 
 	public var value: [Key: Value]
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(_ value: [Key: Value] = [:]) {
 		self.value = value

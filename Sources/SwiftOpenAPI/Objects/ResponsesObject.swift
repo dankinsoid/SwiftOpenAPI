@@ -5,7 +5,7 @@ public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, Expr
 	public typealias Value = ReferenceOr<ResponseObject>
 
 	public var value: [Key: Value]
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(_ value: [Key: Value] = [:]) {
 		self.value = value
@@ -91,7 +91,7 @@ public extension ResponsesObject {
 				throw DecodingError.dataCorrupted(
 					DecodingError.Context(
 						codingPath: decoder.codingPath,
-						debugDescription: "Invalid responses field, expected 'default' or status code, \(rawValue) found"
+						debugDescription: "Invalid responses field, expected '\(Self.defaultRawValue)' or status code, \(rawValue) found"
 					)
 				)
 			}

@@ -29,7 +29,7 @@ public struct SecuritySchemeObject: Codable, Equatable, SpecificationExtendable 
 	/// OpenId Connect URL to discover OAuth2 configuration values. The OpenID Connect standard requires the use of TLS.
 	public var openIdConnectUrl: String?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	/// It's don't recommended to use init directly, use static methods
 	public init(

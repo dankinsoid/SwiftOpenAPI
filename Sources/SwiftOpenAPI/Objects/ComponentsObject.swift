@@ -33,7 +33,7 @@ public struct ComponentsObject: Codable, Equatable, SpecificationExtendable {
 	/// An object to hold reusable Path Item Object.
 	public var pathItems: [String: ReferenceOr<PathItemObject>]?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		schemas: [String: ReferenceOr<SchemaObject>]? = nil,

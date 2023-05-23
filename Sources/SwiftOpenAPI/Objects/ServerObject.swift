@@ -12,7 +12,7 @@ public struct ServerObject: Codable, Equatable, SpecificationExtendable, Express
 	/// A map between a variable name and its value. The value is used for substitution in the server's URL template.
 	public var variables: [String: ServerVariableObject]?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(url: String, description: String? = nil, variables: [String: ServerVariableObject]? = nil) {
 		self.url = url

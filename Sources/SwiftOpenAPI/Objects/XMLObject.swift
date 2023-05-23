@@ -18,7 +18,7 @@ public struct XMLObject: Codable, Equatable, SpecificationExtendable {
 	/// wrapped    boolean    MAY be used only for an array definition. Signifies whether the array is wrapped (for example, <books><book/><book/></books>) or unwrapped (<book/><book/>). Default value is false. The definition takes effect only when defined alongside type being array (outside the items).
 	public var attribute: Bool?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(name: String? = nil, namespace: URL? = nil, prefix: String? = nil, attribute: Bool? = nil) {
 		self.name = name

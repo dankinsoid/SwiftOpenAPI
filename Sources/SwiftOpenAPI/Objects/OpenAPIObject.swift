@@ -33,7 +33,7 @@ public struct OpenAPIObject: Codable, Equatable, SpecificationExtendable {
 	/// Additional external documentation.
 	public var externalDocs: ExternalDocumentationObject?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		openapi: Version = Version(3, 0, 1),

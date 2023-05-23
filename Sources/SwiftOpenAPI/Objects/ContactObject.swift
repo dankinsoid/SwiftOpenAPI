@@ -12,7 +12,7 @@ public struct ContactObject: Codable, Equatable, SpecificationExtendable {
 	/// The email address of the contact person/organization. This MUST be in the form of an email address.
 	public var email: String?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		name: String? = nil,

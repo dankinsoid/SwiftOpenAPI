@@ -12,7 +12,7 @@ public struct RequestBodyObject: Codable, Equatable, SpecificationExtendable {
 	/// Determines if the request body is required in the request. Defaults to false.
 	public var required: Bool?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
 		description: String? = nil,

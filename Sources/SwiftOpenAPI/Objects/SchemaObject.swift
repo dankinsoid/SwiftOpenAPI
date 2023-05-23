@@ -11,6 +11,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
     public var externalDocs: ExternalDocumentationObject?
     public var type: SchemaType
     public var example: AnyValue?
+	  public var specificationExtensions: SpecificationExtensions?
     
     public enum CodingKeys: String, CodingKey {
         
@@ -49,8 +50,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         description = try? container.decodeIfPresent(String.self, forKey: .description)
         externalDocs = try? container.decodeIfPresent(ExternalDocumentationObject.self, forKey: .externalDocs)
-		example = try container.decodeIfPresent(AnyValue.self, forKey: .example)
-//		specificationExtensions = try SpecificationExtensions(from: decoder)
+		    example = try container.decodeIfPresent(AnyValue.self, forKey: .example)
         let dataType = try container.decodeIfPresent(DataType.self, forKey: .type)
         
         switch dataType {
@@ -95,15 +95,14 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
                 type = .primitive(dataType, format: format, pattern: pattern)
             }
         }
+			  specificationExtensions = try? SpecificationExtensions(from: decoder)
     }
     
     public func encode(to encoder: Encoder) throws {
-//		try specificationExtensions?.encode(to: encoder)
-
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(description, forKey: .description)
         try container.encodeIfPresent(externalDocs, forKey: .externalDocs)
-		try container.encodeIfPresent(example, forKey: .example)
+		    try container.encodeIfPresent(example, forKey: .example)
         switch type {
         case .any:
             break
@@ -142,10 +141,11 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
             try container.encode(type, forKey: .type)
             try container.encode(allCases, forKey: .enum)
         }
+			  try? specificationExtensions?.encode(to: encoder)
     }
 }
 
-public indirect enum SchemaType: Equatable, SpecificationExtendable {
+public indirect enum SchemaType: Equatable {
     
     case any
     

@@ -12,7 +12,7 @@ public struct ServerVariableObject: Codable, Equatable, SpecificationExtendable 
 	///     An optional description for the server variable. CommonMark syntax MAY be used for rich text representation.
 	public var description: String?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(enum: [String], default: String, description: String? = nil) {
 

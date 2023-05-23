@@ -35,7 +35,7 @@ public struct HeaderObject: Codable, Equatable, SpecificationExtendable {
 	/// A map containing the representations for the parameter. The key is the media type and the value describes it. The map MUST only contain one entry.
 	public var content: ContentObject?
 
-	//public var specificationExtensions: SpecificationExtensions? = nil
+	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: [String: ReferenceOr<ExampleObject>]? = nil, content: ContentObject? = nil) {
 		self.description = description

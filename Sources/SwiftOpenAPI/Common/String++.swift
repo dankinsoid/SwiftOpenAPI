@@ -18,4 +18,33 @@ extension String {
 			}
 			.joined()
 	}
+	
+	func toCamelCase(separator: String = "_") -> String {
+		var result = ""
+		
+		for word in components(separatedBy: separator) {
+			if result.isEmpty {
+				// keep the first word in lowercase
+				result += word.lowercased()
+			} else {
+				// capitalize the first character of the remaining words
+				result += word.capitalized
+			}
+		}
+		return result
+	}
+	
+	func toSnakeCase(separator: String = "_") -> String {
+		var result = ""
+		
+		for character in self {
+			if character.isUppercase {
+				result += separator + character.lowercased()
+			} else {
+				result += String(character)
+			}
+		}
+		
+		return result
+	}
 }
