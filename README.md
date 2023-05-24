@@ -108,6 +108,27 @@ struct Color: Codable, OpenAPIType {
 }
 ```
 
+## Specification extensions
+While the OpenAPI Specification tries to accommodate most use cases, [additional data](https://swagger.io/specification/#specification-extensions) can be added to extend the specification at certain points.\
+```swift
+var api = OpenAPIObject(...)
+api.specificationExtensions = ["x-some-extension": "some value"]
+// or
+api.specificationExtensions = try? SpecificationExtensions(from: someEncodable)
+```
+It was a bit tricky challenge to implement additional dynamic properties for any codable struct. The solution is to use `SpecificationExtendable` protocol in combination with `WithSpecExtensions` property wrapper.
+There is two ways to decode/encode `SpecificationExtendable` types with additional properties:
+1. Use `SpecificationExtendable.json`, `SpecificationExtendable.Type.from(json:)` methods.
+```swift
+let schema = try SchemaObject.from(json: jsonData)
+let jsonData = try schema.json()
+```
+2. If you cannot use custom decoding methods, you can use `WithSpecExtensions` wrapper.
+```swift
+let api = try WithSpecExtensions(wrappedValue: OpenAPIObject(...))
+let jsonData = try JSONEncoder().encode(api)
+```
+
 ## TODO
 - `URI` type instead of `String`
 - `refactor` method on `OpenAPIObject` (?)
@@ -126,7 +147,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.15.0")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.15.1")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])
