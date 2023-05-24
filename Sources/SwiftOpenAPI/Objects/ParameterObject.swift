@@ -57,11 +57,11 @@ public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
-	public init(name: String, in: ParameterObject.Location, description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: [String: ReferenceOr<ExampleObject>]? = nil, content: ContentObject? = nil) {
+	public init(name: String, in location: ParameterObject.Location, description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: [String: ReferenceOr<ExampleObject>]? = nil, content: ContentObject? = nil) {
 		self.name = name
-		self.in = `in`
+		self.in = location
 		self.description = description
-		self.required = required
+		self.required = location == .path ? true : required
 		self.deprecated = deprecated
 		self.allowEmptyValue = allowEmptyValue
 		self.style = style
