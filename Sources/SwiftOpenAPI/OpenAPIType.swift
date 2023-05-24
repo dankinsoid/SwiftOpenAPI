@@ -1,19 +1,19 @@
 import Foundation
 
 public protocol OpenAPIDescriptable {
-    
-    static var openAPIDescription: OpenAPIDescriptionType? { get }
+
+	static var openAPIDescription: OpenAPIDescriptionType? { get }
 }
 
-extension OpenAPIDescriptable {
-    
-    public static var openAPIDescription: OpenAPIDescriptionType? {
-        nil
-    }
+public extension OpenAPIDescriptable {
+
+	static var openAPIDescription: OpenAPIDescriptionType? {
+		nil
+	}
 }
 
 public protocol OpenAPIType: OpenAPIDescriptable {
-    
+
 	static var openAPISchema: SchemaObject { get }
 }
 
@@ -88,8 +88,8 @@ extension Float: OpenAPIType {
 }
 
 extension Decimal: OpenAPIType {
-    
-    public static var openAPISchema: SchemaObject { .decimal }
+
+	public static var openAPISchema: SchemaObject { .decimal }
 }
 
 extension Date: OpenAPIType {
@@ -113,10 +113,10 @@ extension URL: OpenAPIType {
 }
 
 extension Optional: OpenAPIDescriptable where Wrapped: OpenAPIDescriptable {
-    
-    public static var openAPIDescription: OpenAPIDescriptionType? {
-        Wrapped.openAPIDescription
-    }
+
+	public static var openAPIDescription: OpenAPIDescriptionType? {
+		Wrapped.openAPIDescription
+	}
 }
 
 extension Optional: OpenAPIType where Wrapped: OpenAPIType {

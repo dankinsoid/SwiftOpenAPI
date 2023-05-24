@@ -17,18 +17,18 @@ struct ParametersEncoder {
 		)
 	}
 
-    @discardableResult
-    func decode(
-        _ type: Decodable.Type,
-        schemas: inout [String: ReferenceOr<SchemaObject>]
-    ) throws -> [ParameterObject] {
-        try parse(
-            value: TypeRevision().describe(type: type),
-            type: type,
-            into: &schemas
-        )
-    }
-    
+	@discardableResult
+	func decode(
+		_ type: Decodable.Type,
+		schemas: inout [String: ReferenceOr<SchemaObject>]
+	) throws -> [ParameterObject] {
+		try parse(
+			value: TypeRevision().describe(type: type),
+			type: type,
+			into: &schemas
+		)
+	}
+
 	private func parse(
 		value: CodableContainerValue,
 		type: Any.Type,
@@ -55,7 +55,7 @@ struct ParametersEncoder {
 					)
 				}
 				.sorted { $0.name < $1.name }
-                .with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
+				.with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
 			}
 		}
 	}

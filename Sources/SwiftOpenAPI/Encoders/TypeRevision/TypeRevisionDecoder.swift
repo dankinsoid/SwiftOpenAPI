@@ -71,37 +71,37 @@ final class TypeRevisionDecoder: Decoder {
 		let decodable = try? type.init(from: self)
 		if let custom = context.customDescription(type, decodable) {
 			result.container = custom
-        } else {
-            switch type {
-            case is Date.Type:
-                let date = Date()
-                result.type = type
-                result.container = .single(.double(date.timeIntervalSince1970))
-                return date
-            case is URL.Type:
-                let url = URL(string: "https://github.com/dankinsoid/SwiftOpenAPI")!
-                result.container = .single(.string(url.absoluteString))
-                result.type = type
-                return url
-            case is Data.Type:
-                result.container = .single(.string(nil))
-                result.type = type
-                return Data()
-            case let iterable as any CaseIterable.Type:
-                result.type = type
-                let allCases = iterable.allCases as any Collection
-                if let result = allCases.first as? Decodable {
-                    return result
-                }
-                throw AnyError()
-            default:
-                if case .keyed = result.container {
-                    let decoder = CheckAllKeysDecoder()
-                    _ = try? type.init(from: decoder)
-                    result.container.keyed.isFixed = !decoder.isAdditional
-                }
-            }
-        }
+		} else {
+			switch type {
+			case is Date.Type:
+				let date = Date()
+				result.type = type
+				result.container = .single(.double(date.timeIntervalSince1970))
+				return date
+			case is URL.Type:
+				let url = URL(string: "https://github.com/dankinsoid/SwiftOpenAPI")!
+				result.container = .single(.string(url.absoluteString))
+				result.type = type
+				return url
+			case is Data.Type:
+				result.container = .single(.string(nil))
+				result.type = type
+				return Data()
+			case let iterable as any CaseIterable.Type:
+				result.type = type
+				let allCases = iterable.allCases as any Collection
+				if let result = allCases.first as? Decodable {
+					return result
+				}
+				throw AnyError()
+			default:
+				if case .keyed = result.container {
+					let decoder = CheckAllKeysDecoder()
+					_ = try? type.init(from: decoder)
+					result.container.keyed.isFixed = !decoder.isAdditional
+				}
+			}
+		}
 		guard let value = decodable else {
 			throw AnyError()
 		}
@@ -209,7 +209,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 		value.type = type
 		result = value
 		guard let t = decodable as? T else {
-            print("Failed to decode \(type)")
+			print("Failed to decode \(type)")
 			throw AnyError()
 		}
 		return t
@@ -435,9 +435,9 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 		value.isOptional = optional
 		result[str(key)] = value
 		guard let t = decodable as? T else {
-            if !optional {
-                print("Failed to decode \(type) for key \(key.stringValue)")
-            }
+			if !optional {
+				print("Failed to decode \(type) for key \(key.stringValue)")
+			}
 			throw AnyError()
 		}
 		return t

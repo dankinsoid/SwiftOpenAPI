@@ -36,7 +36,7 @@ public struct ResponsesObject: Codable, Equatable, SpecificationExtendable, Expr
 public extension ResponsesObject {
 
 	enum Key: Hashable, Codable, Equatable, RawRepresentable, CodingKey, ExpressibleByIntegerLiteral, LosslessStringConvertible {
-		
+
 		case code(Int)
 		case `default`
 
@@ -107,11 +107,11 @@ public extension ResponsesObject {
 }
 
 public extension ResponsesObject.Key {
-	
+
 	static let `continue`: ResponsesObject.Key = .code(100)
 	static let switchingProtocols: ResponsesObject.Key = .code(101)
 	static let processing: ResponsesObject.Key = .code(102)
-	
+
 	static let ok: ResponsesObject.Key = .code(200)
 	static let created: ResponsesObject.Key = .code(201)
 	static let accepted: ResponsesObject.Key = .code(202)
@@ -122,7 +122,7 @@ public extension ResponsesObject.Key {
 	static let multiStatus: ResponsesObject.Key = .code(207)
 	static let alreadyReported: ResponsesObject.Key = .code(208)
 	static let imUsed: ResponsesObject.Key = .code(226)
-	
+
 	static let multipleChoices: ResponsesObject.Key = .code(300)
 	static let movedPermanently: ResponsesObject.Key = .code(301)
 	static let found: ResponsesObject.Key = .code(302)
@@ -131,7 +131,7 @@ public extension ResponsesObject.Key {
 	static let useProxy: ResponsesObject.Key = .code(305)
 	static let temporaryRedirect: ResponsesObject.Key = .code(307)
 	static let permanentRedirect: ResponsesObject.Key = .code(308)
-	
+
 	static let badRequest: ResponsesObject.Key = .code(400)
 	static let unauthorized: ResponsesObject.Key = .code(401)
 	static let paymentRequired: ResponsesObject.Key = .code(402)
@@ -160,7 +160,7 @@ public extension ResponsesObject.Key {
 	static let tooManyRequests: ResponsesObject.Key = .code(429)
 	static let requestHeaderFieldsTooLarge: ResponsesObject.Key = .code(431)
 	static let unavailableForLegalReasons: ResponsesObject.Key = .code(451)
-	
+
 	static let internalServerError: ResponsesObject.Key = .code(500)
 	static let notImplemented: ResponsesObject.Key = .code(501)
 	static let badGateway: ResponsesObject.Key = .code(502)

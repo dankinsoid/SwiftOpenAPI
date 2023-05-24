@@ -17,10 +17,25 @@ public struct RequestBodyObject: Codable, Equatable, SpecificationExtendable {
 	public init(
 		description: String? = nil,
 		content: ContentObject,
-		required: Bool?
+		required: Bool? = nil
 	) {
 		self.description = description
 		self.content = content
 		self.required = required
+	}
+}
+
+extension RequestBodyObject: ExpressibleByDictionary {
+
+	public typealias Key = ContentObject.Key
+	public typealias Value = ContentObject.Value
+
+	public subscript(key: ContentObject.Key) -> ContentObject.Value? {
+		get { content[key] }
+		set { content[key] = newValue }
+	}
+
+	public init(dictionaryElements elements: [(ContentObject.Key, ContentObject.Value)]) {
+		self.init(content: ContentObject(dictionaryElements: elements))
 	}
 }

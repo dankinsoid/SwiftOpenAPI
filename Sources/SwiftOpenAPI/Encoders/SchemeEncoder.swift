@@ -18,18 +18,18 @@ struct SchemeEncoder {
 		)
 	}
 
-    @discardableResult
-    func decode(
-        _ type: Decodable.Type,
-        into schemas: inout [String: ReferenceOr<SchemaObject>]
-    ) throws -> ReferenceOr<SchemaObject> {
-        try parse(
-            value: TypeRevision().describe(type: type),
-            type: type,
-            into: &schemas
-        )
-    }
-    
+	@discardableResult
+	func decode(
+		_ type: Decodable.Type,
+		into schemas: inout [String: ReferenceOr<SchemaObject>]
+	) throws -> ReferenceOr<SchemaObject> {
+		try parse(
+			value: TypeRevision().describe(type: type),
+			type: type,
+			into: &schemas
+		)
+	}
+
 	func parse(
 		value: @autoclosure () throws -> CodableContainerValue,
 		type: Any.Type,
@@ -60,7 +60,7 @@ struct SchemeEncoder {
 				switch keyedInfo.isFixed {
 				case true:
 					let schema = try SchemaObject.object(
-                        properties: keyedInfo.fields.mapValues {
+						properties: keyedInfo.fields.mapValues {
 							try parse(value: $0.container, type: $0.type, into: &schemas)
 						},
 						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
@@ -71,7 +71,7 @@ struct SchemeEncoder {
 					let schema = try SchemaObject.dictionary(
 						of: (keyedInfo.fields.first?.value).map {
 							try parse(value: $0.container, type: $0.type, into: &schemas)
-                        } ?? .any
+						} ?? .any
 					)
 					result = .value(schema)
 				}
@@ -86,10 +86,10 @@ struct SchemeEncoder {
 				result = .ref(components: \.schemas, name)
 			}
 		}
-        
-        if let descriptable = type as? OpenAPIDescriptable.Type {
-            result = result.with(description: descriptable.openAPIDescription)
-        }
+
+		if let descriptable = type as? OpenAPIDescriptable.Type {
+			result = result.with(description: descriptable.openAPIDescription)
+		}
 
 		if extractReferences, result.isReferenceable {
 			schemas[name] = result

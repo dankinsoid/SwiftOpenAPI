@@ -9,9 +9,9 @@ public struct ExternalDocumentationObject: Codable, Equatable, SpecificationExte
 	public var description: String?
 
 	///  The URL for the target documentation.
-	public var url: URL
+	public var url: URL?
 
-	public init(description: String? = nil, url: URL) {
+	public init(description: String? = nil, url: URL?) {
 		self.description = description
 		self.url = url
 	}

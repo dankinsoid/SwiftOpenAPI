@@ -76,8 +76,7 @@ try OpenAPIObject(
 )
 ```
 ## Pets store example
-[PetsSwagger.swift](Tests/SwiftOpenAPITests/Mocks/PetsSwagger.swift)
-It's too large for compilator, but it demonstrates syntaxis well
+[PetsSwagger.swift](Tests/SwiftOpenAPITests/Mocks/PetsSwagger.swift) demonstrates syntaxis well
 
 ## Creating schemas and parameters for `Codable` types
 There is a possibility to create `SchemeObject`, `[ParameterObject]`, `AnyValue` and `[String: HeaderObject]` instances from `Codable` types. It's possible to use `SchemeObject.decode/encode`, `[ParameterObject].decode/encode`, `[String: HeaderObject].decode/encode` and `AnyValue.encode` methods for it.
@@ -147,7 +146,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.15.1")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.15.2")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])

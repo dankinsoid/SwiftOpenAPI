@@ -24,7 +24,6 @@ public struct SecurityRequirementObject: Codable, Equatable, SpecificationExtend
 			)
 		}
 		self.init(dictionary[dictionary.startIndex].key, dictionary[dictionary.startIndex].value)
-//		specificationExtensions = try SpecificationExtensions(from: decoder)
 	}
 
 	public init(
@@ -41,6 +40,5 @@ public struct SecurityRequirementObject: Codable, Equatable, SpecificationExtend
 
 	public func encode(to encoder: Encoder) throws {
 		try [name: values].encode(to: encoder)
-//		try specificationExtensions?.encode(to: encoder)
 	}
 }

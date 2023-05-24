@@ -52,77 +52,77 @@ public enum ReferenceOr<Object: Codable & Equatable>: Equatable, Codable {
 }
 
 extension ReferenceOr: ExpressibleByUnicodeScalarLiteral where Object: ExpressibleByUnicodeScalarLiteral {
-	
+
 	public init(unicodeScalarLiteral value: Object.UnicodeScalarLiteralType) {
 		self = .value(Object(unicodeScalarLiteral: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByExtendedGraphemeClusterLiteral where Object: ExpressibleByExtendedGraphemeClusterLiteral {
-	
+
 	public init(extendedGraphemeClusterLiteral value: Object.ExtendedGraphemeClusterLiteralType) {
 		self = .value(Object(extendedGraphemeClusterLiteral: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByStringLiteral where Object: ExpressibleByStringLiteral {
-	
+
 	public init(stringLiteral value: Object.StringLiteralType) {
 		self = .value(Object(stringLiteral: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByFloatLiteral where Object: ExpressibleByFloatLiteral {
-	
+
 	public init(floatLiteral value: Object.FloatLiteralType) {
 		self = .value(Object(floatLiteral: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByIntegerLiteral where Object: ExpressibleByIntegerLiteral {
-	
+
 	public init(integerLiteral value: Object.IntegerLiteralType) {
 		self = .value(Object(integerLiteral: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByBooleanLiteral where Object: ExpressibleByBooleanLiteral {
-	
+
 	public init(booleanLiteral value: Object.BooleanLiteralType) {
 		self = .value(Object(booleanLiteral: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByStringInterpolation where Object: ExpressibleByStringInterpolation {
-	
+
 	public init(stringInterpolation value: Object.StringInterpolation) {
 		self = .value(Object(stringInterpolation: value))
 	}
 }
 
 extension ReferenceOr: ExpressibleByArrayLiteral where Object: ExpressibleByArray {
-	
+
 	public init(arrayLiteral elements: Object.ArrayLiteralElement...) {
 		self = .value(Object(arrayElements: elements))
 	}
 }
 
 extension ReferenceOr: ExpressibleByArray where Object: ExpressibleByArray {
-	
+
 	public init(arrayElements elements: [Object.ArrayLiteralElement]) {
 		self = .value(Object(arrayElements: elements))
 	}
 }
 
 extension ReferenceOr: ExpressibleByDictionaryLiteral where Object: ExpressibleByDictionary {
-	
+
 	public init(dictionaryLiteral elements: (Object.Key, Object.Value)...) {
 		self = .value(Object(dictionaryElements: elements))
 	}
 }
 
 extension ReferenceOr: MutableDictionary where Object: MutableDictionary {
-	
+
 	public typealias Key = Object.Key
 	public typealias Value = Object.Value
 
@@ -143,35 +143,35 @@ extension ReferenceOr: MutableDictionary where Object: MutableDictionary {
 }
 
 extension ReferenceOr: ExpressibleByDictionary where Object: ExpressibleByDictionary {
-	
+
 	public init(dictionaryElements elements: [(Object.Key, Object.Value)]) {
 		self = .value(Object(dictionaryElements: elements))
 	}
 }
 
 public protocol ExpressibleByReferenceOr<Object>: ReferenceObjectExpressible {
-	
+
 	associatedtype Object: Codable & Equatable
-	
+
 	init(referenceOr: ReferenceOr<Object>)
 }
 
-extension ReferenceObjectExpressible where Self: ExpressibleByReferenceOr {
-	
-	public init(referenceObject: ReferenceObject) {
+public extension ReferenceObjectExpressible where Self: ExpressibleByReferenceOr {
+
+	init(referenceObject: ReferenceObject) {
 		self.init(referenceOr: .ref(referenceObject))
 	}
 }
 
 extension ReferenceOr: ExpressibleByReferenceOr {
-	
+
 	public init(referenceOr: ReferenceOr<Object>) {
 		self = referenceOr
 	}
 }
 
 public extension ExpressibleByReferenceOr {
-	
+
 	static func ref(components keyPath: WritableKeyPath<ComponentsObject, [String: ReferenceOr<Object>]?>, _ name: String) -> Self {
 		let path: String
 		if let name = names[keyPath] {
@@ -197,25 +197,25 @@ public extension ExpressibleByReferenceOr {
 }
 
 public extension ExpressibleByReferenceOr<SchemaObject> {
-	
+
 	static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) -> Self {
 		_ = try? encodeSchema(schema, dateFormat: dateFormat, into: &schemas)
 		return .ref(components: \.schemas, .typeName(type(of: schema)))
 	}
-	
+
 	static func encodeSchema(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
 		let encoder = SchemeEncoder(dateFormat: dateFormat)
 		return try Self(referenceOr: encoder.encode(value, into: &schemas))
 	}
-    
-    static func decodeSchema(_ type: Decodable.Type, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
-        let decoder = SchemeEncoder(dateFormat: dateFormat)
-        return try Self(referenceOr: decoder.decode(type, into: &schemas))
-    }
+
+	static func decodeSchema(_ type: Decodable.Type, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
+		let decoder = SchemeEncoder(dateFormat: dateFormat)
+		return try Self(referenceOr: decoder.decode(type, into: &schemas))
+	}
 }
 
 public extension ExpressibleByReferenceOr<ExampleObject> {
-	
+
 	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) throws -> Self {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat)
 		let example = try encoder.encode(value)

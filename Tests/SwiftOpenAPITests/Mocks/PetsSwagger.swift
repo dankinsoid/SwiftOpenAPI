@@ -51,8 +51,8 @@ let petsSwagger = OpenAPIObject(
 					),
 				],
 				responses: [
-					400: "Invalid status value",
-					200: .value(
+					.badRequest: "Invalid status value",
+					.ok: .value(
 						ResponseObject(
 							description: "successful operation",
 							content: [
@@ -64,8 +64,8 @@ let petsSwagger = OpenAPIObject(
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -104,8 +104,8 @@ let petsSwagger = OpenAPIObject(
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -141,7 +141,7 @@ let petsSwagger = OpenAPIObject(
 				],
 				requestBody: .value(RequestBodyObject(
 					content: [
-						.application(.octetStream): .string(.binary),
+						.application(.octetStream): .string(format: .binary),
 					]
 				)),
 				responses: [
@@ -149,15 +149,15 @@ let petsSwagger = OpenAPIObject(
 						ResponseObject(
 							description: "successful operation",
 							content: [
-								.application(.json): .ref(components: .schemas, "ApiResponse"),
+								.application(.json): .ref(components: \.schemas, "ApiResponse"),
 							]
 						)
 					),
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -194,8 +194,8 @@ let petsSwagger = OpenAPIObject(
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -222,16 +222,16 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "Pet"),
-							.application(.xml): .ref(components: .schemas, "Pet"),
+							.application(.json): .ref(components: \.schemas, "Pet"),
+							.application(.xml): .ref(components: \.schemas, "Pet"),
 						]
 					)),
 				],
 				security: [
 					"api_key",
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -269,8 +269,8 @@ let petsSwagger = OpenAPIObject(
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -287,26 +287,26 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Create a new pet in the store",
 					content: [
-						.application(.json): .ref(components: .schemas, "Pet"),
-						.application(.xml): .ref(components: .schemas, "Pet"),
-						.application(.urlEncoded): .ref(components: .schemas, "Pet"),
+						.application(.json): .ref(components: \.schemas, "Pet"),
+						.application(.xml): .ref(components: \.schemas, "Pet"),
+						.application(.urlEncoded): .ref(components: \.schemas, "Pet"),
 					],
 					required: true
 				)),
 				responses: [
-					400: "Invalid input",
-					200: .value(ResponseObject(
+					.badRequest: "Invalid input",
+					.ok: .value(ResponseObject(
 						description: "Successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "Pet"),
-							.application(.xml): .ref(components: .schemas, "Pet"),
+							.application(.json): .ref(components: \.schemas, "Pet"),
+							.application(.xml): .ref(components: \.schemas, "Pet"),
 						]
 					)),
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -321,9 +321,9 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Update an existent pet in the store",
 					content: [
-						.application(.json): .ref(components: .schemas, "Pet"),
-						.application(.xml): .ref(components: .schemas, "Pet"),
-						.application(.urlEncoded): .ref(components: .schemas, "Pet"),
+						.application(.json): .ref(components: \.schemas, "Pet"),
+						.application(.xml): .ref(components: \.schemas, "Pet"),
+						.application(.urlEncoded): .ref(components: \.schemas, "Pet"),
 					],
 					required: true
 				)),
@@ -334,16 +334,16 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "Successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "Pet"),
-							.application(.xml): .ref(components: .schemas, "Pet"),
+							.application(.json): .ref(components: \.schemas, "Pet"),
+							.application(.xml): .ref(components: \.schemas, "Pet"),
 						]
 					)
 					),
 				],
 				security: [
 					SecurityRequirementObject(
-						name: "petstore_auth",
-						values: [
+						"petstore_auth",
+						[
 							"write:pets",
 							"read:pets",
 						]
@@ -361,7 +361,7 @@ let petsSwagger = OpenAPIObject(
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): .dictionary(of: .integer(.int32)),
+							.application(.json): .dictionary(of: .integer(format: .int32)),
 						]
 					)),
 				],
@@ -402,13 +402,13 @@ let petsSwagger = OpenAPIObject(
 					)),
 				],
 				responses: [
-					400: "Invalid ID supplied",
-					404: "Order not found",
-					200: .value(ResponseObject(
+					.badRequest: "Invalid ID supplied",
+					.notFound: "Order not found",
+					.ok: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "Order"),
-							.application(.xml): .ref(components: .schemas, "Order"),
+							.application(.json): .ref(components: \.schemas, "Order"),
+							.application(.xml): .ref(components: \.schemas, "Order"),
 						]
 					)),
 				]
@@ -421,16 +421,16 @@ let petsSwagger = OpenAPIObject(
 				description: "Place a new order in the store",
 				operationId: "placeOrder",
 				requestBody: [
-					.application(.json): .ref(components: .schemas, "Order"),
-					.application(.xml): .ref(components: .schemas, "Order"),
-					.application(.urlEncoded): .ref(components: .schemas, "Order"),
+					.application(.json): .ref(components: \.schemas, "Order"),
+					.application(.xml): .ref(components: \.schemas, "Order"),
+					.application(.urlEncoded): .ref(components: \.schemas, "Order"),
 				],
 				responses: [
 					400: "Invalid input",
 					200: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "Order"),
+							.application(.json): .ref(components: \.schemas, "Order"),
 						]
 					)),
 				]
@@ -444,16 +444,16 @@ let petsSwagger = OpenAPIObject(
 				operationId: "createUsersWithListInput",
 				requestBody: .value(RequestBodyObject(
 					content: [
-						.application(.json): .ref(components: \.schema, "User"),
+						.application(.json): .ref(components: \.schemas, "User"),
 					]
 				)),
 				responses: [
 					.default: "successful operation",
-					200: .value(ResponseObject(
+					.ok: .value(ResponseObject(
 						description: "Successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "User"),
-							.application(.xml): .ref(components: .schemas, "User"),
+							.application(.json): .ref(components: \.schemas, "User"),
+							.application(.xml): .ref(components: \.schemas, "User"),
 						]
 					)),
 				]
@@ -495,7 +495,7 @@ let petsSwagger = OpenAPIObject(
 							"X-Rate-Limit": .value(
 								HeaderObject(
 									description: "calls per hour allowed by the user",
-									schema: .integer(.int32)
+									schema: .integer(format: .int32)
 								)
 							),
 						],
@@ -537,8 +537,8 @@ let petsSwagger = OpenAPIObject(
 					)),
 				],
 				responses: [
-					400: "Invalid username supplied",
-					404: "User not found",
+					.badRequest: "Invalid username supplied",
+					.notFound: "User not found",
 				]
 			),
 			.get: OperationObject(
@@ -557,12 +557,12 @@ let petsSwagger = OpenAPIObject(
 				],
 				responses: [
 					400: "Invalid username supplied",
-					404: "User not found",
-					200: .value(ResponseObject(
+					.notFound: "User not found",
+					.ok: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "User"),
-							.application(.xml): .ref(components: .schemas, "User"),
+							.application(.json): .ref(components: \.schemas, "User"),
+							.application(.xml): .ref(components: \.schemas, "User"),
 						]
 					)),
 				]
@@ -586,9 +586,9 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Update an existent user in the store",
 					content: [
-						.application(.json): .ref(components: .schemas, "User"),
-						.application(.urlEncoded): .ref(components: .schemas, "User"),
-						.application(.xml): .ref(components: .schemas, "User"),
+						.application(.json): .ref(components: \.schemas, "User"),
+						.application(.urlEncoded): .ref(components: \.schemas, "User"),
+						.application(.xml): .ref(components: \.schemas, "User"),
 					]
 				)),
 				responses: [.default: "successful operation"]
@@ -603,17 +603,17 @@ let petsSwagger = OpenAPIObject(
 				requestBody: .value(RequestBodyObject(
 					description: "Created user object",
 					content: [
-						.application(.json): .ref(components: .schemas, "User"),
-						.application(.urlEncoded): .ref(components: .schemas, "User"),
-						.application(.xml): .ref(components: .schemas, "User"),
+						.application(.json): .ref(components: \.schemas, "User"),
+						.application(.urlEncoded): .ref(components: \.schemas, "User"),
+						.application(.xml): .ref(components: \.schemas, "User"),
 					]
 				)),
 				responses: [
 					.default: .value(ResponseObject(
 						description: "successful operation",
 						content: [
-							.application(.json): .ref(components: .schemas, "User"),
-							.application(.xml): .ref(components: .schemas, "User"),
+							.application(.json): .ref(components: \.schemas, "User"),
+							.application(.xml): .ref(components: \.schemas, "User"),
 						]
 					)),
 				]
@@ -623,165 +623,95 @@ let petsSwagger = OpenAPIObject(
 	components: ComponentsObject(
 		schemas: [
 			"Address": .object(
-				[
-					"city": .value(SchemaObject(
-						example: "Palo Alto",
-						schema: .string
-					)),
-					"state": .value(SchemaObject(
-						example: "CA",
-						schema: .string
-					)),
-					"street": .value(SchemaObject(
-						example: "437 Lytton",
-						schema: .string
-					)),
-					"zip": .value(SchemaObject(
-						example: "94301",
-						schema: .string
-					)),
+				properties: [
+					"city": .string(example: "Palo Alto"),
+					"state": .string(example: "CA"),
+					"street": .string(example: "437 Lytton"),
+					"zip": .string(example: "94301"),
 				],
 				xml: XMLObject(name: "address")
 			),
 			"ApiResponse": .object(
-				[
-					"code": .integer(.int32),
+				properties: [
+					"code": .integer(format: .int32),
 					"message": .string,
 					"type": .string,
 				],
 				xml: XMLObject(name: "##default")
 			),
 			"Category": .object(
-				[
-					"id": .value(SchemaObject(
-						example: 1,
-						schema: .integer
-					)),
-					"name": .value(SchemaObject(
-						example: "Dogs",
-						schema: .string
-					)),
+				properties: [
+					"id": .integer(example: 1),
+					"name": .string(example: "Dogs"),
 				],
 				xml: XMLObject(name: "category")
 			),
 			"Customer": .object(
-				[
-					"address": .ref(components: \.schema, "Address"),
-					"id": .value(SchemaObject(
-						example: 100_000,
-						schema: .integer
-					)),
-					"username": .value(SchemaObject(
-						example: "fehguy",
-						schema: .string
-					)),
+				properties: [
+					"address": .ref(components: \.schemas, "Address"),
+					"id": .integer(example: 100_000),
+					"username": .string(example: "fehguy"),
 				],
 				xml: XMLObject(name: "customer")
 			),
 			"Order": .object(
-				[
+				properties: [
 					"complete": .boolean,
-					"id": .value(SchemaObject(
-						example: 10,
-						schema: .integer
-					)),
-					"petId": .value(SchemaObject(
-						example: 198_772,
-						schema: .integer
-					)),
-					"quantity": .value(SchemaObject(
-						example: 7,
-						schema: .integer(.int32)
-					)),
+					"id": .integer(example: 10),
+					"petId": .integer(example: 198_772),
+					"quantity": .integer(format: .int32, example: 7),
 					"shipDate": .dateTime,
-					"status": .value(SchemaObject(
+					"status": .enum(
+						cases: [
+							"placed",
+							"approved",
+							"delivered",
+						],
 						description: "Order Status",
-						example: "approved",
-						schema: .enum(
-							cases: [
-								"placed",
-								"approved",
-								"delivered",
-							]
-						)
-					)),
+						example: "approved"
+					),
 				],
 				xml: XMLObject(name: "order")
 			),
-			"Pet": .value(SchemaObject(
-				schema: .object(
-					[
-						"category": .ref(components: \.schemas, "Category"),
-						"id": .value(SchemaObject(
-							example: 10,
-							schema: .integer
-						)),
-						"name": .value(SchemaObject(
-							example: "doggie",
-							schema: .string
-						)),
-						"photoUrls": .array(of: .string),
-						"status": .value(SchemaObject(
-							description: "pet status in the store",
-							schema: .enum(
-								cases: [
-									"available",
-									"pending",
-									"sold",
-								]
-							)
-						)),
-						"tags": .array(of: .ref(components: \.schemas, "Tag")),
-					],
-					required: [
-						"name",
-						"photoUrls",
-					],
-					xml: XMLObject(name: "pet")
-				)
-			)),
+			"Pet": .object(
+				properties: [
+					"category": .ref(components: \.schemas, "Category"),
+					"id": .integer(example: 10),
+					"name": .string(example: "doggie"),
+					"photoUrls": .array(of: .string),
+					"status": .enum(
+						cases: [
+							"available",
+							"pending",
+							"sold",
+						],
+						description: "pet status in the store"
+					),
+					"tags": .array(of: .ref(components: \.schemas, "Tag")),
+				],
+				required: [
+					"name",
+					"photoUrls",
+				],
+				xml: XMLObject(name: "pet")
+			),
 			"Tag": .object(
-				[
+				properties: [
 					"id": .integer,
 					"name": .string,
 				],
 				xml: XMLObject(name: "tag")
 			),
 			"User": .object(
-				[
-					"email": .value(SchemaObject(
-						example: "john@email.com",
-						schema: .string
-					)),
-					"firstName": .value(SchemaObject(
-						example: "John",
-						schema: .string
-					)),
-					"id": .value(SchemaObject(
-						example: 10,
-						schema: .integer
-					)),
-					"lastName": .value(SchemaObject(
-						example: "James",
-						schema: .string
-					)),
-					"password": .value(SchemaObject(
-						example: "12345",
-						schema: .string
-					)),
-					"phone": .value(SchemaObject(
-						example: "12345",
-						schema: .string
-					)),
-					"userStatus": .value(SchemaObject(
-						description: "User Status",
-						example: 1,
-						schema: .integer(.int32)
-					)),
-					"username": .value(SchemaObject(
-						example: "theUser",
-						schema: .string
-					)),
+				properties: [
+					"email": .string(example: "john@email.com"),
+					"firstName": .string(example: "John"),
+					"id": .integer(example: 10),
+					"lastName": .string(example: "James"),
+					"password": .string(example: "12345"),
+					"phone": .string(example: "12345"),
+					"userStatus": .integer(format: .int32, description: "User Status", example: 1),
+					"username": .string(example: "theUser"),
 				],
 				xml: XMLObject(name: "user")
 			),
@@ -790,14 +720,14 @@ let petsSwagger = OpenAPIObject(
 			"Pet": .value(RequestBodyObject(
 				description: "Pet object that needs to be added to the store",
 				content: [
-					.application(.json): .ref(components: .schemas, "Pet"),
-					.application(.xml): .ref(components: .schemas, "Pet"),
+					.application(.json): .ref(components: \.schemas, "Pet"),
+					.application(.xml): .ref(components: \.schemas, "Pet"),
 				]
 			)),
 			"UserArray": .value(RequestBodyObject(
 				description: "List of user object",
 				content: [
-					.application(.json): .ref(components: \.schema, "User"),
+					.application(.json): .ref(components: \.schemas, "User"),
 				]
 			)),
 		],

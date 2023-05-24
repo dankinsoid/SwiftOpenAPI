@@ -6,7 +6,7 @@ import Foundation
 ///
 /// See the rules for resolving Relative References.
 public struct ReferenceObject: Codable, Equatable {
-	
+
 	/// The reference identifier. This MUST be in the form of a URI.
 	public var ref: String
 
@@ -17,7 +17,7 @@ public struct ReferenceObject: Codable, Equatable {
 	public var description: String?
 
 	public enum CodingKeys: String, CodingKey {
-		
+
 		case ref = "$ref"
 		case summary
 		case description
@@ -31,7 +31,7 @@ public struct ReferenceObject: Codable, Equatable {
 }
 
 extension ReferenceObject: ExpressibleByStringInterpolation {
-	
+
 	public init(stringLiteral value: String) {
 		self.init(ref: value)
 	}
@@ -42,26 +42,26 @@ extension ReferenceObject: ExpressibleByStringInterpolation {
 }
 
 public protocol ReferenceObjectExpressible {
-	
+
 	init(referenceObject: ReferenceObject)
 }
 
 extension ReferenceOr: ReferenceObjectExpressible {
-	
+
 	public init(referenceObject: ReferenceObject) {
 		self = .ref(referenceObject)
 	}
 }
 
 extension ReferenceObject: ReferenceObjectExpressible {
-	
+
 	public init(referenceObject: ReferenceObject) {
 		self = referenceObject
 	}
 }
 
 public extension ReferenceObjectExpressible {
-	
+
 	/// file#/type
 	static func ref(to type: String, file: String? = nil) -> Self {
 		Self(

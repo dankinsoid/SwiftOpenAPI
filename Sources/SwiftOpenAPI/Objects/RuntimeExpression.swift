@@ -15,7 +15,7 @@ public struct RuntimeExpression: Codable, Hashable, ExpressibleByStringInterpola
 	}
 
 	public init(stringLiteral value: String) {
-		self.rawValue = value.trimmingCharacters(in: ["{", "}"])
+		rawValue = value.trimmingCharacters(in: ["{", "}"])
 	}
 
 	public init(stringInterpolation value: DefaultStringInterpolation) {

@@ -39,14 +39,14 @@ public struct MediaTypeObject: Codable, Equatable, SpecificationExtendable {
 }
 
 extension MediaTypeObject: ExpressibleByReferenceOr {
-	
+
 	public init(referenceOr: ReferenceOr<SchemaObject>) {
 		self.init(schema: referenceOr)
 	}
 }
 
 extension MediaTypeObject: ExpressibleBySchemaObject {
-	
+
 	public init(schemaObject: SchemaObject) {
 		self.init(schema: .value(schemaObject))
 	}
@@ -63,7 +63,7 @@ public extension MediaTypeObject {
 			example: .encode(value)
 		)
 	}
-	
+
 	static func encode(
 		_ value: Encodable,
 		schemas: inout [String: ReferenceOr<SchemaObject>],
@@ -74,14 +74,14 @@ public extension MediaTypeObject {
 			examples: [.typeName(type(of: value)): .ref(example: value, into: &examples)]
 		)
 	}
-    
-    static func decode(
-        _ type: Decodable.Type,
-        schemas: inout [String: ReferenceOr<SchemaObject>]
-    ) throws -> MediaTypeObject {
-        try MediaTypeObject(
-            schema: .decodeSchema(type, into: &schemas),
-            examples: [:]
-        )
-    }
+
+	static func decode(
+		_ type: Decodable.Type,
+		schemas: inout [String: ReferenceOr<SchemaObject>]
+	) throws -> MediaTypeObject {
+		try MediaTypeObject(
+			schema: .decodeSchema(type, into: &schemas),
+			examples: [:]
+		)
+	}
 }

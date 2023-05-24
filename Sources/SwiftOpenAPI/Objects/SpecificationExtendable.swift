@@ -30,7 +30,7 @@ public struct SpecificationExtensions: Codable, ExpressibleByDictionary, Equatab
 			fields[key.value] = try container.decodeIfPresent(AnyValue.self, forKey: key)
 		}
 	}
-	
+
 	public init(
 		from value: some Encodable,
 		encoder: JSONEncoder = JSONEncoder(),
@@ -81,27 +81,27 @@ public struct SpecificationExtensions: Codable, ExpressibleByDictionary, Equatab
 
 @propertyWrapper
 public struct WithSpecExtensions<Wrapped: SpecificationExtendable> {
-	
+
 	public var wrappedValue: Wrapped
 	public var projectedValue: SpecificationExtensions {
 		get { wrappedValue.specificationExtensions ?? [:] }
 		set { wrappedValue.specificationExtensions = newValue }
 	}
-	
+
 	public init(wrappedValue: Wrapped) {
 		self.wrappedValue = wrappedValue
 	}
 }
 
-extension WithSpecExtensions {
-	
-	public init<T>() where T? == Wrapped {
+public extension WithSpecExtensions {
+
+	init() {
 		self.init(wrappedValue: nil)
 	}
 }
 
 extension WithSpecExtensions: Decodable where Wrapped: Decodable {
-	
+
 	public init(from decoder: Decoder) throws {
 		var wrapped = try Wrapped(from: decoder)
 		wrapped.specificationExtensions = try? SpecificationExtensions(from: decoder)
@@ -110,7 +110,7 @@ extension WithSpecExtensions: Decodable where Wrapped: Decodable {
 }
 
 extension WithSpecExtensions: Encodable where Wrapped: Encodable {
-	
+
 	public func encode(to encoder: Encoder) throws {
 		try projectedValue.encode(to: encoder)
 		var wrapped = wrappedValue
@@ -119,105 +119,104 @@ extension WithSpecExtensions: Encodable where Wrapped: Encodable {
 	}
 }
 
-extension WithSpecExtensions: Equatable where Wrapped: Equatable {
-}
+extension WithSpecExtensions: Equatable where Wrapped: Equatable {}
 
 extension Optional: SpecificationExtendable where Wrapped: SpecificationExtendable {
-	
+
 	public var specificationExtensions: SpecificationExtensions? {
 		get { self?.specificationExtensions }
 		set { self?.specificationExtensions = newValue }
 	}
 }
 
-extension JSONDecoder.KeyDecodingStrategy {
-	
-	public static var specificationExtension: JSONDecoder.KeyDecodingStrategy {
+public extension JSONDecoder.KeyDecodingStrategy {
+
+	static var specificationExtension: JSONDecoder.KeyDecodingStrategy {
 		.custom { codingPath in
 			guard let last = codingPath.last else {
 				return StringKey<String>("")
 			}
-		
+
 			let string = last.stringValue.replacingOccurrences(of: "_", with: "-").toCamelCase(separator: "-")
 			return StringKey(SpecificationExtensions.Key(stringLiteral: string))
 		}
 	}
 }
 
-extension JSONEncoder.KeyEncodingStrategy {
-	
-	public static var specificationExtension: JSONEncoder.KeyEncodingStrategy {
+public extension JSONEncoder.KeyEncodingStrategy {
+
+	static var specificationExtension: JSONEncoder.KeyEncodingStrategy {
 		.custom { codingPath in
 			guard let last = codingPath.last else {
 				return StringKey<String>("")
 			}
-			
+
 			let string = last.stringValue.toSnakeCase(separator: "-").replacingOccurrences(of: "_", with: "-")
 			return StringKey(SpecificationExtensions.Key(stringLiteral: string))
 		}
 	}
 }
 
-extension KeyedDecodingContainer {
+public extension KeyedDecodingContainer {
 
-	public func decodeIfPresent<T: SpecificationExtendable & Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
+	func decodeIfPresent<T: SpecificationExtendable & Decodable>(_ type: T.Type, forKey key: Key) throws -> T? {
 		try decodeIfPresent(WithSpecExtensions<T>.self, forKey: key)?.wrappedValue
 	}
 
-	public func decode<T: SpecificationExtendable & Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
+	func decode<T: SpecificationExtendable & Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
 		try decode(WithSpecExtensions<T>.self, forKey: key).wrappedValue
 	}
 }
 
-extension UnkeyedDecodingContainer {
-	
-	public mutating func decode<T: SpecificationExtendable & Decodable>(_ type: T.Type) throws -> T {
+public extension UnkeyedDecodingContainer {
+
+	mutating func decode<T: SpecificationExtendable & Decodable>(_: T.Type) throws -> T {
 		try decode(WithSpecExtensions<T>.self).wrappedValue
 	}
-	
-	public mutating func decodeIfPresent<T: SpecificationExtendable & Decodable>(_ type: T.Type) throws -> T? {
+
+	mutating func decodeIfPresent<T: SpecificationExtendable & Decodable>(_: T.Type) throws -> T? {
 		try decodeIfPresent(WithSpecExtensions<T>.self)?.wrappedValue
 	}
 }
 
-extension KeyedEncodingContainer {
+public extension KeyedEncodingContainer {
 
-	public mutating func encodeIfPresent(_ value: (some SpecificationExtendable & Encodable)?, forKey key: K) throws {
+	mutating func encodeIfPresent(_ value: (some SpecificationExtendable & Encodable)?, forKey key: K) throws {
 		try encodeIfPresent(value.map { WithSpecExtensions(wrappedValue: $0) }, forKey: key)
 	}
 
-	public mutating func encode(_ value: some SpecificationExtendable & Encodable, forKey key: K) throws {
+	mutating func encode(_ value: some SpecificationExtendable & Encodable, forKey key: K) throws {
 		try encode(WithSpecExtensions(wrappedValue: value), forKey: key)
 	}
 }
 
-extension UnkeyedEncodingContainer {
-	
-	public mutating func encode<T: SpecificationExtendable & Encodable>(_ value: T) throws {
+public extension UnkeyedEncodingContainer {
+
+	mutating func encode(_ value: some SpecificationExtendable & Encodable) throws {
 		try encode(WithSpecExtensions(wrappedValue: value))
 	}
-	
-	public mutating func encode<T>(contentsOf sequence: T) throws where T : Sequence, T.Element: Encodable, T.Element: SpecificationExtendable {
+
+	mutating func encode<T>(contentsOf sequence: T) throws where T: Sequence, T.Element: Encodable, T.Element: SpecificationExtendable {
 		try encode(contentsOf: sequence.map { WithSpecExtensions(wrappedValue: $0) })
 	}
 }
 
-extension SingleValueEncodingContainer {
-	
-	public mutating func encode<T: Encodable & SpecificationExtendable>(_ value: T) throws {
+public extension SingleValueEncodingContainer {
+
+	mutating func encode(_ value: some Encodable & SpecificationExtendable) throws {
 		try encode(WithSpecExtensions(wrappedValue: value))
 	}
 }
 
-extension SingleValueDecodingContainer {
-	
-	public func decode<T: Decodable & SpecificationExtendable>(_ type: T.Type) throws -> T {
+public extension SingleValueDecodingContainer {
+
+	func decode<T: Decodable & SpecificationExtendable>(_: T.Type) throws -> T {
 		try decode(WithSpecExtensions<T>.self).wrappedValue
 	}
 }
 
 public extension SpecificationExtendable where Self: Encodable {
-	
+
 	func json(encoder: JSONEncoder = JSONEncoder()) throws -> Data {
 		encoder.outputFormatting.insert(.sortedKeys)
 		return try encoder.encode(WithSpecExtensions(wrappedValue: self))
@@ -225,7 +224,7 @@ public extension SpecificationExtendable where Self: Encodable {
 }
 
 public extension SpecificationExtendable where Self: Decodable {
-	
+
 	init(json: Data, decoder: JSONDecoder = JSONDecoder()) throws {
 		self = try decoder.decode(WithSpecExtensions<Self>.self, from: json).wrappedValue
 	}
