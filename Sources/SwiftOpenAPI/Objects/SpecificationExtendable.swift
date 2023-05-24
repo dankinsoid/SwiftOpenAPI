@@ -95,7 +95,7 @@ public struct WithSpecExtensions<Wrapped: SpecificationExtendable> {
 
 public extension WithSpecExtensions {
 
-	init() {
+	init<T>() where T? == Wrapped {
 		self.init(wrappedValue: nil)
 	}
 }
