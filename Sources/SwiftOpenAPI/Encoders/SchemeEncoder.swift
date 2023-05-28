@@ -4,6 +4,7 @@ struct SchemeEncoder {
 
 	var extractReferences = true
 	var dateFormat: DateEncodingFormat
+	var keyEncodingStrategy: KeyEncodingStrategy
 
 	@discardableResult
 	func encode(
@@ -60,7 +61,9 @@ struct SchemeEncoder {
 				switch keyedInfo.isFixed {
 				case true:
 					let schema = try SchemaObject.object(
-						properties: keyedInfo.fields.mapValues {
+						properties: keyedInfo.fields.mapKeys {
+							keyEncodingStrategy.encode($0)
+						}.mapValues {
 							try parse(value: $0.container, type: $0.type, into: &schemas)
 						},
 						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)

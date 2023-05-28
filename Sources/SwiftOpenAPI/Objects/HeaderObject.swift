@@ -57,20 +57,26 @@ public extension [String: ReferenceOr<HeaderObject>] {
 	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> [String: ReferenceOr<HeaderObject>] {
-		try HeadersEncoder(dateFormat: dateFormat).encode(value, schemas: &schemas).mapValues {
-			.value($0)
-		}
+		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+			.encode(value, schemas: &schemas)
+			.mapValues {
+				.value($0)
+			}
 	}
 
 	static func decode(
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> [String: ReferenceOr<HeaderObject>] {
-		try HeadersEncoder(dateFormat: dateFormat).decode(type, schemas: &schemas).mapValues {
-			.value($0)
-		}
+		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+			.decode(type, schemas: &schemas)
+			.mapValues {
+				.value($0)
+			}
 	}
 }

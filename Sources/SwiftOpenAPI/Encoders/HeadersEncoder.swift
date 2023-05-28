@@ -3,6 +3,7 @@ import Foundation
 struct HeadersEncoder {
 
 	var dateFormat: DateEncodingFormat
+	var keyEncodingStrategy: KeyEncodingStrategy
 
 	@discardableResult
 	func encode(
@@ -43,15 +44,17 @@ struct HeadersEncoder {
 				throw InvalidType()
 
 			case let .keyed(keyedInfo):
-				return try keyedInfo.fields.mapValues {
-					try HeaderObject(
-						required: !$0.isOptional,
-						schema: SchemeEncoder(dateFormat: dateFormat)
-							.parse(value: $0.container, type: $0.type, into: &schemas),
-						example: $0.container.anyValue
-					)
-				}
-				.with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
+				return try keyedInfo.fields
+					.mapKeys(keyEncodingStrategy.encode)
+					.mapValues {
+						try HeaderObject(
+							required: !$0.isOptional,
+							schema: SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+								.parse(value: $0.container, type: $0.type, into: &schemas),
+							example: $0.container.anyValue
+						)
+					}
+					.with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
 			}
 		}
 	}

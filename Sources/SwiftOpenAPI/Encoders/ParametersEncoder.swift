@@ -4,6 +4,7 @@ struct ParametersEncoder {
 
 	var location: ParameterObject.Location
 	var dateFormat: DateEncodingFormat
+	var keyEncodingStrategy: KeyEncodingStrategy
 
 	@discardableResult
 	func encode(
@@ -46,10 +47,10 @@ struct ParametersEncoder {
 			case let .keyed(keyedInfo):
 				return try keyedInfo.fields.map {
 					try ParameterObject(
-						name: $0.key,
+						name: keyEncodingStrategy.encode($0.key),
 						in: location,
 						required: !$0.value.isOptional,
-						schema: SchemeEncoder(dateFormat: dateFormat)
+						schema: SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 							.parse(value: $0.value.container, type: $0.value.type, into: &schemas),
 						example: $0.value.container.anyValue
 					)

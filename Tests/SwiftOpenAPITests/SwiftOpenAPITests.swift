@@ -107,6 +107,31 @@ final class SwiftOpenAPITests: XCTestCase {
 		let decoded = try JSONDecoder().decode(OpenAPIObject.self, from: data).info
 		XCTAssertEqual(decoded.specificationExtensions?[key], value)
 	}
+	
+	func testKeyEncoding() throws {
+		var references: [String: ReferenceOr<SchemaObject>] = [:]
+		KeyEncodingStrategy.default = .convertToSnakeCase
+		try SchemaObject.encode(LoginBody.example, into: &references)
+		XCTAssertEqual(
+			references,
+			[
+				"SomeEnum": .enum(cases: ["first", "second"]),
+				"LoginBody": .object(
+					properties: [
+						"username": .string,
+						"password": .string,
+						"tags": .array(of: .string),
+						"id": .uuid,
+						"url": .uri,
+						"enum_value": .ref(components: \.schemas, "SomeEnum"),
+						"comments": .dictionary(of: .string),
+						"int": .integer,
+					],
+					required: ["id", "username", "password"]
+				),
+			]
+		)
+	}
 }
 
 func prettyPrint(_ value: some Encodable) {

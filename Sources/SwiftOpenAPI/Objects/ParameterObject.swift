@@ -97,21 +97,27 @@ public extension [ReferenceOr<ParameterObject>] {
 		_ value: Encodable,
 		in location: ParameterObject.Location,
 		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> [ReferenceOr<ParameterObject>] {
-		try ParametersEncoder(location: location, dateFormat: dateFormat).encode(value, schemas: &schemas).map {
-			.value($0)
-		}
+		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+			.encode(value, schemas: &schemas)
+			.map {
+				.value($0)
+			}
 	}
 
 	static func decode(
 		_ type: Decodable.Type,
 		in location: ParameterObject.Location,
 		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> [ReferenceOr<ParameterObject>] {
-		try ParametersEncoder(location: location, dateFormat: dateFormat).decode(type, schemas: &schemas).map {
-			.value($0)
-		}
+		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+			.decode(type, schemas: &schemas)
+			.map {
+				.value($0)
+			}
 	}
 }

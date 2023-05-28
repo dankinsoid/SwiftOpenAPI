@@ -203,13 +203,23 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 		return .ref(components: \.schemas, .typeName(type(of: schema)))
 	}
 
-	static func encodeSchema(_ value: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
-		let encoder = SchemeEncoder(dateFormat: dateFormat)
+	static func encodeSchema(
+		_ value: Encodable,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		into schemas: inout [String: ReferenceOr<SchemaObject>]
+	) throws -> Self {
+		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try Self(referenceOr: encoder.encode(value, into: &schemas))
 	}
 
-	static func decodeSchema(_ type: Decodable.Type, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) throws -> Self {
-		let decoder = SchemeEncoder(dateFormat: dateFormat)
+	static func decodeSchema(
+		_ type: Decodable.Type,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		into schemas: inout [String: ReferenceOr<SchemaObject>]
+	) throws -> Self {
+		let decoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try Self(referenceOr: decoder.decode(type, into: &schemas))
 	}
 }

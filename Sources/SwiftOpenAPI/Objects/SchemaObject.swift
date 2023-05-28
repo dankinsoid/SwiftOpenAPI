@@ -462,18 +462,20 @@ public extension SchemaObject {
 	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		into schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws {
-		let encoder = SchemeEncoder(dateFormat: dateFormat)
+		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		try encoder.encode(value, into: &schemas)
 	}
 
 	static func decode(
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		into schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws {
-		let encoder = SchemeEncoder(dateFormat: dateFormat)
+		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		try encoder.decode(type, into: &schemas)
 	}
 }
