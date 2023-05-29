@@ -23,6 +23,10 @@ public struct SpecificationExtensions: Codable, ExpressibleByDictionary, Equatab
 		fields = Dictionary(elements) { _, s in s }
 	}
 
+	public init(fields: [Key: AnyValue]) {
+		self.fields = fields
+	}
+
 	public init(from decoder: Decoder) throws {
 		fields = [:]
 		let container = try decoder.container(keyedBy: StringKey<Key>.self)
@@ -227,5 +231,19 @@ public extension SpecificationExtendable where Self: Decodable {
 
 	init(json: Data, decoder: JSONDecoder = JSONDecoder()) throws {
 		self = try decoder.decode(WithSpecExtensions<Self>.self, from: json).wrappedValue
+	}
+}
+
+public extension SpecificationExtendable {
+
+	func extended(with extensions: SpecificationExtensions) -> Self {
+		var result = self
+		result.specificationExtensions = SpecificationExtensions(
+			fields: (result.specificationExtensions ?? [:]).fields
+				.merging(extensions.fields) { _, new in
+					new
+				}
+		)
+		return result
 	}
 }

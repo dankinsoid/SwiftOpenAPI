@@ -107,7 +107,7 @@ final class SwiftOpenAPITests: XCTestCase {
 		let decoded = try JSONDecoder().decode(OpenAPIObject.self, from: data).info
 		XCTAssertEqual(decoded.specificationExtensions?[key], value)
 	}
-	
+
 	func testKeyEncoding() throws {
 		var references: [String: ReferenceOr<SchemaObject>] = [:]
 		KeyEncodingStrategy.default = .convertToSnakeCase

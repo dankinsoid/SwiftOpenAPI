@@ -347,6 +347,10 @@ public extension ExpressibleBySchemaObject {
 		)
 	}
 
+	static func `enum`<T>(_ type: T.Type, example: T? = nil) -> Self where T: CaseIterable, T.AllCases.Element: RawRepresentable, T.AllCases.Element.RawValue == String {
+		.enum(cases: type.allCases.map(\.rawValue), example: example.map { .string($0.rawValue) })
+	}
+
 	static var string: Self { primitive(.string) }
 	static func string(format: DataFormat? = nil, description: String? = nil, example: String? = nil) -> Self {
 		.primitive(.string, format: format, description: description, example: example.map { .string($0) })

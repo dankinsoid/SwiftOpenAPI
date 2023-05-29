@@ -500,12 +500,8 @@ let petsSwagger = OpenAPIObject(
 							),
 						],
 						content: [
-							.application(.json): MediaTypeObject(
-								schema: .string
-							),
-							.application(.xml): MediaTypeObject(
-								schema: .string
-							),
+							.application(.json): .string,
+							.application(.xml): .string,
 						]
 					)),
 				]
