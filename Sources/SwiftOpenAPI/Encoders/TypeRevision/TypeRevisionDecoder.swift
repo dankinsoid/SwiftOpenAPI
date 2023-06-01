@@ -76,16 +76,16 @@ final class TypeRevisionDecoder: Decoder {
 			case is Date.Type:
 				let date = Date()
 				result.type = type
-				result.container = .single(.double(date.timeIntervalSince1970))
+				result.container = .single(.double(nil))
 				return date
 			case is URL.Type:
 				let url = URL(string: "https://github.com/dankinsoid/SwiftOpenAPI")!
-				result.container = .single(.string(url.absoluteString))
+				result.container = .single(.string(nil))
 				result.type = type
 				return url
 			case is UUID.Type:
 				let uuid = UUID()
-				result.container = .single(.string(uuid.uuidString))
+				result.container = .single(.string(nil))
 				result.type = type
 				return uuid
 			case is Data.Type:
