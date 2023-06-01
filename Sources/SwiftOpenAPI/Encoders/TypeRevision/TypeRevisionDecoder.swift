@@ -83,6 +83,11 @@ final class TypeRevisionDecoder: Decoder {
 				result.container = .single(.string(url.absoluteString))
 				result.type = type
 				return url
+			case is UUID.Type:
+				let uuid = UUID()
+				result.container = .single(.string(uuid.uuidString))
+				result.type = type
+				return uuid
 			case is Data.Type:
 				result.container = .single(.string(nil))
 				result.type = type
