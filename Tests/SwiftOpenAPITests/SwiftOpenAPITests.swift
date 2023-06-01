@@ -1,6 +1,7 @@
 import Foundation
 @testable import SwiftOpenAPI
 import XCTest
+import CustomDump
 
 final class SwiftOpenAPITests: XCTestCase {
 
@@ -13,7 +14,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testSchemeEncoding() throws {
 		var references: [String: ReferenceOr<SchemaObject>] = [:]
 		try SchemaObject.encode(LoginBody.example, into: &references)
-		XCTAssertEqual(
+		XCTAssertNoDifference(
 			references,
 			[
 				"SomeEnum": .enum(cases: ["first", "second"]),
@@ -60,7 +61,7 @@ final class SwiftOpenAPITests: XCTestCase {
 		withSpec.projectedValue[key] = value
 		let data = try JSONEncoder().encode(withSpec)
 		let decoded = try JSONDecoder().decode(WithSpecExtensions<SchemaObject>.self, from: data)
-		XCTAssertEqual(decoded.projectedValue[key], value)
+		XCTAssertNoDifference(decoded.projectedValue[key], value)
 	}
 
 	func testSpecificationExtensionsWrapperWithDictionary0() throws {
@@ -112,7 +113,7 @@ final class SwiftOpenAPITests: XCTestCase {
 		var references: [String: ReferenceOr<SchemaObject>] = [:]
 		KeyEncodingStrategy.default = .convertToSnakeCase
 		try SchemaObject.encode(LoginBody.example, into: &references)
-		XCTAssertEqual(
+		XCTAssertNoDifference(
 			references,
 			[
 				"SomeEnum": .enum(cases: ["first", "second"]),
