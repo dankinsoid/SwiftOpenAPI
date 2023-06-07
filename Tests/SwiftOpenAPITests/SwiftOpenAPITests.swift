@@ -25,7 +25,7 @@ final class SwiftOpenAPITests: XCTestCase {
 						"tags": .array(of: .string),
 						"id": .uuid,
 						"url": .uri,
-						"enumValue": .ref(components: \.schemas, "SomeEnum"),
+						"enum_value": .ref(components: \.schemas, "SomeEnum"),
 						"comments": .dictionary(of: .string),
 						"int": .integer,
 					],
