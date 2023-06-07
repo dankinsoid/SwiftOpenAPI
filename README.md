@@ -1,7 +1,6 @@
 # SwiftOpenAPI
 
 [![build](https://github.com/dankinsoid/SwiftOpenAPI/actions/workflows/test.yml/badge.svg)](https://github.com/dankinsoid/SwiftOpenAPI/actions/workflows/test.yml)
-[![CI Status](https://img.shields.io/travis/dankinsoid/SwiftOpenAPI.svg?style=flat)](https://travis-ci.org/dankinsoid/SwiftOpenAPI)
 [![Version](https://img.shields.io/cocoapods/v/SwiftOpenAPI.svg?style=flat)](https://cocoapods.org/pods/SwiftOpenAPI)
 [![License](https://img.shields.io/cocoapods/l/SwiftOpenAPI.svg?style=flat)](https://cocoapods.org/pods/SwiftOpenAPI)
 [![Platform](https://img.shields.io/cocoapods/p/SwiftOpenAPI.svg?style=flat)](https://cocoapods.org/pods/SwiftOpenAPI)
