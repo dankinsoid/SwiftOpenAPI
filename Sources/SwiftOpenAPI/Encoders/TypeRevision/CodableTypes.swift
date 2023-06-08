@@ -1,4 +1,5 @@
 import Foundation
+import OpenAPIKit
 
 struct TypeInfo {
 
@@ -11,7 +12,7 @@ struct TypeInfo {
 
 struct KeyedInfo {
 
-	var fields: [String: TypeInfo] = [:]
+	var fields: OrderedDictionary<String, TypeInfo> = [:]
 	var isFixed = true
 
 	subscript(_ key: String) -> TypeInfo {
@@ -109,32 +110,32 @@ enum CodableValues: Equatable {
 
 extension CodableContainerValue {
 
-	var anyValue: AnyValue? {
+	var anyValue: AnyCodable? {
 		switch self {
 		case let .single(codableValues):
 			switch codableValues {
-			case let .int(value): return value.map { .int($0) }
-			case let .int8(value): return value.map { .int(Int($0)) }
-			case let .int16(value): return value.map { .int(Int($0)) }
-			case let .int32(value): return value.map { .int(Int($0)) }
-			case let .int64(value): return value.map { .int(Int($0)) }
-			case let .uint(value): return value.map { .int(Int($0)) }
-			case let .uint8(value): return value.map { .int(Int($0)) }
-			case let .uint16(value): return value.map { .int(Int($0)) }
-			case let .uint32(value): return value.map { .int(Int($0)) }
-			case let .uint64(value): return value.map { .int(Int($0)) }
-			case let .double(value): return value.map { .double($0) }
-			case let .float(value): return value.map { .double(Double($0)) }
-			case let .bool(value): return value.map { .bool($0) }
-			case let .string(value): return value.map { .string($0) }
-			case .null: return .null
+			case let .int(value): return value.map { .init($0) }
+			case let .int8(value): return value.map { .init($0) }
+			case let .int16(value): return value.map { .init($0) }
+			case let .int32(value): return value.map { .init($0) }
+			case let .int64(value): return value.map { .init($0) }
+			case let .uint(value): return value.map { .init($0) }
+			case let .uint8(value): return value.map { .init($0) }
+			case let .uint16(value): return value.map { .init($0) }
+			case let .uint32(value): return value.map { .init($0) }
+			case let .uint64(value): return value.map { .init($0) }
+			case let .double(value): return value.map { .init($0) }
+			case let .float(value): return value.map { .init($0) }
+			case let .bool(value): return value.map { .init($0) }
+			case let .string(value): return value.map { .init($0) }
+			case .null: return AnyCodable(())
 			}
 
 		case let .keyed(keyedInfo):
-			return .object(keyedInfo.fields.compactMapValues(\.container.anyValue))
+			return AnyCodable(keyedInfo.fields.compactMapValues { $0.container.anyValue?.value })
 
 		case let .unkeyed(typeInfo):
-			return typeInfo.container.anyValue.map { .array([$0]) }
+			return typeInfo.container.anyValue.map { AnyCodable([$0.value]) }
 
 		case .recursive:
 			return nil

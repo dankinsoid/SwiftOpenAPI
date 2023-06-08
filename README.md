@@ -79,7 +79,7 @@ try OpenAPIObject(
 [PetsSwagger.swift](Tests/SwiftOpenAPITests/Mocks/PetsSwagger.swift) demonstrates syntaxis well
 
 ## Creating schemas and parameters for `Codable` types
-There is a possibility to create `SchemeObject`, `[ParameterObject]`, `AnyValue` and `[String: HeaderObject]` instances from `Codable` types. It's possible to use `SchemeObject.decode/encode`, `[ParameterObject].decode/encode`, `[String: HeaderObject].decode/encode` and `AnyValue.encode` methods for it.
+There is a possibility to create `SchemeObject`, `[ParameterObject]`, `AnyValue` and `[String: OpenAPI.Header]` instances from `Codable` types. It's possible to use `SchemeObject.decode/encode`, `[ParameterObject].decode/encode`, `[String: OpenAPI.Header].decode/encode` and `AnyValue.encode` methods for it.
 ```swift
 let loginBodySchemeFromType: SchemeObject = try .decode(LoginBody.self)
 let loginBodySchemeFromInstance: SchemeObject = try .encode(LoginBody.example)
@@ -101,7 +101,7 @@ struct LoginBody: Codable, OpenAPIDescriptable {
 ```swift
 struct Color: Codable, OpenAPIType {
     
-    static var openAPISchema: SchemaObject {
+    static var openAPISchema: JSONSchema {
         .string(format: "hex", description: "Color in hex format")
     }
 }
@@ -119,7 +119,7 @@ It was a bit tricky challenge to implement additional dynamic properties for any
 There is two ways to decode/encode `SpecificationExtendable` types with additional properties:
 1. Use `SpecificationExtendable.json`, `SpecificationExtendable.Type.from(json:)` methods.
 ```swift
-let schema = try SchemaObject.from(json: jsonData)
+let schema = try JSONSchema.from(json: jsonData)
 let jsonData = try schema.json()
 ```
 2. If you cannot use custom decoding methods, you can use `WithSpecExtensions` wrapper.

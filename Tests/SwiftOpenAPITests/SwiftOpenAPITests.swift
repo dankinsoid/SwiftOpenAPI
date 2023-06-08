@@ -8,126 +8,66 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testDecoding() async throws {
 		let file = try Mocks.petsSwagger.getData()
 		let decoder = JSONDecoder()
-		let _ = try decoder.decode(OpenAPIObject.self, from: file)
+		let _ = try decoder.decode(OpenAPI.Document.self, from: file)
 	}
 
 	func testSchemeEncoding() throws {
-		var references: [String: ReferenceOr<SchemaObject>] = [:]
-		try SchemaObject.encode(LoginBody.example, into: &references)
+		var references: OpenAPI.ComponentDictionary<JSONSchema> = [:]
+		try JSONSchema.encode(LoginBody.example, into: &references)
+		prettyPrint(references)
 		XCTAssertNoDifference(
 			references,
 			[
-				"SomeEnum": .enum(cases: ["first", "second"]),
+				"SomeEnum": .string(allowedValues: "first", "second"),
 				"LoginBody": .object(
 					properties: [
-						"username": .string,
-						"password": .string,
-						"tags": .array(of: .string, nullable: true),
-						"id": .uuid,
-						"url": .uri(nullable: true),
-						"enumValue": .ref(components: \.schemas, "SomeEnum"),
-						"comments": .dictionary(of: .string, nullable: true),
-						"int": .integer(nullable: true),
-					],
-					required: ["id", "username", "password"]
+						"enumValue": .reference(.component(named: "SomeEnum")),
+						"username": .string(required: true),
+						"password": .string(required: true)
+					]
 				),
 			]
 		)
 	}
 
 	func testDescriptions() throws {
-		var references: [String: ReferenceOr<SchemaObject>] = [:]
-		try SchemaObject.decode(CardMeta.self, into: &references)
-		guard let schema = references["CardMeta"]?.object else {
+		var references: OpenAPI.ComponentDictionary<JSONSchema> = [:]
+		try JSONSchema.decode(CardMeta.self, into: &references)
+		guard let schema = references["CardMeta"] else {
 			XCTFail()
 			return
 		}
 		XCTAssertEqual(schema.description, .cardMeta)
-		switch schema.type {
-		case let .object(.some(props), _, _, _):
-			XCTAssertEqual(props["cardNumber"]?.object?.description, .cardNumber)
-			XCTAssertEqual(props["expiryYear"]?.object?.description, .expiryYear)
-			XCTAssertEqual(props["expiryMonth"]?.object?.description, .expiryMonth)
-			XCTAssertEqual(props["cvv"]?.object?.description, .cvv)
+		switch schema {
+		case let .object(_, object):
+			let props = object.properties
+			XCTAssertEqual(props["cardNumber"]?.description, .cardNumber)
+			XCTAssertEqual(props["expiryYear"]?.description, .expiryYear)
+			XCTAssertEqual(props["expiryMonth"]?.description, .expiryMonth)
+			XCTAssertEqual(props["cvv"]?.description, .cvv)
 		default:
 			XCTFail()
 		}
 	}
 
-	func testSpecificationExtensionsWrapper() throws {
-		var withSpec = WithSpecExtensions(wrappedValue: SchemaObject.string)
-		let key: SpecificationExtensions.Key = "x-some-value"
-		let value: AnyValue = 1
-		withSpec.projectedValue[key] = value
-		let data = try JSONEncoder().encode(withSpec)
-		let decoded = try JSONDecoder().decode(WithSpecExtensions<SchemaObject>.self, from: data)
-		XCTAssertNoDifference(decoded.projectedValue[key], value)
-	}
-
-	func testSpecificationExtensionsWrapperWithDictionary0() throws {
-		var withSpec = WithSpecExtensions(wrappedValue: CallbackObject())
-		withSpec.wrappedValue["some"] = .value(.delete(OperationObject(description: "Delete")))
-		let key: SpecificationExtensions.Key = "x-some-value"
-		let value: AnyValue = 1
-		withSpec.projectedValue[key] = value
-		let data = try JSONEncoder().encode(withSpec)
-		let decoded = try JSONDecoder().decode(WithSpecExtensions<CallbackObject>.self, from: data)
-		XCTAssertEqual(decoded.projectedValue[key], value)
-		XCTAssertEqual(decoded.wrappedValue.value.count, 1)
-	}
-
-	func testSpecificationExtensionsWrapperWithDictionary1() throws {
-		var withSpec = WithSpecExtensions(wrappedValue: ContentObject())
-		withSpec.wrappedValue["some"] = .string
-		let key: SpecificationExtensions.Key = "x-some-value"
-		let value: AnyValue = 1
-		withSpec.projectedValue[key] = value
-		let data = try JSONEncoder().encode(withSpec)
-		let decoded = try JSONDecoder().decode(WithSpecExtensions<ContentObject>.self, from: data)
-		XCTAssertEqual(decoded.projectedValue[key], value)
-		XCTAssertEqual(decoded.wrappedValue.value.count, 1)
-	}
-
-	func testSpecificationKeys() throws {
-		let value = InfoObject(title: "Title", termsOfService: URL(string: "http://google.com"), version: "1.0.0")
-		let specs = try SpecificationExtensions(from: value)
-		XCTAssertEqual(specs["x-terms-of-service"], "http://google.com")
-		XCTAssertEqual(specs["x-title"], "Title")
-		XCTAssertEqual(specs["x-version"], "1.0.0")
-	}
-
-	func testSpecificationExtensions() throws {
-		var info = InfoObject(title: "Title", termsOfService: URL(string: "http://google.com"), version: "1.0.0")
-		let key: SpecificationExtensions.Key = "x-some-value"
-		let value: AnyValue = 1
-		info.specificationExtensions = [
-			key: value,
-		]
-		let api = OpenAPIObject(info: info)
-		let data = try JSONEncoder().encode(api)
-		let decoded = try JSONDecoder().decode(OpenAPIObject.self, from: data).info
-		XCTAssertEqual(decoded.specificationExtensions?[key], value)
-	}
-
 	func testKeyEncoding() throws {
-		var references: [String: ReferenceOr<SchemaObject>] = [:]
-		try SchemaObject.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
+		var references: OpenAPI.ComponentDictionary<JSONSchema> = [:]
+		try JSONSchema.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
 		XCTAssertNoDifference(
 			references,
 			[
-				"SomeEnum": .enum(cases: ["first", "second"]),
+				"SomeEnum": .string(allowedValues: ["first", "second"]),
 				"LoginBody": .object(
 					properties: [
-						"username": .string,
-						"password": .string,
-						"tags": .array(of: .string, nullable: true),
-						"id": .uuid,
-						"url": .uri(nullable: true),
-						"enum_value": .ref(components: \.schemas, "SomeEnum"),
-						"comments": .dictionary(of: .string, nullable: true),
+						"username": .string(required: true),
+						"password": .string(required: true),
+						"tags": .array(nullable: true, items: .string),
+						"id": .string(format: .other("uuid"), required: true),
+						"url": .string(format: .other("uri"), nullable: true),
+						"enum_value": .reference(.component(named: "SomeEnum")),
+						"comments": .object(nullable: true, additionalProperties: .b(.string)),
 						"int": .integer(nullable: true),
-					],
-					required: ["id", "username", "password"]
+					]
 				),
 			]
 		)

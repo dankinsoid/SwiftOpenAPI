@@ -487,13 +487,13 @@ let petsSwagger = OpenAPIObject(
 						description: "successful operation",
 						headers: [
 							"X-Expires-After": .value(
-								HeaderObject(
+								OpenAPI.Header(
 									description: "date in UTC when token expires",
 									schema: .dateTime
 								)
 							),
 							"X-Rate-Limit": .value(
-								HeaderObject(
+								OpenAPI.Header(
 									description: "calls per hour allowed by the user",
 									schema: .integer(format: .int32)
 								)

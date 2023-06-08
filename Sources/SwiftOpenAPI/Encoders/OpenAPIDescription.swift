@@ -1,4 +1,5 @@
 import Foundation
+import OpenAPIKit
 
 public protocol OpenAPIDescriptionType {
 
@@ -36,61 +37,124 @@ public struct OpenAPIDescription<Key: CodingKey>: OpenAPIDescriptionType, Expres
 	}
 }
 
-extension SchemaObject {
+extension JSONSchema {
 
-	func with(description: OpenAPIDescriptionType?) -> SchemaObject {
+	func with(description: OpenAPIDescriptionType?) -> JSONSchema {
 		guard let description else { return self }
-		var result = self
-		result.description = description.openAPISchemeDescription ?? result.description
-		switch result.type {
-		case .object(var props, let req, let additional, let xml):
+		var result = description.openAPISchemeDescription.map { with(description: $0) } ?? self
+		switch result {
+		case let .object(context, object):
+			var props = object.properties
 			for (key, value) in description.schemePropertyDescriptions {
-				if case var .value(scheme) = props?[key] {
-					scheme.description = value
-					props?[key] = .value(scheme)
+				if let schema = props[key] {
+					props[key] = schema.with(description: value)
 				}
 			}
-			result.type = .object(props, required: req, additionalProperties: additional, xml: xml)
+			result = .object(
+				context,
+				ObjectContext(
+					properties: props,
+					additionalProperties: object.additionalProperties,
+					maxProperties: object.maxProperties,
+					minProperties: object.minProperties
+				)
+			)
 		default:
 			break
 		}
 		return result
 	}
-}
-
-extension ReferenceOr<SchemaObject> {
-
-	func with(description: OpenAPIDescriptionType?) -> ReferenceOr<SchemaObject> {
-		guard let description else { return self }
+	
+	func with(description: String) -> JSONSchema {
 		switch self {
-		case let .value(scheme):
-			return .value(scheme.with(description: description))
-		default:
+		case .boolean(let context):
+			return .boolean(context.with(description: description))
+		case .object(let contextA, let contextB):
+			return .object(contextA.with(description: description), contextB)
+		case .array(let contextA, let contextB):
+			return .array(contextA.with(description: description), contextB)
+		case .number(let context, let contextB):
+			return .number(context.with(description: description), contextB)
+		case .integer(let context, let contextB):
+			return .integer(context.with(description: description), contextB)
+		case .string(let context, let contextB):
+			return .string(context.with(description: description), contextB)
+		case .fragment(let context):
+			return .fragment(context.with(description: description))
+		case .all(of: let fragments, core: let core):
+			return .all(of: fragments, core: core.with(description: description))
+		case .one(of: let schemas, core: let core):
+			return .one(of: schemas, core: core.with(description: description))
+		case .any(of: let schemas, core: let core):
+			return .any(of: schemas, core: core.with(description: description))
+		case .not(let schema, core: let core):
+			return .not(schema, core: core.with(description: description))
+		case .reference:
 			return self
 		}
 	}
+
 }
 
-extension [ParameterObject] {
+extension JSONSchema.CoreContext {
+	
+	func with(description: String) -> JSONSchema.CoreContext<Format> {
+		return .init(
+			format: format,
+			required: required,
+			nullable: nullable,
+			permissions: permissions,
+			deprecated: deprecated,
+			title: title,
+			description: description,
+			discriminator: discriminator,
+			externalDocs: externalDocs,
+			allowedValues: allowedValues,
+			defaultValue: defaultValue,
+			example: example
+		)
+	}
+}
 
-	func with(description: OpenAPIDescriptionType?) -> [ParameterObject] {
+extension OpenAPI.Parameter.Array {
+
+	func with(description: OpenAPIDescriptionType?) -> OpenAPI.Parameter.Array {
 		guard let description else { return self }
 		var result = self
 		for (key, value) in description.schemePropertyDescriptions {
-			guard let i = result.firstIndex(where: { $0.name == key }) else { continue }
-			result[i].description = value
+			guard let i = result.firstIndex(where: { $0.b?.name == key }), let parameter = result[i].b else { continue }
+			result[i] = .b(
+				OpenAPI.Parameter(
+					name: parameter.name,
+					context: parameter.context,
+					schemaOrContent: parameter.schemaOrContent,
+					description: value,
+					deprecated: parameter.deprecated,
+					vendorExtensions: parameter.vendorExtensions
+				)
+			)
 		}
 		return result
 	}
 }
 
-extension [String: HeaderObject] {
+extension OpenAPI.Header.Map {
 
-	func with(description: OpenAPIDescriptionType?) -> [String: HeaderObject] {
+	func with(description: OpenAPIDescriptionType?) -> OpenAPI.Header.Map {
 		guard let description else { return self }
 		var result = self
 		for (key, value) in description.schemePropertyDescriptions {
-			result[key]?.description = value
+			if let header = result[key]?.b, header.description?.nilIfEmpty == nil {
+				result[key] = .b(
+					OpenAPI.Header(
+						schemaOrContent: header.schemaOrContent,
+						description: value,
+						required: header.required,
+						deprecated: header.deprecated,
+						vendorExtensions: header.vendorExtensions
+					)
+				)
+			}
 		}
 		return result
 	}

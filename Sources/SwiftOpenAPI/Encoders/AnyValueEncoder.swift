@@ -1,31 +1,48 @@
 import Foundation
+import OpenAPIKit
+
+extension AnyCodable {
+	
+	public static func encode(
+		_ value: Encodable,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default
+	) throws -> AnyCodable {
+		let encoder = AnyValueEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		return try encoder.encode(value)
+	}
+}
 
 final class AnyValueEncoder: Encoder {
 
 	var codingPath: [CodingKey]
 	var userInfo: [CodingUserInfoKey: Any]
-	var result: AnyValue
+	var result: AnyCodable
 	var dateFormat: DateEncodingFormat
+	var keyEncodingStrategy: KeyEncodingStrategy
 
 	init(
 		codingPath: [CodingKey] = [],
-		dateFormat: DateEncodingFormat
+		dateFormat: DateEncodingFormat,
+		keyEncodingStrategy: KeyEncodingStrategy
 	) {
 		self.codingPath = codingPath
 		userInfo = [:]
 		self.dateFormat = dateFormat
-		result = .object([:])
+		self.keyEncodingStrategy = keyEncodingStrategy
+		result = AnyCodable(())
 	}
 
 	func container<Key>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> where Key: CodingKey {
 		let container = AnyValueKeyedEncodingContainer<Key>(
 			codingPath: codingPath,
 			dateFormat: dateFormat,
+			keyEncodingStrategy: keyEncodingStrategy,
 			result: Ref { [self] in
-				guard case let .object(value) = result else { return [:] }
+				guard let value = result.value as? [String: Any?] else { return [:] }
 				return value
 			} set: { [self] newValue in
-				result = .object(newValue)
+				result = AnyCodable(newValue)
 			}
 		)
 		return KeyedEncodingContainer(container)
@@ -35,13 +52,14 @@ final class AnyValueEncoder: Encoder {
 		AnyValueUnkeyedEncodingContainer(
 			codingPath: codingPath,
 			dateFormat: dateFormat,
+			keyEncodingStrategy: keyEncodingStrategy,
 			result: Ref { [self] in
-				if case let .array(value) = result {
+				if let value = result.value as? [Any?] {
 					return value
 				}
 				return []
 			} set: { [self] newValue in
-				result = .array(newValue)
+				result = AnyCodable(newValue)
 			}
 		)
 	}
@@ -50,11 +68,16 @@ final class AnyValueEncoder: Encoder {
 		AnyValueSingleValueEncodingContainer(
 			codingPath: codingPath,
 			dateFormat: dateFormat,
-			result: Ref(self, \.result)
+			keyEncodingStrategy: keyEncodingStrategy,
+			result: Ref { [self] in
+				result.value
+			} set: { [self] newValue in
+				result = AnyCodable(newValue)
+			}
 		)
 	}
 
-	func encode(_ value: Encodable) throws -> AnyValue {
+	func encode(_ value: Encodable) throws -> AnyCodable {
 		switch value {
 		case let date as Date:
 			var container = singleValueContainer()
@@ -95,69 +118,70 @@ private struct AnyValueSingleValueEncodingContainer: SingleValueEncodingContaine
 
 	var codingPath: [CodingKey]
 	let dateFormat: DateEncodingFormat
-	@Ref var result: AnyValue
+	let keyEncodingStrategy: KeyEncodingStrategy
+	@Ref var result: Any?
 
 	mutating func encodeNil() throws {}
 
 	mutating func encode(_ value: Bool) throws {
-		result = .bool(value)
+		result = value
 	}
 
 	mutating func encode(_ value: String) throws {
-		result = .string(value)
+		result = value
 	}
 
 	mutating func encode(_ value: Double) throws {
-		result = .double(value)
+		result = value
 	}
 
 	mutating func encode(_ value: Float) throws {
-		result = .double(Double(value))
+		result = value
 	}
 
 	mutating func encode(_ value: Int) throws {
-		result = .int(value)
+		result = value
 	}
 
 	mutating func encode(_ value: Int8) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: Int16) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: Int32) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: Int64) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: UInt) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: UInt8) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: UInt16) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: UInt32) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: UInt64) throws {
-		result = .int(Int(value))
+		result = value
 	}
 
 	mutating func encode(_ value: some Encodable) throws {
-		let encoder = AnyValueEncoder(codingPath: codingPath, dateFormat: dateFormat)
-		result = try encoder.encode(value)
+		let encoder = AnyValueEncoder(codingPath: codingPath, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		result = try encoder.encode(value).value
 	}
 }
 
@@ -165,11 +189,12 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
 
 	var codingPath: [CodingKey]
 	let dateFormat: DateEncodingFormat
-	@Ref var result: [String: AnyValue]
+	let keyEncodingStrategy: KeyEncodingStrategy
+	@Ref var result: [String: Any?]
 
 	@inline(__always)
 	private func str(_ key: Key) -> String {
-		key.stringValue
+		keyEncodingStrategy.encode(key.stringValue)
 	}
 
 	mutating func encodeNil(forKey key: Key) throws {
@@ -177,64 +202,64 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
 	}
 
 	mutating func encode(_ value: Bool, forKey key: Key) throws {
-		result[str(key)] = .bool(value)
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: String, forKey key: Key) throws {
-		result[str(key)] = .string(value)
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Double, forKey key: Key) throws {
-		result[str(key)] = .double(value)
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Float, forKey key: Key) throws {
-		result[str(key)] = .double(Double(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Int, forKey key: Key) throws {
-		result[str(key)] = .int(value)
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Int8, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Int16, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Int32, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: Int64, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: UInt, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: UInt8, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: UInt16, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: UInt32, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: UInt64, forKey key: Key) throws {
-		result[str(key)] = .int(Int(value))
+		result[str(key)] = value
 	}
 
 	mutating func encode(_ value: some Encodable, forKey key: Key) throws {
-		let encoder = AnyValueEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
-		result[str(key)] = try encoder.encode(value)
+		let encoder = AnyValueEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		result[str(key)] = try encoder.encode(value).value
 	}
 
 	mutating func nestedContainer<NestedKey>(keyedBy _: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey: CodingKey {
@@ -242,16 +267,17 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
 		let container = AnyValueKeyedEncodingContainer<NestedKey>(
 			codingPath: nestedPath(for: key),
 			dateFormat: dateFormat,
+			keyEncodingStrategy: keyEncodingStrategy,
 			result: Ref { [$result] in
 				guard
-					case let .object(value) = $result.wrappedValue[strKey]
+					let value = $result.wrappedValue[strKey] as? [String: Any?]
 				else { return [:] }
 				return value
 			} set: { [$result] newValue in
-				$result.wrappedValue[strKey] = .object(newValue)
+				$result.wrappedValue[strKey] = newValue
 			}
 		)
-		result[strKey] = .object([:])
+		result[strKey] = [:] as [String: Any?]
 		return KeyedEncodingContainer(container)
 	}
 
@@ -260,26 +286,27 @@ private struct AnyValueKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingCont
 		let container = AnyValueUnkeyedEncodingContainer(
 			codingPath: nestedPath(for: key),
 			dateFormat: dateFormat,
+			keyEncodingStrategy: keyEncodingStrategy,
 			result: Ref { [$result] in
 				guard
-					case let .array(value) = $result.wrappedValue[strKey]
+					let value = $result.wrappedValue[strKey] as? [Any?]
 				else { return [] }
 				return value
 			} set: { [$result] newValue in
-				$result.wrappedValue[strKey] = .array(newValue)
+				$result.wrappedValue[strKey] = newValue
 			}
 		)
-		result[strKey] = .array([])
+		result[strKey] = [] as [Any?]
 		return container
 	}
 
 	mutating func superEncoder() -> Encoder {
-		AnyValueEncoder(codingPath: codingPath, dateFormat: dateFormat)
+		AnyValueEncoder(codingPath: codingPath, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 	}
 
 	mutating func superEncoder(forKey key: Key) -> Encoder {
-		result[str(key)] = .object([:])
-		return AnyValueEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat)
+		result[str(key)] = [:] as [String: Any?]
+		return AnyValueEncoder(codingPath: nestedPath(for: key), dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 	}
 
 	private func nestedPath(for key: Key) -> [CodingKey] {
@@ -292,7 +319,8 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 	var codingPath: [CodingKey]
 	var count: Int { result.count }
 	let dateFormat: DateEncodingFormat
-	@Ref var result: [AnyValue]
+	let keyEncodingStrategy: KeyEncodingStrategy
+	@Ref var result: [Any?]
 
 	private var nestedPath: [CodingKey] {
 		codingPath + [IntKey(intValue: codingPath.count)]
@@ -303,20 +331,21 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 		let container = AnyValueKeyedEncodingContainer<NestedKey>(
 			codingPath: nestedPath,
 			dateFormat: dateFormat,
+			keyEncodingStrategy: keyEncodingStrategy,
 			result: Ref { [$result] in
 				guard
 					$result.wrappedValue.indices.contains(index),
-					case let .object(value) = $result.wrappedValue[index]
+					let value = $result.wrappedValue[index] as? [String: Any?]
 				else { return [:] }
 				return value
 			} set: { [$result] newValue in
 				guard $result.wrappedValue.indices.contains(index) else {
 					return
 				}
-				$result.wrappedValue[index] = .object(newValue)
+				$result.wrappedValue[index] = newValue
 			}
 		)
-		result.append(.object([:]))
+		result.append([:] as [String: Any])
 		return KeyedEncodingContainer(container)
 	}
 
@@ -325,87 +354,88 @@ private struct AnyValueUnkeyedEncodingContainer: UnkeyedEncodingContainer {
 		let container = AnyValueUnkeyedEncodingContainer(
 			codingPath: nestedPath,
 			dateFormat: dateFormat,
+			keyEncodingStrategy: keyEncodingStrategy,
 			result: Ref { [$result] in
 				guard
 					$result.wrappedValue.indices.contains(index),
-					case let .array(value) = $result.wrappedValue[index]
+					let value = $result.wrappedValue[index] as? [Any?]
 				else { return [] }
 				return value
 			} set: { [$result] newValue in
 				guard $result.wrappedValue.indices.contains(index) else {
 					return
 				}
-				$result.wrappedValue[index] = .array(newValue)
+				$result.wrappedValue[index] = newValue
 			}
 		)
-		result.append(.array([]))
+		result.append([] as [Any?])
 		return container
 	}
 
 	mutating func encodeNil() throws {}
 
 	mutating func superEncoder() -> Encoder {
-		AnyValueEncoder(codingPath: codingPath, dateFormat: dateFormat)
+		AnyValueEncoder(codingPath: codingPath, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 	}
 
 	mutating func encode(_ value: Bool) throws {
-		result.append(.bool(value))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: String) throws {
-		result.append(.string(value))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Double) throws {
-		result.append(.double(value))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Float) throws {
-		result.append(.double(Double(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Int) throws {
-		result.append(.int(value))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Int8) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Int16) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Int32) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: Int64) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: UInt) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: UInt8) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: UInt16) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: UInt32) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: UInt64) throws {
-		result.append(.int(Int(value)))
+		result.append(value)
 	}
 
 	mutating func encode(_ value: some Encodable) throws {
-		let encoder = AnyValueEncoder(codingPath: nestedPath, dateFormat: dateFormat)
-		try result.append(encoder.encode(value))
+		let encoder = AnyValueEncoder(codingPath: nestedPath, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		try result.append(encoder.encode(value).value)
 	}
 }

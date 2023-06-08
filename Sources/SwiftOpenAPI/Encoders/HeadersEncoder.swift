@@ -1,4 +1,5 @@
 import Foundation
+import OpenAPIKit
 
 struct HeadersEncoder {
 
@@ -8,8 +9,8 @@ struct HeadersEncoder {
 	@discardableResult
 	func encode(
 		_ value: Encodable,
-		schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> [String: HeaderObject] {
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Header.Map {
 		try parse(
 			value: TypeRevision().describeType(of: value),
 			type: type(of: value),
@@ -20,8 +21,8 @@ struct HeadersEncoder {
 	@discardableResult
 	func decode(
 		_ type: Decodable.Type,
-		schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> [String: HeaderObject] {
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Header.Map {
 		try parse(
 			value: TypeRevision().describe(type: type),
 			type: type,
@@ -32,8 +33,8 @@ struct HeadersEncoder {
 	private func parse(
 		value: TypeInfo,
 		type: Any.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> [String: HeaderObject] {
+		into schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Header.Map {
 		switch type {
 		case is URL.Type:
 			throw InvalidType()
@@ -47,15 +48,41 @@ struct HeadersEncoder {
 				return try keyedInfo.fields
 					.mapKeys(keyEncodingStrategy.encode)
 					.mapValues {
-						try HeaderObject(
-							required: !$0.isOptional,
-							schema: SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
-								.parse(value: $0, type: $0.type, into: &schemas),
-							example: $0.container.anyValue
+						try .b(
+							OpenAPI.Header(
+								schema: .header(
+									SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+										.parse(value: $0, type: $0.type, into: &schemas),
+									example: $0.container.anyValue
+								)
+							)
 						)
 					}
 					.with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
 			}
 		}
+	}
+}
+
+public extension OpenAPI.Header.Map {
+	
+	static func encode(
+		_ value: Encodable,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Header.Map {
+		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+			.encode(value, schemas: &schemas)
+	}
+	
+	static func decode(
+		_ type: Decodable.Type,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Header.Map {
+		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+			.decode(type, schemas: &schemas)
 	}
 }

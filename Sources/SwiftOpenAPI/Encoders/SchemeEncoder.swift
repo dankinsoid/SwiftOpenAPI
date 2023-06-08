@@ -1,4 +1,5 @@
 import Foundation
+import OpenAPIKit
 
 struct SchemeEncoder {
 
@@ -9,8 +10,8 @@ struct SchemeEncoder {
 	@discardableResult
 	func encode(
 		_ value: Encodable,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> ReferenceOr<SchemaObject> {
+		into schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> JSONSchema {
 		let type = Swift.type(of: value)
 		return try parse(
 			value: TypeRevision().describeType(of: value),
@@ -22,8 +23,8 @@ struct SchemeEncoder {
 	@discardableResult
 	func decode(
 		_ type: Decodable.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> ReferenceOr<SchemaObject> {
+		into schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> JSONSchema {
 		try parse(
 			value: TypeRevision().describe(type: type),
 			type: type,
@@ -34,62 +35,59 @@ struct SchemeEncoder {
 	func parse(
 		value: @autoclosure () throws -> TypeInfo,
 		type: Any.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> ReferenceOr<SchemaObject> {
+		into schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> JSONSchema {
 		let name = String.typeName(type)
-		var result: ReferenceOr<SchemaObject>
+		var result: JSONSchema
 		let typeInfo = try value()
 
 		switch type {
 		case is Date.Type:
-			result = .value(dateFormat.schema)
+			result = dateFormat.schema
 
 		case let openAPI as OpenAPIType.Type:
-			result = .value(openAPI.openAPISchema)
+			result = openAPI.openAPISchema
 
 		default:
 			switch typeInfo.container {
 			case let .single(codableValues):
-				let (dataType, format) = try parse(value: codableValues)
-				let schema: SchemaObject
+				let schema = try parse(value: codableValues)
 				if let iterable = type as? any CaseIterable.Type {
 					let allCases = iterable.allCases as any Collection
-					schema = .enum(of: dataType, cases: allCases.map { "\($0)" })
+					result = schema.with(allowedValues: allCases.map { AnyCodable("\($0)") })
 				} else {
-					schema = .primitive(dataType, format: format)
+					result = schema
 				}
-				result = .value(schema)
 
 			case let .keyed(keyedInfo):
 				switch keyedInfo.isFixed {
 				case true:
-					let schema = try SchemaObject.object(
-						properties: keyedInfo.fields.mapKeys {
-							keyEncodingStrategy.encode($0)
-						}.mapValues {
-							try parse(value: $0, type: $0.type, into: &schemas)
-						},
-						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
+					result = try JSONSchema.object(
+						properties: Dictionary(
+							keyedInfo.fields.map {
+								try (
+									keyEncodingStrategy.encode($0.key),
+									parse(value: $0.value, type: $0.value.type, into: &schemas)
+								)
+							}
+						) { _, s in s }
 					)
-					result = .value(schema)
 
 				case false:
-					let schema = try SchemaObject.dictionary(
-						of: (keyedInfo.fields.first?.value).map {
-							try parse(value: $0, type: $0.type, into: &schemas)
-						} ?? .any
+					result = try JSONSchema.object(
+						additionalProperties: keyedInfo.fields.first.map {
+							try .b(parse(value: $0.value, type: $0.value.type, into: &schemas))
+						} ?? .a(true)
 					)
-					result = .value(schema)
 				}
 
 			case let .unkeyed(itemInfo):
-				let schema = try SchemaObject.array(
-					of: parse(value: itemInfo, type: itemInfo.type, into: &schemas)
+				result = try JSONSchema.array(
+					items: parse(value: itemInfo, type: itemInfo.type, into: &schemas)
 				)
-				result = .value(schema)
 
 			case .recursive:
-				result = .ref(components: \.schemas, name)
+				result = .reference(.component(named: name.rawValue))
 			}
 		}
 
@@ -98,12 +96,14 @@ struct SchemeEncoder {
 		}
 
 		if extractReferences, result.isReferenceable {
-			result.object?.nullable = nil
 			schemas[name] = result
-			return .ref(components: \.schemas, name)
+			let ref: JSONSchema = .reference(.component(named: name.rawValue))
+			return typeInfo.isOptional ? ref.optionalSchemaObject() : ref.requiredSchemaObject()
 		} else {
 			if typeInfo.isOptional {
-				result.object?.nullable = true
+				result = result.nullableSchemaObject().optionalSchemaObject()
+			} else {
+				result = result.requiredSchemaObject()
 			}
 			return result
 		}
@@ -111,20 +111,140 @@ struct SchemeEncoder {
 
 	private func parse(
 		value: CodableValues
-	) throws -> (PrimitiveDataType, DataFormat?) {
+	) throws -> JSONSchema {
 		switch value {
-		case .int8, .int16, .int32, .uint8, .uint16, .uint32:
-			return (.integer, .int32)
-		case .int, .int64, .uint, .uint64:
-			return (.integer, .int64)
+		case .int:
+			return Int.openAPISchema
+		case .int8:
+			return Int8.openAPISchema
+		case .int16:
+			return Int16.openAPISchema
+		case .int32:
+			return Int32.openAPISchema
+		case .int64:
+			return Int64.openAPISchema
+		case .uint:
+			return UInt.openAPISchema
+		case .uint8:
+			return UInt8.openAPISchema
+		case .uint16:
+			return UInt16.openAPISchema
+		case .uint32:
+			return UInt32.openAPISchema
+		case .uint64:
+			return UInt64.openAPISchema
 		case .double:
-			return (.number, .double)
+			return Double.openAPISchema
 		case .float:
-			return (.number, .float)
+			return Float.openAPISchema
 		case .bool:
-			return (.boolean, nil)
-		case .string, .null:
-			return (.string, nil)
+			return Bool.openAPISchema
+		case .string:
+			return String.openAPISchema
+		case .null:
+			return .string(nullable: true)
 		}
+	}
+}
+
+private extension JSONSchema {
+	
+	var isReferenceable: Bool {
+		switch self {
+		case .boolean(let core as JSONSchemaContext),
+				.number(let core as JSONSchemaContext, _),
+				.integer(let core as JSONSchemaContext, _),
+				.string(let core as JSONSchemaContext, _):
+			return core.allowedValues?.isEmpty == false
+		case .array, .fragment, .reference:
+			return false
+		case .object(_, let objectContext):
+			return !objectContext.properties.isEmpty
+		case .all, .one, .any, .not:
+			return true
+		}
+	}
+}
+
+public extension JSONSchema {
+	
+	@discardableResult
+	static func encode(
+		_ value: Encodable,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		into schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> JSONSchema {
+		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		return try encoder.encode(value, into: &schemas)
+	}
+	
+	@discardableResult
+	static func decode(
+		_ type: Decodable.Type,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		into schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> JSONSchema {
+		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		return try encoder.decode(type, into: &schemas)
+	}
+}
+
+public extension OpenAPI.Content {
+	
+	static func encode(
+		_ value: Encodable,
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Content {
+		try OpenAPI.Content(
+			schema: .encode(value, into: &schemas),
+			example: .encode(value)
+		)
+	}
+	
+	static func encode(
+		_ value: Encodable,
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>,
+		examples: inout OpenAPI.Example.Map
+	) throws -> OpenAPI.Content {
+		try OpenAPI.Content(
+			schema: .encode(value, into: &schemas),
+			examples: [
+				String.typeName(type(of: value)).rawValue: .a(.reference(example: value, into: &examples))
+			]
+		)
+	}
+	
+	static func decode(
+		_ type: Decodable.Type,
+		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
+	) throws -> OpenAPI.Content {
+		try OpenAPI.Content(
+			schema: .decode(type, into: &schemas),
+			examples: [:]
+		)
+	}
+}
+
+public extension JSONReference<OpenAPI.Example> {
+	
+	static func reference(
+		example value: Encodable,
+		dateFormat: DateEncodingFormat = .default,
+		keyEncodingStrategy: KeyEncodingStrategy = .default,
+		into examples: inout OpenAPI.Example.Map
+	) throws -> Self {
+		let encoder = AnyValueEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
+		let example = try encoder.encode(value)
+		let typeName = String.typeName(type(of: value)).rawValue
+		var name = typeName
+		var i = 0
+		while let current = examples[name]?.b?.value.b, current != example {
+			i += 1
+			name = "\(typeName)\(i)"
+		}
+		examples[name] = .b(OpenAPI.Example(value: .b(example)))
+		return .internal(.component(name: name))
 	}
 }

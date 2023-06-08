@@ -15,10 +15,11 @@ let package = Package(
 		.library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
 	],
 	dependencies: [
+		.package(url: "https://github.com/mattpolzin/OpenAPIKit.git", from: "2.5.1"),
 		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3")
 	],
 	targets: [
-		.target(name: "SwiftOpenAPI", dependencies: []),
+		.target(name: "SwiftOpenAPI", dependencies: ["OpenAPIKit"]),
 		.testTarget(
 			name: "SwiftOpenAPITests",
 			dependencies: [

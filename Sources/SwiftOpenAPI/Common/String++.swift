@@ -1,22 +1,25 @@
 import Foundation
+import OpenAPIKit
 
 extension String {
 
-	static func typeName(_ type: Any.Type) -> String {
-		String(reflecting: type)
-			.components(separatedBy: ["<", ",", " ", ">", ":", "[", "]", "?"])
-			.lazy
-			.flatMap {
-				var result = $0.components(separatedBy: ["."])
-				if result.count > 1 {
-					result.removeFirst()
+	static func typeName(_ type: Any.Type) -> OpenAPI.ComponentKey {
+		OpenAPI.ComponentKey(
+			stringLiteral: String(reflecting: type)
+				.components(separatedBy: ["<", ",", " ", ">", ":", "[", "]", "?"])
+				.lazy
+				.flatMap {
+					var result = $0.components(separatedBy: ["."])
+					if result.count > 1 {
+						result.removeFirst()
+					}
+					return result
 				}
-				return result
-			}
-			.flatMap {
-				$0.components(separatedBy: .alphanumerics.inverted)
-			}
-			.joined()
+				.flatMap {
+					$0.components(separatedBy: .alphanumerics.inverted)
+				}
+				.joined()
+			)
 	}
 
 	func toCamelCase(separator: String = "_") -> String {
