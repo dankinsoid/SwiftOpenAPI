@@ -1,9 +1,9 @@
 import Foundation
 import OpenAPIKit
 
-extension AnyCodable {
-	
-	public static func encode(
+public extension AnyCodable {
+
+	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default

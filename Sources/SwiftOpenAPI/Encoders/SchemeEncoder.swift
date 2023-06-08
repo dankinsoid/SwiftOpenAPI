@@ -148,17 +148,17 @@ struct SchemeEncoder {
 }
 
 private extension JSONSchema {
-	
+
 	var isReferenceable: Bool {
 		switch self {
-		case .boolean(let core as JSONSchemaContext),
-				.number(let core as JSONSchemaContext, _),
-				.integer(let core as JSONSchemaContext, _),
-				.string(let core as JSONSchemaContext, _):
+		case let .boolean(core as JSONSchemaContext),
+		     .number(let core as JSONSchemaContext, _),
+		     .integer(let core as JSONSchemaContext, _),
+		     .string(let core as JSONSchemaContext, _):
 			return core.allowedValues?.isEmpty == false
 		case .array, .fragment, .reference:
 			return false
-		case .object(_, let objectContext):
+		case let .object(_, objectContext):
 			return !objectContext.properties.isEmpty
 		case .all, .one, .any, .not:
 			return true
@@ -167,7 +167,7 @@ private extension JSONSchema {
 }
 
 public extension JSONSchema {
-	
+
 	@discardableResult
 	static func encode(
 		_ value: Encodable,
@@ -178,7 +178,7 @@ public extension JSONSchema {
 		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try encoder.encode(value, into: &schemas)
 	}
-	
+
 	@discardableResult
 	static func decode(
 		_ type: Decodable.Type,
@@ -192,7 +192,7 @@ public extension JSONSchema {
 }
 
 public extension OpenAPI.Content {
-	
+
 	static func encode(
 		_ value: Encodable,
 		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
@@ -202,7 +202,7 @@ public extension OpenAPI.Content {
 			example: .encode(value)
 		)
 	}
-	
+
 	static func encode(
 		_ value: Encodable,
 		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>,
@@ -211,11 +211,11 @@ public extension OpenAPI.Content {
 		try OpenAPI.Content(
 			schema: .encode(value, into: &schemas),
 			examples: [
-				String.typeName(type(of: value)).rawValue: .a(.reference(example: value, into: &examples))
+				String.typeName(type(of: value)).rawValue: .a(.reference(example: value, into: &examples)),
 			]
 		)
 	}
-	
+
 	static func decode(
 		_ type: Decodable.Type,
 		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>
@@ -228,7 +228,7 @@ public extension OpenAPI.Content {
 }
 
 public extension JSONReference<OpenAPI.Example> {
-	
+
 	static func reference(
 		example value: Encodable,
 		dateFormat: DateEncodingFormat = .default,

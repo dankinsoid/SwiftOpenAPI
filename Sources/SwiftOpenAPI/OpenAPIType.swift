@@ -35,7 +35,7 @@ extension Int: OpenAPIType {
 
 extension Int8: OpenAPIType {
 
-	public static var openAPISchema:JSONSchema {
+	public static var openAPISchema: JSONSchema {
 		.integer(format: .int32, maximum: (Int(Self.max), false), minimum: (Int(Self.min), false))
 	}
 }
@@ -63,14 +63,14 @@ extension UInt: OpenAPIType {
 }
 
 extension UInt8: OpenAPIType {
-	
+
 	public static var openAPISchema: JSONSchema {
 		.integer(format: .int32, maximum: (Int(Self.max), false), minimum: (Int(Self.min), false))
 	}
 }
 
 extension UInt16: OpenAPIType {
-	
+
 	public static var openAPISchema: JSONSchema {
 		.integer(format: .int32, maximum: (Int(Self.max), false), minimum: (Int(Self.min), false))
 	}

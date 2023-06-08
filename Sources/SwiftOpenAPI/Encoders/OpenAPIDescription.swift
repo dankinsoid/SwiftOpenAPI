@@ -64,42 +64,41 @@ extension JSONSchema {
 		}
 		return result
 	}
-	
+
 	func with(description: String) -> JSONSchema {
 		switch self {
-		case .boolean(let context):
+		case let .boolean(context):
 			return .boolean(context.with(description: description))
-		case .object(let contextA, let contextB):
+		case let .object(contextA, contextB):
 			return .object(contextA.with(description: description), contextB)
-		case .array(let contextA, let contextB):
+		case let .array(contextA, contextB):
 			return .array(contextA.with(description: description), contextB)
-		case .number(let context, let contextB):
+		case let .number(context, contextB):
 			return .number(context.with(description: description), contextB)
-		case .integer(let context, let contextB):
+		case let .integer(context, contextB):
 			return .integer(context.with(description: description), contextB)
-		case .string(let context, let contextB):
+		case let .string(context, contextB):
 			return .string(context.with(description: description), contextB)
-		case .fragment(let context):
+		case let .fragment(context):
 			return .fragment(context.with(description: description))
-		case .all(of: let fragments, core: let core):
+		case let .all(of: fragments, core: core):
 			return .all(of: fragments, core: core.with(description: description))
-		case .one(of: let schemas, core: let core):
+		case let .one(of: schemas, core: core):
 			return .one(of: schemas, core: core.with(description: description))
-		case .any(of: let schemas, core: let core):
+		case let .any(of: schemas, core: core):
 			return .any(of: schemas, core: core.with(description: description))
-		case .not(let schema, core: let core):
+		case let .not(schema, core: core):
 			return .not(schema, core: core.with(description: description))
 		case .reference:
 			return self
 		}
 	}
-
 }
 
 extension JSONSchema.CoreContext {
-	
+
 	func with(description: String) -> JSONSchema.CoreContext<Format> {
-		return .init(
+		.init(
 			format: format,
 			required: required,
 			nullable: nullable,

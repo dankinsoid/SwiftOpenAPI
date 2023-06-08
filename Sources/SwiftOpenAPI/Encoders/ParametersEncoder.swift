@@ -82,7 +82,7 @@ struct ParametersEncoder {
 struct InvalidType: Error {}
 
 public extension OpenAPI.Parameter.Array {
-	
+
 	static func encode(
 		_ value: Encodable,
 		in location: OpenAPI.Parameter.Context.Location,
@@ -93,7 +93,7 @@ public extension OpenAPI.Parameter.Array {
 		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.encode(value, schemas: &schemas)
 	}
-	
+
 	static func decode(
 		_ type: Decodable.Type,
 		in location: OpenAPI.Parameter.Context.Location,

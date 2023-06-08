@@ -16,7 +16,7 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/mattpolzin/OpenAPIKit.git", from: "2.5.1"),
-		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3")
+		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3"),
 	],
 	targets: [
 		.target(name: "SwiftOpenAPI", dependencies: ["OpenAPIKit"]),
@@ -24,7 +24,7 @@ let package = Package(
 			name: "SwiftOpenAPITests",
 			dependencies: [
 				"SwiftOpenAPI",
-				.product(name: "CustomDump", package: "swift-custom-dump")
+				.product(name: "CustomDump", package: "swift-custom-dump"),
 			],
 			exclude: ["Mocks/"]
 		),

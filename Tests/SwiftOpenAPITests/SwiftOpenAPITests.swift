@@ -1,7 +1,7 @@
+import CustomDump
 import Foundation
 @testable import SwiftOpenAPI
 import XCTest
-import CustomDump
 
 final class SwiftOpenAPITests: XCTestCase {
 
@@ -23,7 +23,7 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"enumValue": .reference(.component(named: "SomeEnum")),
 						"username": .string(required: true),
-						"password": .string(required: true)
+						"password": .string(required: true),
 					]
 				),
 			]

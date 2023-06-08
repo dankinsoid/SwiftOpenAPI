@@ -65,7 +65,7 @@ struct HeadersEncoder {
 }
 
 public extension OpenAPI.Header.Map {
-	
+
 	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
@@ -75,7 +75,7 @@ public extension OpenAPI.Header.Map {
 		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.encode(value, schemas: &schemas)
 	}
-	
+
 	static func decode(
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,

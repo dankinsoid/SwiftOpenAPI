@@ -19,7 +19,7 @@ extension String {
 					$0.components(separatedBy: .alphanumerics.inverted)
 				}
 				.joined()
-			)
+		)
 	}
 
 	func toCamelCase(separator: String = "_") -> String {

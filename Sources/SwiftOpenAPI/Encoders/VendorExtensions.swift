@@ -2,7 +2,7 @@ import Foundation
 import OpenAPIKit
 
 extension KeyEncodingStrategy {
-	
+
 	static var vendorExtensions: KeyEncodingStrategy {
 		.custom { last in
 			var string = last.toSnakeCase(separator: "-").replacingOccurrences(of: "_", with: "-")
@@ -15,7 +15,7 @@ extension KeyEncodingStrategy {
 }
 
 public extension JSONDecoder.KeyDecodingStrategy {
-	
+
 	static var vendorExtensions: JSONDecoder.KeyDecodingStrategy {
 		.custom { codingPath in
 			guard let last = codingPath.last else {
@@ -32,11 +32,11 @@ public extension JSONDecoder.KeyDecodingStrategy {
 }
 
 public extension JSONEncoder.KeyEncodingStrategy {
-	
+
 	static var vendorExtensions: JSONEncoder.KeyEncodingStrategy {
 		.vendorExtensions(nested: .useDefaultKeys)
 	}
-	
+
 	static func vendorExtensions(nested: KeyEncodingStrategy) -> JSONEncoder.KeyEncodingStrategy {
 		.custom { codingPath in
 			guard let last = codingPath.last else {
@@ -49,7 +49,7 @@ public extension JSONEncoder.KeyEncodingStrategy {
 }
 
 public extension [String: AnyCodable] {
-	
+
 	static func vendorExtensions(
 		_ value: some Encodable,
 		encoder: JSONEncoder = JSONEncoder(),
