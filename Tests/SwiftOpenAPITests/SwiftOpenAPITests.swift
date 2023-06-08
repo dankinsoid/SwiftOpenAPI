@@ -25,7 +25,7 @@ final class SwiftOpenAPITests: XCTestCase {
 						"tags": .array(of: .string),
 						"id": .uuid,
 						"url": .uri,
-						"enum_value": .ref(components: \.schemas, "SomeEnum"),
+						"enumValue": .ref(components: \.schemas, "SomeEnum"),
 						"comments": .dictionary(of: .string),
 						"int": .integer,
 					],
@@ -111,8 +111,7 @@ final class SwiftOpenAPITests: XCTestCase {
 
 	func testKeyEncoding() throws {
 		var references: [String: ReferenceOr<SchemaObject>] = [:]
-		KeyEncodingStrategy.default = .convertToSnakeCase
-		try SchemaObject.encode(LoginBody.example, into: &references)
+		try SchemaObject.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
 		XCTAssertNoDifference(
 			references,
 			[
