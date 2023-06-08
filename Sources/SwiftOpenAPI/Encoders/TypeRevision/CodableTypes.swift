@@ -127,7 +127,7 @@ extension CodableContainerValue {
 			case let .float(value): return value.map { .double(Double($0)) }
 			case let .bool(value): return value.map { .bool($0) }
 			case let .string(value): return value.map { .string($0) }
-			case .null: return nil
+			case .null: return .null
 			}
 
 		case let .keyed(keyedInfo):

@@ -30,7 +30,7 @@ struct HeadersEncoder {
 	}
 
 	private func parse(
-		value: CodableContainerValue,
+		value: TypeInfo,
 		type: Any.Type,
 		into schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> [String: HeaderObject] {
@@ -39,7 +39,7 @@ struct HeadersEncoder {
 			throw InvalidType()
 
 		default:
-			switch value {
+			switch value.container {
 			case .single, .unkeyed, .recursive:
 				throw InvalidType()
 
@@ -50,7 +50,7 @@ struct HeadersEncoder {
 						try HeaderObject(
 							required: !$0.isOptional,
 							schema: SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
-								.parse(value: $0.container, type: $0.type, into: &schemas),
+								.parse(value: $0, type: $0.type, into: &schemas),
 							example: $0.container.anyValue
 						)
 					}

@@ -22,12 +22,12 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"username": .string,
 						"password": .string,
-						"tags": .array(of: .string),
+						"tags": .array(of: .string, nullable: true),
 						"id": .uuid,
-						"url": .uri,
+						"url": .uri(nullable: true),
 						"enumValue": .ref(components: \.schemas, "SomeEnum"),
-						"comments": .dictionary(of: .string),
-						"int": .integer,
+						"comments": .dictionary(of: .string, nullable: true),
+						"int": .integer(nullable: true),
 					],
 					required: ["id", "username", "password"]
 				),
@@ -120,12 +120,12 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"username": .string,
 						"password": .string,
-						"tags": .array(of: .string),
+						"tags": .array(of: .string, nullable: true),
 						"id": .uuid,
-						"url": .uri,
+						"url": .uri(nullable: true),
 						"enum_value": .ref(components: \.schemas, "SomeEnum"),
-						"comments": .dictionary(of: .string),
-						"int": .integer,
+						"comments": .dictionary(of: .string, nullable: true),
+						"int": .integer(nullable: true),
 					],
 					required: ["id", "username", "password"]
 				),

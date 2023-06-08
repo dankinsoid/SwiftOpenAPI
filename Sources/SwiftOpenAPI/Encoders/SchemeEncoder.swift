@@ -32,12 +32,13 @@ struct SchemeEncoder {
 	}
 
 	func parse(
-		value: @autoclosure () throws -> CodableContainerValue,
+		value: @autoclosure () throws -> TypeInfo,
 		type: Any.Type,
 		into schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> ReferenceOr<SchemaObject> {
 		let name = String.typeName(type)
 		var result: ReferenceOr<SchemaObject>
+		let typeInfo = try value()
 
 		switch type {
 		case is Date.Type:
@@ -47,15 +48,17 @@ struct SchemeEncoder {
 			result = .value(openAPI.openAPISchema)
 
 		default:
-			switch try value() {
+			switch typeInfo.container {
 			case let .single(codableValues):
 				let (dataType, format) = try parse(value: codableValues)
+				let schema: SchemaObject
 				if let iterable = type as? any CaseIterable.Type {
 					let allCases = iterable.allCases as any Collection
-					result = .value(.enum(of: dataType, cases: allCases.map { "\($0)" }))
+					schema = .enum(of: dataType, cases: allCases.map { "\($0)" })
 				} else {
-					result = .value(.primitive(dataType, format: format))
+					schema = .primitive(dataType, format: format)
 				}
+				result = .value(schema)
 
 			case let .keyed(keyedInfo):
 				switch keyedInfo.isFixed {
@@ -64,7 +67,7 @@ struct SchemeEncoder {
 						properties: keyedInfo.fields.mapKeys {
 							keyEncodingStrategy.encode($0)
 						}.mapValues {
-							try parse(value: $0.container, type: $0.type, into: &schemas)
+							try parse(value: $0, type: $0.type, into: &schemas)
 						},
 						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
 					)
@@ -73,15 +76,15 @@ struct SchemeEncoder {
 				case false:
 					let schema = try SchemaObject.dictionary(
 						of: (keyedInfo.fields.first?.value).map {
-							try parse(value: $0.container, type: $0.type, into: &schemas)
+							try parse(value: $0, type: $0.type, into: &schemas)
 						} ?? .any
 					)
 					result = .value(schema)
 				}
 
-			case let .unkeyed(typeInfo):
+			case let .unkeyed(itemInfo):
 				let schema = try SchemaObject.array(
-					of: parse(value: typeInfo.container, type: typeInfo.type, into: &schemas)
+					of: parse(value: itemInfo, type: itemInfo.type, into: &schemas)
 				)
 				result = .value(schema)
 
@@ -95,9 +98,13 @@ struct SchemeEncoder {
 		}
 
 		if extractReferences, result.isReferenceable {
+			result.object?.nullable = nil
 			schemas[name] = result
 			return .ref(components: \.schemas, name)
 		} else {
+			if typeInfo.isOptional {
+				result.object?.nullable = true
+			}
 			return result
 		}
 	}

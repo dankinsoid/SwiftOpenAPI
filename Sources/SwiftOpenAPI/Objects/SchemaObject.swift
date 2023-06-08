@@ -7,12 +7,26 @@ import Foundation
 /// Unless stated otherwise, the property definitions follow those of JSON Schema and do not add any additional semantics. Where JSON Schema indicates that behavior is defined by the application (e.g. for annotations), OAS also defers the definition of semantics to the application consuming the OpenAPI document.
 public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 
+	public var title: String?
 	public var description: String?
 	public var externalDocs: ExternalDocumentationObject?
 	public var type: SchemaType
 	public var example: AnyValue?
+	
+	public var nullable: Bool?
+	
+	public var readOnly: Bool?
+	public var writeOnly: Bool?
+	public var deprecated: Bool?
+	
+	// NOTE: "const" is supported by the newest JSON Schema spec but not
+	// yet by OpenAPI. Instead, will use "enum" with one possible value for now.
+	//        public let constantValue: Format.SwiftType?
+	
+	public var `default`: AnyValue?
+	
 	public var specificationExtensions: SpecificationExtensions?
-
+	
 	public enum CodingKeys: String, CodingKey {
 
 		case type
@@ -28,6 +42,12 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		case description
 		case externalDocs
 		case example
+		case title
+		case nullable
+		case readOnly
+		case writeOnly
+		case deprecated
+		case `default`
 		case oneOf
 		case allOf
 		case anyOf
@@ -35,14 +55,28 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 
 	public init(
 		_ type: SchemaType,
+		title: String? = nil,
+		default: AnyValue? = nil,
 		example: AnyValue? = nil,
 		description: String? = nil,
-		externalDocs: ExternalDocumentationObject? = nil
+		nullable: Bool? = nil,
+		readOnly: Bool? = nil,
+		writeOnly: Bool? = nil,
+		deprecated: Bool? = nil,
+		externalDocs: ExternalDocumentationObject? = nil,
+		specificationExtensions: SpecificationExtensions? = nil
 	) {
+		self.type = type
+		self.title = title
+		self.default = `default`
 		self.description = description
 		self.externalDocs = externalDocs
 		self.example = example
-		self.type = type
+		self.nullable = nullable
+		self.readOnly = readOnly
+		self.writeOnly = writeOnly
+		self.deprecated = deprecated
+		self.specificationExtensions = specificationExtensions
 	}
 
 	public init(from decoder: Decoder) throws {
@@ -50,6 +84,12 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		description = try? container.decodeIfPresent(String.self, forKey: .description)
 		externalDocs = try? container.decodeIfPresent(ExternalDocumentationObject.self, forKey: .externalDocs)
 		example = try container.decodeIfPresent(AnyValue.self, forKey: .example)
+		title = try? container.decodeIfPresent(String.self, forKey: .title)
+		`default` = try? container.decodeIfPresent(AnyValue.self, forKey: .default)
+		nullable = try? container.decodeIfPresent(Bool.self, forKey: .nullable)
+		readOnly = try? container.decodeIfPresent(Bool.self, forKey: .readOnly)
+		writeOnly = try? container.decodeIfPresent(Bool.self, forKey: .writeOnly)
+		deprecated = try? container.decodeIfPresent(Bool.self, forKey: .deprecated)
 		let dataType = try container.decodeIfPresent(DataType.self, forKey: .type)
 
 		switch dataType {
@@ -60,8 +100,8 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		case .object:
 			let properties = try container.decodeIfPresent([String: ReferenceOr<SchemaObject>].self, forKey: .properties)
 			let xml = try container.decodeIfPresent(XMLObject.self, forKey: .xml)
-			let required = try container.decodeIfPresent(Set<String>.self, forKey: .required)
-			let additionalProperties = try container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .additionalProperties)
+			let required = try? container.decodeIfPresent(Set<String>.self, forKey: .required)
+			let additionalProperties = try? container.decodeIfPresent(ReferenceOr<SchemaObject>.self, forKey: .additionalProperties)
 			type = .object(
 				properties,
 				required: required,
@@ -102,6 +142,13 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		try container.encodeIfPresent(description, forKey: .description)
 		try container.encodeIfPresent(externalDocs, forKey: .externalDocs)
 		try container.encodeIfPresent(example, forKey: .example)
+		try container.encodeIfPresent(title, forKey: .title)
+		try container.encodeIfPresent(`default`, forKey: .default)
+		try container.encodeIfPresent(nullable, forKey: .nullable)
+		try container.encodeIfPresent(readOnly, forKey: .readOnly)
+		try container.encodeIfPresent(writeOnly, forKey: .writeOnly)
+		try container.encodeIfPresent(deprecated, forKey: .deprecated)
+		
 		switch type {
 		case .any:
 			break
@@ -266,6 +313,7 @@ public extension ExpressibleBySchemaObject {
 		format: DataFormat? = nil,
 		pattern: String? = nil,
 		description: String? = nil,
+		nullable: Bool? = nil,
 		example: AnyValue? = nil,
 		externalDocs: ExternalDocumentationObject? = nil
 	) -> Self {
@@ -274,6 +322,7 @@ public extension ExpressibleBySchemaObject {
 				.primitive(type, format: format, pattern: pattern),
 				example: example,
 				description: description,
+				nullable: nullable,
 				externalDocs: externalDocs
 			)
 		)
@@ -284,6 +333,7 @@ public extension ExpressibleBySchemaObject {
 		required: Set<String> = [],
 		xml: XMLObject? = nil,
 		description: String? = nil,
+		nullable: Bool? = nil,
 		example: AnyValue? = nil,
 		externalDocs: ExternalDocumentationObject? = nil
 	) -> Self {
@@ -292,6 +342,7 @@ public extension ExpressibleBySchemaObject {
 				.object(properties.nilIfEmpty, required: required.nilIfEmpty, xml: xml),
 				example: example,
 				description: description,
+				nullable: nullable,
 				externalDocs: externalDocs
 			)
 		)
@@ -301,6 +352,7 @@ public extension ExpressibleBySchemaObject {
 		of additionalProperties: ReferenceOr<SchemaObject>,
 		xml: XMLObject? = nil,
 		description: String? = nil,
+		nullable: Bool? = nil,
 		example: AnyValue? = nil,
 		externalDocs: ExternalDocumentationObject? = nil
 	) -> Self {
@@ -309,6 +361,7 @@ public extension ExpressibleBySchemaObject {
 				.object(additionalProperties: additionalProperties, xml: xml),
 				example: example,
 				description: description,
+				nullable: nullable,
 				externalDocs: externalDocs
 			)
 		)
@@ -318,6 +371,7 @@ public extension ExpressibleBySchemaObject {
 		of type: ReferenceOr<SchemaObject>,
 		description: String? = nil,
 		example: AnyValue? = nil,
+		nullable: Bool? = nil,
 		externalDocs: ExternalDocumentationObject? = nil
 	) -> Self {
 		Self(
@@ -325,6 +379,7 @@ public extension ExpressibleBySchemaObject {
 				.array(type),
 				example: example,
 				description: description,
+				nullable: nullable,
 				externalDocs: externalDocs
 			)
 		)
@@ -334,6 +389,7 @@ public extension ExpressibleBySchemaObject {
 		of type: PrimitiveDataType = .string,
 		cases: [String],
 		description: String? = nil,
+		nullable: Bool? = nil,
 		example: AnyValue? = nil,
 		externalDocs: ExternalDocumentationObject? = nil
 	) -> Self {
@@ -342,67 +398,68 @@ public extension ExpressibleBySchemaObject {
 				.enum(type, allCases: cases),
 				example: example,
 				description: description,
+				nullable: nullable,
 				externalDocs: externalDocs
 			)
 		)
 	}
 
-	static func `enum`<T>(_ type: T.Type, example: T? = nil) -> Self where T: CaseIterable, T.AllCases.Element: RawRepresentable, T.AllCases.Element.RawValue == String {
-		.enum(cases: type.allCases.map(\.rawValue), example: example.map { .string($0.rawValue) })
+	static func `enum`<T>(_ type: T.Type, nullable: Bool? = nil, example: T? = nil) -> Self where T: CaseIterable, T.AllCases.Element: RawRepresentable, T.AllCases.Element.RawValue == String {
+		.enum(cases: type.allCases.map(\.rawValue), nullable: nullable, example: example.map { .string($0.rawValue) })
 	}
 
 	static var string: Self { primitive(.string) }
-	static func string(format: DataFormat? = nil, description: String? = nil, example: String? = nil) -> Self {
-		.primitive(.string, format: format, description: description, example: example.map { .string($0) })
+	static func string(format: DataFormat? = nil, description: String? = nil, nullable: Bool? = nil, example: String? = nil) -> Self {
+		.primitive(.string, format: format, description: description, nullable: nullable, example: example.map { .string($0) })
 	}
 
-	static func number(format: DataFormat? = nil, description: String? = nil, example: Double? = nil) -> Self {
-		.primitive(.number, format: format, description: description, example: example.map { .double($0) })
+	static func number(format: DataFormat? = nil, description: String? = nil, nullable: Bool? = nil, example: Double? = nil) -> Self {
+		.primitive(.number, format: format, description: description, nullable: nullable, example: example.map { .double($0) })
 	}
 
 	static var number: Self { .number() }
-	static func integer(format: DataFormat? = .int64, description: String? = nil, example: Int? = nil) -> Self {
-		.primitive(.integer, format: format, description: description, example: example.map { .int($0) })
+	static func integer(format: DataFormat? = .int64, description: String? = nil, nullable: Bool? = nil, example: Int? = nil) -> Self {
+		.primitive(.integer, format: format, description: description, nullable: nullable, example: example.map { .int($0) })
 	}
 
 	static var integer: Self { .integer(format: .int64) }
-	static func float(description: String? = nil, example: Float? = nil) -> Self {
-		.number(format: .float, description: description, example: example.map { Double($0) })
+	static func float(description: String? = nil, nullable: Bool? = nil, example: Float? = nil) -> Self {
+		.number(format: .float, description: description, nullable: nullable, example: example.map { Double($0) })
 	}
 
 	static var float: Self { .float() }
-	static func decimal(description: String? = nil, example: Decimal? = nil) -> Self {
-		.number(format: .decimal, description: description, example: (example as? NSDecimalNumber)?.doubleValue)
+	static func decimal(description: String? = nil, nullable: Bool? = nil, example: Decimal? = nil) -> Self {
+		.number(format: .decimal, description: description, nullable: nullable, example: (example as? NSDecimalNumber)?.doubleValue)
 	}
 
 	static var decimal: Self { .decimal() }
-	static func double(description: String? = nil, example: Double? = nil) -> Self {
-		.number(format: .double, description: description, example: example)
+	static func double(description: String? = nil, nullable: Bool? = nil, example: Double? = nil) -> Self {
+		.number(format: .double, description: description, nullable: nullable, example: example)
 	}
 
 	static var double: Self { .double() }
-	static func boolean(description: String? = nil, example: Bool? = nil) -> Self {
-		.primitive(.boolean, description: description, example: example.map { .bool($0) })
+	static func boolean(description: String? = nil, nullable: Bool? = nil, example: Bool? = nil) -> Self {
+		.primitive(.boolean, description: description, nullable: nullable, example: example.map { .bool($0) })
 	}
 
 	static var boolean: Self { .boolean() }
-	static func uuid(description: String? = nil, example: UUID? = nil) -> Self {
-		.string(format: .uuid, description: description, example: example?.uuidString)
+	static func uuid(description: String? = nil, nullable: Bool? = nil, example: UUID? = nil) -> Self {
+		.string(format: .uuid, description: description, nullable: nullable, example: example?.uuidString)
 	}
 
 	static var uuid: Self { .uuid() }
-	static func uri(description: String? = nil, example: String? = nil) -> Self {
-		.string(format: .uri, description: description, example: example)
+	static func uri(description: String? = nil, nullable: Bool? = nil, example: String? = nil) -> Self {
+		.string(format: .uri, description: description, nullable: nullable, example: example)
 	}
 
 	static var uri: Self { .uri() }
-	static func date(description: String? = nil, example: Date? = nil) -> Self {
-		.string(format: .date, description: description, example: example.map { DateEncodingFormat.date($0) })
+	static func date(description: String? = nil, nullable: Bool? = nil, example: Date? = nil) -> Self {
+		.string(format: .date, description: description, nullable: nullable, example: example.map { DateEncodingFormat.date($0) })
 	}
 
 	static var date: Self { .date() }
-	static func dateTime(description: String? = nil, example: Date? = nil) -> Self {
-		.string(format: .dateTime, description: description, example: example.map { DateEncodingFormat.dateTime($0) })
+	static func dateTime(description: String? = nil, nullable: Bool? = nil, example: Date? = nil) -> Self {
+		.string(format: .dateTime, description: description, nullable: nullable, example: example.map { DateEncodingFormat.dateTime($0) })
 	}
 
 	static var dateTime: Self { .dateTime() }

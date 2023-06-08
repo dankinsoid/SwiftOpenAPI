@@ -9,6 +9,7 @@ public enum AnyValue: Codable, Equatable {
 	case double(Double)
 	case object([String: AnyValue])
 	case array([AnyValue])
+	case null
 
 	public init(from decoder: Decoder) throws {
 		do {
@@ -26,7 +27,18 @@ public enum AnyValue: Codable, Equatable {
 						do {
 							self = try .object([String: AnyValue](from: decoder))
 						} catch {
-							self = try .array([AnyValue](from: decoder))
+							do {
+								self = try .array([AnyValue](from: decoder))
+							} catch {
+								let container = try decoder.singleValueContainer()
+								if container.decodeNil() {
+									self = .null
+								} else {
+									throw DecodingError.dataCorrupted(
+										DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unknown type")
+									)
+								}
+							}
 						}
 					}
 				}
@@ -42,6 +54,9 @@ public enum AnyValue: Codable, Equatable {
 		case let .double(value): try value.encode(to: encoder)
 		case let .object(value): try value.encode(to: encoder)
 		case let .array(value): try value.encode(to: encoder)
+		case .null:
+			var container = encoder.singleValueContainer()
+			try container.encodeNil()
 		}
 	}
 
@@ -85,6 +100,7 @@ public enum AnyValue: Codable, Equatable {
 		case .double: return .number
 		case .object: return .object
 		case .array: return .array
+		case .null: return .null
 		}
 	}
 }
@@ -139,6 +155,52 @@ extension AnyValue: ExpressibleByFloatLiteral {
 
 	public init(floatLiteral value: Double) {
 		self = .double(value)
+	}
+}
+
+extension AnyValue: ExpressibleByNilLiteral {
+	
+	public init(nilLiteral: ()) {
+		self = .null
+	}
+}
+
+extension AnyValue: LosslessStringConvertible {
+	
+	public var description: String {
+		switch self {
+		case .string(let string):
+			return string.description
+		case .bool(let bool):
+			return bool.description
+		case .int(let int):
+			return int.description
+		case .double(let double):
+			return double.description
+		case .object(let dictionary):
+			return dictionary.description
+		case .array(let array):
+			return array.description
+		case .null:
+			return "nil"
+		}
+	}
+	
+	public init(_ description: String) {
+		switch description {
+		case "nil":
+			self = .null
+		default:
+			if let int = Int(description) {
+				self = .int(int)
+			} else if let bool = Bool(description) {
+				self = .bool(bool)
+			} else if let double = Double(description) {
+				self = .double(double)
+			} else {
+				self = .string(description)
+			}
+		}
 	}
 }
 

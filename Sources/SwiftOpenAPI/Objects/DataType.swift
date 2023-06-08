@@ -8,6 +8,7 @@ public enum DataType: String, Codable {
 	case boolean
 	case array
 	case object
+	case null
 
 	public var asPrimitive: PrimitiveDataType? {
 		switch self {
@@ -15,7 +16,7 @@ public enum DataType: String, Codable {
 		case .number: return .number
 		case .integer: return .integer
 		case .boolean: return .boolean
-		case .array, .object: return nil
+		case .array, .object, .null: return nil
 		}
 	}
 }

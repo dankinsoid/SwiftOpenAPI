@@ -31,7 +31,7 @@ struct ParametersEncoder {
 	}
 
 	private func parse(
-		value: CodableContainerValue,
+		value: TypeInfo,
 		type: Any.Type,
 		into schemas: inout [String: ReferenceOr<SchemaObject>]
 	) throws -> [ParameterObject] {
@@ -40,7 +40,7 @@ struct ParametersEncoder {
 			throw InvalidType()
 
 		default:
-			switch value {
+			switch value.container {
 			case .single, .unkeyed, .recursive:
 				throw InvalidType()
 
@@ -51,7 +51,7 @@ struct ParametersEncoder {
 						in: location,
 						required: !$0.value.isOptional,
 						schema: SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
-							.parse(value: $0.value.container, type: $0.value.type, into: &schemas),
+							.parse(value: $0.value, type: $0.value.type, into: &schemas),
 						example: $0.value.container.anyValue
 					)
 				}
