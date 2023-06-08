@@ -380,7 +380,7 @@ public extension ExpressibleBySchemaObject {
 		.number(format: .double, description: description, example: example)
 	}
 
-	static var double: Self { .decimal() }
+	static var double: Self { .double() }
 	static func boolean(description: String? = nil, example: Bool? = nil) -> Self {
 		.primitive(.boolean, description: description, example: example.map { .bool($0) })
 	}
