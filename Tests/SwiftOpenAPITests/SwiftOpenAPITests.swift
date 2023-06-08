@@ -21,12 +21,21 @@ final class SwiftOpenAPITests: XCTestCase {
 				"SomeEnum": .string(allowedValues: "first", "second"),
 				"LoginBody": .object(
 					properties: [
-						"enumValue": .reference(.component(named: "SomeEnum")),
 						"username": .string(required: true),
 						"password": .string(required: true),
+						"tags": .array(nullable: true, items: .string).optionalSchemaObject(),
+						"id": .string(format: .other("uuid"), required: true),
+						"url": .string(format: .other("uri"), nullable: true).optionalSchemaObject(),
+						"enumValue": .reference(.component(named: "SomeEnum")).optionalSchemaObject(),
+						"comments": .object(nullable: true, additionalProperties: .b(.string)).optionalSchemaObject(),
+						"int": .integer(nullable: true).optionalSchemaObject(),
 					]
 				),
 			]
+		)
+		XCTAssertNoDifference(
+			Set(references["LoginBody"]?.objectContext?.requiredProperties ?? []),
+			["username", "password", "id"]
 		)
 	}
 
@@ -56,17 +65,17 @@ final class SwiftOpenAPITests: XCTestCase {
 		XCTAssertNoDifference(
 			references,
 			[
-				"SomeEnum": .string(allowedValues: ["first", "second"]),
+				"SomeEnum": .string(allowedValues: "first", "second"),
 				"LoginBody": .object(
 					properties: [
 						"username": .string(required: true),
 						"password": .string(required: true),
-						"tags": .array(nullable: true, items: .string),
+						"tags": .array(nullable: true, items: .string).optionalSchemaObject(),
 						"id": .string(format: .other("uuid"), required: true),
-						"url": .string(format: .other("uri"), nullable: true),
-						"enum_value": .reference(.component(named: "SomeEnum")),
-						"comments": .object(nullable: true, additionalProperties: .b(.string)),
-						"int": .integer(nullable: true),
+						"url": .string(format: .other("uri"), nullable: true).optionalSchemaObject(),
+						"enum_value": .reference(.component(named: "SomeEnum")).optionalSchemaObject(),
+						"comments": .object(nullable: true, additionalProperties: .b(.string)).optionalSchemaObject(),
+						"int": .integer(nullable: true).optionalSchemaObject(),
 					]
 				),
 			]
