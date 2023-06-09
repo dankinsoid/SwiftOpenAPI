@@ -14,7 +14,6 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testSchemeEncoding() throws {
 		var references: OpenAPI.ComponentDictionary<JSONSchema> = [:]
 		try JSONSchema.encode(LoginBody.example, into: &references)
-		prettyPrint(references)
 		XCTAssertNoDifference(
 			references,
 			[
@@ -24,10 +23,10 @@ final class SwiftOpenAPITests: XCTestCase {
 						"username": .string(required: true),
 						"password": .string(required: true),
 						"tags": .array(nullable: true, items: .string).optionalSchemaObject(),
-						"id": .string(format: .other("uuid"), required: true),
-						"url": .string(format: .other("uri"), nullable: true).optionalSchemaObject(),
+                        "comments": .object(nullable: true, additionalProperties: .b(.string)).optionalSchemaObject(),
 						"enumValue": .reference(.component(named: "SomeEnum")).optionalSchemaObject(),
-						"comments": .object(nullable: true, additionalProperties: .b(.string)).optionalSchemaObject(),
+                        "url": .string(format: .other("uri"), nullable: true).optionalSchemaObject(),
+                        "id": .string(format: .other("uuid"), required: true),
 						"int": .integer(nullable: true).optionalSchemaObject(),
 					]
 				),
@@ -47,7 +46,7 @@ final class SwiftOpenAPITests: XCTestCase {
 			return
 		}
 		XCTAssertEqual(schema.description, .cardMeta)
-		switch schema {
+        switch schema.value {
 		case let .object(_, object):
 			let props = object.properties
 			XCTAssertEqual(props["cardNumber"]?.description, .cardNumber)
@@ -62,24 +61,24 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testKeyEncoding() throws {
 		var references: OpenAPI.ComponentDictionary<JSONSchema> = [:]
 		try JSONSchema.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
-		XCTAssertNoDifference(
-			references,
-			[
-				"SomeEnum": .string(allowedValues: "first", "second"),
-				"LoginBody": .object(
-					properties: [
-						"username": .string(required: true),
-						"password": .string(required: true),
-						"tags": .array(nullable: true, items: .string).optionalSchemaObject(),
-						"id": .string(format: .other("uuid"), required: true),
-						"url": .string(format: .other("uri"), nullable: true).optionalSchemaObject(),
-						"enum_value": .reference(.component(named: "SomeEnum")).optionalSchemaObject(),
-						"comments": .object(nullable: true, additionalProperties: .b(.string)).optionalSchemaObject(),
-						"int": .integer(nullable: true).optionalSchemaObject(),
-					]
-				),
-			]
-		)
+        XCTAssertNoDifference(
+            references,
+            [
+                "SomeEnum": .string(allowedValues: "first", "second"),
+                "LoginBody": .object(
+                    properties: [
+                        "username": .string(required: true),
+                        "password": .string(required: true),
+                        "tags": .array(nullable: true, items: .string).optionalSchemaObject(),
+                        "comments": .object(nullable: true, additionalProperties: .b(.string)).optionalSchemaObject(),
+                        "enum_value": .reference(.component(named: "SomeEnum")).optionalSchemaObject(),
+                        "url": .string(format: .other("uri"), nullable: true).optionalSchemaObject(),
+                        "id": .string(format: .other("uuid"), required: true),
+                        "int": .integer(nullable: true).optionalSchemaObject(),
+                    ]
+                ),
+            ]
+        )
 	}
 }
 

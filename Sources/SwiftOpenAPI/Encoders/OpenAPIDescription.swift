@@ -42,7 +42,7 @@ extension JSONSchema {
 	func with(description: OpenAPIDescriptionType?) -> JSONSchema {
 		guard let description else { return self }
 		var result = description.openAPISchemeDescription.map { with(description: $0) } ?? self
-		switch result {
+        switch result.value {
 		case let .object(context, object):
 			var props = object.properties
 			for (key, value) in description.schemePropertyDescriptions {
@@ -66,7 +66,7 @@ extension JSONSchema {
 	}
 
 	func with(description: String) -> JSONSchema {
-		switch self {
+		switch value {
 		case let .boolean(context):
 			return .boolean(context.with(description: description))
 		case let .object(contextA, contextB):
@@ -89,7 +89,7 @@ extension JSONSchema {
 			return .any(of: schemas, core: core.with(description: description))
 		case let .not(schema, core: core):
 			return .not(schema, core: core.with(description: description))
-		case .reference:
+        case .reference, .null:
 			return self
 		}
 	}
@@ -110,7 +110,7 @@ extension JSONSchema.CoreContext {
 			externalDocs: externalDocs,
 			allowedValues: allowedValues,
 			defaultValue: defaultValue,
-			example: example
+			examples: examples
 		)
 	}
 }

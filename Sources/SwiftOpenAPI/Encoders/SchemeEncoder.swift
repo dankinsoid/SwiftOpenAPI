@@ -63,14 +63,11 @@ struct SchemeEncoder {
 				switch keyedInfo.isFixed {
 				case true:
 					result = try JSONSchema.object(
-						properties: Dictionary(
-							keyedInfo.fields.map {
-								try (
-									keyEncodingStrategy.encode($0.key),
-									parse(value: $0.value, type: $0.value.type, into: &schemas)
-								)
-							}
-						) { _, s in s }
+                        properties: keyedInfo.fields.mapKeys {
+                            keyEncodingStrategy.encode($0)
+                        }.mapValues {
+                            try parse(value: $0, type: $0.type, into: &schemas)
+                        }
 					)
 
 				case false:
@@ -150,13 +147,13 @@ struct SchemeEncoder {
 private extension JSONSchema {
 
 	var isReferenceable: Bool {
-		switch self {
-		case let .boolean(core as JSONSchemaContext),
+		switch value {
+		case .boolean(let core as JSONSchemaContext),
 		     .number(let core as JSONSchemaContext, _),
 		     .integer(let core as JSONSchemaContext, _),
 		     .string(let core as JSONSchemaContext, _):
 			return core.allowedValues?.isEmpty == false
-		case .array, .fragment, .reference:
+        case .array, .fragment, .reference, .null:
 			return false
 		case let .object(_, objectContext):
 			return !objectContext.properties.isEmpty
@@ -211,7 +208,7 @@ public extension OpenAPI.Content {
 		try OpenAPI.Content(
 			schema: .encode(value, into: &schemas),
 			examples: [
-				String.typeName(type(of: value)).rawValue: .a(.reference(example: value, into: &examples)),
+                String.typeName(type(of: value)).rawValue: .a(.reference(example: value, into: &examples)),
 			]
 		)
 	}
@@ -227,7 +224,7 @@ public extension OpenAPI.Content {
 	}
 }
 
-public extension JSONReference<OpenAPI.Example> {
+public extension OpenAPI.Reference<OpenAPI.Example> {
 
 	static func reference(
 		example value: Encodable,
@@ -245,6 +242,6 @@ public extension JSONReference<OpenAPI.Example> {
 			name = "\(typeName)\(i)"
 		}
 		examples[name] = .b(OpenAPI.Example(value: .b(example)))
-		return .internal(.component(name: name))
+        return .component(named: name)
 	}
 }
