@@ -1,17 +1,5 @@
 import Foundation
 
-public protocol OpenAPIDescriptable {
-
-	static var openAPIDescription: OpenAPIDescriptionType? { get }
-}
-
-public extension OpenAPIDescriptable {
-
-	static var openAPIDescription: OpenAPIDescriptionType? {
-		nil
-	}
-}
-
 public protocol OpenAPIType: OpenAPIDescriptable {
 
 	static var openAPISchema: SchemaObject { get }
