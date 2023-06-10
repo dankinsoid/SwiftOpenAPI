@@ -121,7 +121,34 @@ extension Optional: OpenAPIDescriptable where Wrapped: OpenAPIDescriptable {
 
 extension Optional: OpenAPIType where Wrapped: OpenAPIType {
 
-	public static var openAPISchema: SchemaObject { Wrapped.openAPISchema }
+	public static var openAPISchema: SchemaObject { Wrapped.openAPISchema.with(\.nullable, true) }
+}
+
+extension Dictionary: OpenAPIDescriptable where Key == String, Value: OpenAPIType {}
+
+extension Dictionary: OpenAPIType where Key == String, Value: OpenAPIType {
+
+	public static var openAPISchema: SchemaObject {
+		.dictionary(of: .value(Value.openAPISchema))
+	}
+}
+
+extension Array: OpenAPIDescriptable where Element: OpenAPIDescriptable {}
+
+extension Array: OpenAPIType where Element: OpenAPIType {
+
+	public static var openAPISchema: SchemaObject {
+		.array(of: .value(Element.openAPISchema))
+	}
+}
+
+extension Set: OpenAPIDescriptable where Element: OpenAPIDescriptable {}
+
+extension Set: OpenAPIType where Element: OpenAPIType {
+
+	public static var openAPISchema: SchemaObject {
+		.array(of: .value(Element.openAPISchema), uniqueItems: true)
+	}
 }
 
 private extension FixedWidthInteger {
