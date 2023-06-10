@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SwiftOpenAPI'
-  s.version          = '2.17.1'
+  s.version          = '2.17.2'
   s.summary          = 'A short description of SwiftOpenAPI.'
   s.description      = <<-DESC
 TODO: Add long description of the pod here.

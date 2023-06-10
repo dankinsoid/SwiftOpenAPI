@@ -20,7 +20,7 @@ extension SchemaObject: ExpressibleByDictionary {
 		}
 		set {
 			if case var .object(objectContext) = context {
-                objectContext.properties?[key] = newValue
+				objectContext.properties?[key] = newValue
 				context = .object(objectContext)
 			}
 		}
