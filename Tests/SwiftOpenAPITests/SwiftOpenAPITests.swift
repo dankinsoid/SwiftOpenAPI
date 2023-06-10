@@ -1,7 +1,7 @@
+import CustomDump
 import Foundation
 @testable import SwiftOpenAPI
 import XCTest
-import CustomDump
 
 final class SwiftOpenAPITests: XCTestCase {
 
@@ -12,7 +12,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	}
 
 	func testSchemeEncoding() throws {
-		var references: [String: ReferenceOr<SchemaObject>] = [:]
+		var references: OrderedDictionary<String, ReferenceOr<SchemaObject>> = [:]
 		try SchemaObject.encode(LoginBody.example, into: &references)
 		XCTAssertNoDifference(
 			references,
@@ -22,12 +22,12 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"username": .string,
 						"password": .string,
-						"tags": .array(of: .string, nullable: true),
-						"id": .uuid,
-						"url": .uri(nullable: true),
+						"tags": .array(of: .string).with(\.nullable, true),
+						"comments": .dictionary(of: .string).with(\.nullable, true),
 						"enumValue": .ref(components: \.schemas, "SomeEnum"),
-						"comments": .dictionary(of: .string, nullable: true),
-						"int": .integer(nullable: true),
+						"url": .uri.with(\.nullable, true),
+						"id": .uuid,
+						"int": .integer.with(\.nullable, true),
 					],
 					required: ["id", "username", "password"]
 				),
@@ -36,19 +36,19 @@ final class SwiftOpenAPITests: XCTestCase {
 	}
 
 	func testDescriptions() throws {
-		var references: [String: ReferenceOr<SchemaObject>] = [:]
+		var references: OrderedDictionary<String, ReferenceOr<SchemaObject>> = [:]
 		try SchemaObject.decode(CardMeta.self, into: &references)
 		guard let schema = references["CardMeta"]?.object else {
 			XCTFail()
 			return
 		}
 		XCTAssertEqual(schema.description, .cardMeta)
-		switch schema.type {
-		case let .object(.some(props), _, _, _):
-			XCTAssertEqual(props["cardNumber"]?.object?.description, .cardNumber)
-			XCTAssertEqual(props["expiryYear"]?.object?.description, .expiryYear)
-			XCTAssertEqual(props["expiryMonth"]?.object?.description, .expiryMonth)
-			XCTAssertEqual(props["cvv"]?.object?.description, .cvv)
+		switch schema.context {
+		case let .object(context):
+			XCTAssertEqual(context.properties?["cardNumber"]?.object?.description, .cardNumber)
+			XCTAssertEqual(context.properties?["expiryYear"]?.object?.description, .expiryYear)
+			XCTAssertEqual(context.properties?["expiryMonth"]?.object?.description, .expiryMonth)
+			XCTAssertEqual(context.properties?["cvv"]?.object?.description, .cvv)
 		default:
 			XCTFail()
 		}
@@ -110,7 +110,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	}
 
 	func testKeyEncoding() throws {
-		var references: [String: ReferenceOr<SchemaObject>] = [:]
+		var references: OrderedDictionary<String, ReferenceOr<SchemaObject>> = [:]
 		try SchemaObject.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
 		XCTAssertNoDifference(
 			references,
@@ -120,12 +120,12 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"username": .string,
 						"password": .string,
-						"tags": .array(of: .string, nullable: true),
-						"id": .uuid,
-						"url": .uri(nullable: true),
+						"tags": .array(of: .string).with(\.nullable, true),
+						"comments": .dictionary(of: .string).with(\.nullable, true),
 						"enum_value": .ref(components: \.schemas, "SomeEnum"),
-						"comments": .dictionary(of: .string, nullable: true),
-						"int": .integer(nullable: true),
+						"url": .uri.with(\.nullable, true),
+						"id": .uuid,
+						"int": .integer.with(\.nullable, true),
 					],
 					required: ["id", "username", "password"]
 				),

@@ -8,8 +8,8 @@ struct HeadersEncoder {
 	@discardableResult
 	func encode(
 		_ value: Encodable,
-		schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> [String: HeaderObject] {
+		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+	) throws -> OrderedDictionary<String, HeaderObject> {
 		try parse(
 			value: TypeRevision().describeType(of: value),
 			type: type(of: value),
@@ -20,8 +20,8 @@ struct HeadersEncoder {
 	@discardableResult
 	func decode(
 		_ type: Decodable.Type,
-		schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> [String: HeaderObject] {
+		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+	) throws -> OrderedDictionary<String, HeaderObject> {
 		try parse(
 			value: TypeRevision().describe(type: type),
 			type: type,
@@ -32,8 +32,8 @@ struct HeadersEncoder {
 	private func parse(
 		value: TypeInfo,
 		type: Any.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
-	) throws -> [String: HeaderObject] {
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+	) throws -> OrderedDictionary<String, HeaderObject> {
 		switch type {
 		case is URL.Type:
 			throw InvalidType()

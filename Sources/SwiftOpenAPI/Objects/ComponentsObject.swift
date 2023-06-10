@@ -4,48 +4,48 @@ import Foundation
 public struct ComponentsObject: Codable, Equatable, SpecificationExtendable {
 
 	/// An object to hold reusable Schema Objects.
-	public var schemas: [String: ReferenceOr<SchemaObject>]?
+	public var schemas: OrderedDictionary<String, ReferenceOr<SchemaObject>>?
 
 	/// An object to hold reusable Response Objects.
-	public var responses: [String: ReferenceOr<ResponseObject>]?
+	public var responses: OrderedDictionary<String, ReferenceOr<ResponseObject>>?
 
 	/// An object to hold reusable Parameter Objects.
-	public var parameters: [String: ReferenceOr<ParameterObject>]?
+	public var parameters: OrderedDictionary<String, ReferenceOr<ParameterObject>>?
 
 	/// An object to hold reusable Example Objects.
-	public var examples: [String: ReferenceOr<ExampleObject>]?
+	public var examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>?
 
 	/// An object to hold reusable Request Body Objects.
-	public var requestBodies: [String: ReferenceOr<RequestBodyObject>]?
+	public var requestBodies: OrderedDictionary<String, ReferenceOr<RequestBodyObject>>?
 
 	/// An object to hold reusable Header Objects.
-	public var headers: [String: ReferenceOr<HeaderObject>]?
+	public var headers: OrderedDictionary<String, ReferenceOr<HeaderObject>>?
 
 	/// An object to hold reusable Security Scheme Objecvar ts.
-	public var securitySchemes: [String: ReferenceOr<SecuritySchemeObject>]?
+	public var securitySchemes: OrderedDictionary<String, ReferenceOr<SecuritySchemeObject>>?
 
 	/// An object to hold reusable Link Objects.
-	public var links: [String: ReferenceOr<LinkObject>]?
+	public var links: OrderedDictionary<String, ReferenceOr<LinkObject>>?
 
 	/// An object to hold reusable Callback Objects.
-	public var callbacks: [String: ReferenceOr<CallbackObject>]?
+	public var callbacks: OrderedDictionary<String, ReferenceOr<CallbackObject>>?
 
 	/// An object to hold reusable Path Item Object.
-	public var pathItems: [String: ReferenceOr<PathItemObject>]?
+	public var pathItems: OrderedDictionary<String, ReferenceOr<PathItemObject>>?
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
 	public init(
-		schemas: [String: ReferenceOr<SchemaObject>]? = nil,
-		responses: [String: ReferenceOr<ResponseObject>]? = nil,
-		parameters: [String: ReferenceOr<ParameterObject>]? = nil,
-		examples: [String: ReferenceOr<ExampleObject>]? = nil,
-		requestBodies: [String: ReferenceOr<RequestBodyObject>]? = nil,
-		headers: [String: ReferenceOr<HeaderObject>]? = nil,
-		securitySchemes: [String: ReferenceOr<SecuritySchemeObject>]? = nil,
-		links: [String: ReferenceOr<LinkObject>]? = nil,
-		callbacks: [String: ReferenceOr<CallbackObject>]? = nil,
-		pathItems: [String: ReferenceOr<PathItemObject>]? = nil,
+		schemas: OrderedDictionary<String, ReferenceOr<SchemaObject>>? = nil,
+		responses: OrderedDictionary<String, ReferenceOr<ResponseObject>>? = nil,
+		parameters: OrderedDictionary<String, ReferenceOr<ParameterObject>>? = nil,
+		examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>? = nil,
+		requestBodies: OrderedDictionary<String, ReferenceOr<RequestBodyObject>>? = nil,
+		headers: OrderedDictionary<String, ReferenceOr<HeaderObject>>? = nil,
+		securitySchemes: OrderedDictionary<String, ReferenceOr<SecuritySchemeObject>>? = nil,
+		links: OrderedDictionary<String, ReferenceOr<LinkObject>>? = nil,
+		callbacks: OrderedDictionary<String, ReferenceOr<CallbackObject>>? = nil,
+		pathItems: OrderedDictionary<String, ReferenceOr<PathItemObject>>? = nil,
 		specificationExtensions: SpecificationExtensions = [:]
 	) {
 		self.schemas = schemas

@@ -42,15 +42,15 @@ extension SchemaObject {
 		guard let description else { return self }
 		var result = self
 		result.description = description.openAPISchemeDescription ?? result.description
-		switch result.type {
-		case .object(var props, let req, let additional, let xml):
+		switch result.context {
+		case var .object(context):
 			for (key, value) in description.schemePropertyDescriptions {
-				if case var .value(scheme) = props?[key] {
+				if case var .value(scheme) = context.properties?[key] {
 					scheme.description = value
-					props?[key] = .value(scheme)
+					context.properties?[key] = .value(scheme)
 				}
 			}
-			result.type = .object(props, required: req, additionalProperties: additional, xml: xml)
+			result.context = .object(context)
 		default:
 			break
 		}
@@ -84,9 +84,9 @@ extension [ParameterObject] {
 	}
 }
 
-extension [String: HeaderObject] {
+extension OrderedDictionary<String, HeaderObject> {
 
-	func with(description: OpenAPIDescriptionType?) -> [String: HeaderObject] {
+	func with(description: OpenAPIDescriptionType?) -> OrderedDictionary<String, HeaderObject> {
 		guard let description else { return self }
 		var result = self
 		for (key, value) in description.schemePropertyDescriptions {

@@ -12,37 +12,24 @@ public enum AnyValue: Codable, Equatable {
 	case null
 
 	public init(from decoder: Decoder) throws {
-		do {
-			self = try .string(String(from: decoder))
-		} catch {
-			do {
-				self = try .bool(Bool(from: decoder))
-			} catch {
-				do {
-					self = try .int(Int(from: decoder))
-				} catch {
-					do {
-						self = try .double(Double(from: decoder))
-					} catch {
-						do {
-							self = try .object([String: AnyValue](from: decoder))
-						} catch {
-							do {
-								self = try .array([AnyValue](from: decoder))
-							} catch {
-								let container = try decoder.singleValueContainer()
-								if container.decodeNil() {
-									self = .null
-								} else {
-									throw DecodingError.dataCorrupted(
-										DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unknown type")
-									)
-								}
-							}
-						}
-					}
-				}
-			}
+		let container = try decoder.singleValueContainer()
+
+		if container.decodeNil() {
+			self = .null
+		} else if let bool = try? container.decode(Bool.self) {
+			self = .bool(bool)
+		} else if let int = try? container.decode(Int.self) {
+			self = .int(int)
+		} else if let double = try? container.decode(Double.self) {
+			self = .double(double)
+		} else if let string = try? container.decode(String.self) {
+			self = .string(string)
+		} else if let array = try? container.decode([AnyValue].self) {
+			self = .array(array)
+		} else if let dictionary = try? container.decode([String: AnyValue].self) {
+			self = .object(dictionary)
+		} else {
+			throw DecodingError.dataCorruptedError(in: container, debugDescription: "AnyValue value cannot be decoded")
 		}
 	}
 
@@ -92,7 +79,7 @@ public enum AnyValue: Codable, Equatable {
 		}
 	}
 
-	public var dataType: DataType {
+	public var dataType: DataType? {
 		switch self {
 		case .string: return .string
 		case .bool: return .boolean
@@ -100,7 +87,7 @@ public enum AnyValue: Codable, Equatable {
 		case .double: return .number
 		case .object: return .object
 		case .array: return .array
-		case .null: return .null
+		case .null: return nil
 		}
 	}
 }
@@ -159,33 +146,33 @@ extension AnyValue: ExpressibleByFloatLiteral {
 }
 
 extension AnyValue: ExpressibleByNilLiteral {
-	
+
 	public init(nilLiteral: ()) {
 		self = .null
 	}
 }
 
 extension AnyValue: LosslessStringConvertible {
-	
+
 	public var description: String {
 		switch self {
-		case .string(let string):
+		case let .string(string):
 			return string.description
-		case .bool(let bool):
+		case let .bool(bool):
 			return bool.description
-		case .int(let int):
+		case let .int(int):
 			return int.description
-		case .double(let double):
+		case let .double(double):
 			return double.description
-		case .object(let dictionary):
+		case let .object(dictionary):
 			return dictionary.description
-		case .array(let array):
+		case let .array(array):
 			return array.description
 		case .null:
 			return "nil"
 		}
 	}
-	
+
 	public init(_ description: String) {
 		switch description {
 		case "nil":

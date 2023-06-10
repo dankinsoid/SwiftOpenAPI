@@ -172,7 +172,7 @@ extension ReferenceOr: ExpressibleByReferenceOr {
 
 public extension ExpressibleByReferenceOr {
 
-	static func ref(components keyPath: WritableKeyPath<ComponentsObject, [String: ReferenceOr<Object>]?>, _ name: String) -> Self {
+	static func ref(components keyPath: WritableKeyPath<ComponentsObject, OrderedDictionary<String, ReferenceOr<Object>>?>, _ name: String) -> Self {
 		let path: String
 		if let name = names[keyPath] {
 			path = name
@@ -191,14 +191,14 @@ public extension ExpressibleByReferenceOr {
 		return .ref(components: path, name)
 	}
 
-	static func ref(components keyPath: WritableKeyPath<ComponentsObject, [String: ReferenceOr<Object>]?>, _ type: Any.Type) -> Self {
+	static func ref(components keyPath: WritableKeyPath<ComponentsObject, OrderedDictionary<String, ReferenceOr<Object>>?>, _ type: Any.Type) -> Self {
 		.ref(components: keyPath, .typeName(type))
 	}
 }
 
 public extension ExpressibleByReferenceOr<SchemaObject> {
 
-	static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout [String: ReferenceOr<SchemaObject>]) -> Self {
+	static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>) -> Self {
 		_ = try? encodeSchema(schema, dateFormat: dateFormat, into: &schemas)
 		return .ref(components: \.schemas, .typeName(type(of: schema)))
 	}
@@ -207,7 +207,7 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> Self {
 		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try Self(referenceOr: encoder.encode(value, into: &schemas))
@@ -217,7 +217,7 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> Self {
 		let decoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try Self(referenceOr: decoder.decode(type, into: &schemas))
@@ -226,7 +226,7 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 
 public extension ExpressibleByReferenceOr<ExampleObject> {
 
-	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout [String: ReferenceOr<ExampleObject>]) throws -> Self {
+	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout OrderedDictionary<String, ReferenceOr<ExampleObject>>) throws -> Self {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat)
 		let example = try encoder.encode(value)
 		let typeName = String.typeName(type(of: value))

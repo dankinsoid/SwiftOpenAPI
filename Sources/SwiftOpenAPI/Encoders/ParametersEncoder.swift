@@ -9,7 +9,7 @@ struct ParametersEncoder {
 	@discardableResult
 	func encode(
 		_ value: Encodable,
-		schemas: inout [String: ReferenceOr<SchemaObject>]
+		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> [ParameterObject] {
 		try parse(
 			value: TypeRevision().describeType(of: value),
@@ -21,7 +21,7 @@ struct ParametersEncoder {
 	@discardableResult
 	func decode(
 		_ type: Decodable.Type,
-		schemas: inout [String: ReferenceOr<SchemaObject>]
+		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> [ParameterObject] {
 		try parse(
 			value: TypeRevision().describe(type: type),
@@ -33,7 +33,7 @@ struct ParametersEncoder {
 	private func parse(
 		value: TypeInfo,
 		type: Any.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> [ParameterObject] {
 		switch type {
 		case is URL.Type:

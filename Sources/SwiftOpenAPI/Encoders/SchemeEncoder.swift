@@ -9,7 +9,7 @@ struct SchemeEncoder {
 	@discardableResult
 	func encode(
 		_ value: Encodable,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> ReferenceOr<SchemaObject> {
 		let type = Swift.type(of: value)
 		return try parse(
@@ -22,7 +22,7 @@ struct SchemeEncoder {
 	@discardableResult
 	func decode(
 		_ type: Decodable.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> ReferenceOr<SchemaObject> {
 		try parse(
 			value: TypeRevision().describe(type: type),
@@ -34,7 +34,7 @@ struct SchemeEncoder {
 	func parse(
 		value: @autoclosure () throws -> TypeInfo,
 		type: Any.Type,
-		into schemas: inout [String: ReferenceOr<SchemaObject>]
+		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
 	) throws -> ReferenceOr<SchemaObject> {
 		let name = String.typeName(type)
 		var result: ReferenceOr<SchemaObject>
@@ -56,7 +56,7 @@ struct SchemeEncoder {
 					let allCases = iterable.allCases as any Collection
 					schema = .enum(of: dataType, cases: allCases.map { "\($0)" })
 				} else {
-					schema = .primitive(dataType, format: format)
+					schema = SchemaObject(format: format, context: SchemaContexts(dataType))
 				}
 				result = .value(schema)
 
@@ -69,7 +69,7 @@ struct SchemeEncoder {
 						}.mapValues {
 							try parse(value: $0, type: $0.type, into: &schemas)
 						},
-						required: Set(keyedInfo.fields.filter { !$0.value.isOptional }.keys)
+						required: Set(keyedInfo.fields.unorderedHash.filter { !$0.value.isOptional }.keys)
 					)
 					result = .value(schema)
 
@@ -102,7 +102,7 @@ struct SchemeEncoder {
 			schemas[name] = result
 			return .ref(components: \.schemas, name)
 		} else {
-			if typeInfo.isOptional {
+			if typeInfo.isOptional, result.object?.enum == nil {
 				result.object?.nullable = true
 			}
 			return result

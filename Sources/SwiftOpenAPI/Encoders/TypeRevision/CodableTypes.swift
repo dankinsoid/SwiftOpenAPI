@@ -11,7 +11,7 @@ struct TypeInfo {
 
 struct KeyedInfo {
 
-	var fields: [String: TypeInfo] = [:]
+	var fields: OrderedDictionary<String, TypeInfo> = [:]
 	var isFixed = true
 
 	subscript(_ key: String) -> TypeInfo {
@@ -131,7 +131,7 @@ extension CodableContainerValue {
 			}
 
 		case let .keyed(keyedInfo):
-			return .object(keyedInfo.fields.compactMapValues(\.container.anyValue))
+			return .object(keyedInfo.fields.unorderedHash.compactMapValues(\.container.anyValue))
 
 		case let .unkeyed(typeInfo):
 			return typeInfo.container.anyValue.map { .array([$0]) }
