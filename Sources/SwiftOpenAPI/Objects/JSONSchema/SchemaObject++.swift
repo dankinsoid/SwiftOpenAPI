@@ -19,9 +19,9 @@ extension SchemaObject: ExpressibleByDictionary {
 			return nil
 		}
 		set {
-			if case var .object(context) = context {
-				context.properties?[key] = newValue
-				context = .object(context)
+			if case var .object(objectContext) = context {
+                objectContext.properties?[key] = newValue
+				context = .object(objectContext)
 			}
 		}
 	}
