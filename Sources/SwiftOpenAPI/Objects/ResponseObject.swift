@@ -7,7 +7,7 @@ public struct ResponseObject: Codable, Equatable, SpecificationExtendable, Expre
 	public var description: String
 
 	/// Maps a header name to its definition. RFC7230 states header names are case insensitive. If a response header is defined with the name "Content-Type", it SHALL be ignored.
-	public var headers: [String: ReferenceOr<HeaderObject>]?
+	public var headers: OrderedDictionary<String, ReferenceOr<HeaderObject>>?
 
 	/// A map containing descriptions of potential response payloads. The key is a media type or media type range and the value describes it. For responses that match multiple keys, only the most specific key is applicable. e.g. text/plain overrides text/*
 	public var content: ContentObject?
@@ -19,7 +19,7 @@ public struct ResponseObject: Codable, Equatable, SpecificationExtendable, Expre
 
 	public init(
 		description: String,
-		headers: [String: ReferenceOr<HeaderObject>]? = nil,
+		headers: OrderedDictionary<String, ReferenceOr<HeaderObject>>? = nil,
 		content: ContentObject? = nil,
 		links: [String: ReferenceOr<LinkObject>]? = nil
 	) {

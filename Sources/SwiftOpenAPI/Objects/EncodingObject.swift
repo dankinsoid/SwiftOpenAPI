@@ -6,7 +6,7 @@ public struct EncodingObject: Codable, Equatable, SpecificationExtendable {
 	public var contentType: MediaType?
 
 	/// A map allowing additional information to be provided as headers, for example Content-Disposition. Content-Type is described separately and SHALL be ignored in this section. This property SHALL be ignored if the request body media type is not a multipart.
-	public var headers: [String: ReferenceOr<HeaderObject>]?
+	public var headers: OrderedDictionary<String, ReferenceOr<HeaderObject>>?
 
 	/// Describes how a specific property value will be serialized depending on its type. See Parameter Object for details on the style property. The behavior follows the same values as query parameters, including default values. This property SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
 	public var style: String?
@@ -19,7 +19,7 @@ public struct EncodingObject: Codable, Equatable, SpecificationExtendable {
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
-	public init(contentType: MediaType? = nil, headers: [String: ReferenceOr<HeaderObject>]? = nil, style: String? = nil, explode: Bool? = nil, allowReserved: Bool? = nil) {
+	public init(contentType: MediaType? = nil, headers: OrderedDictionary<String, ReferenceOr<HeaderObject>>? = nil, style: String? = nil, explode: Bool? = nil, allowReserved: Bool? = nil) {
 		self.contentType = contentType
 		self.headers = headers
 		self.style = style

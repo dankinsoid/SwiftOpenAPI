@@ -148,6 +148,14 @@ public struct OrderedDictionary<Key, Value> where Key: Hashable {
 		}
 		return ret
 	}
+
+	public func merging<C: Collection>(_ other: C, uniquingKeysWith combine: (Value, Value) throws -> Value) rethrows -> OrderedDictionary where C.Element == Element {
+		try OrderedDictionary(Array(self) + Array(other), uniquingKeysWith: combine)
+	}
+
+	public mutating func merge<C: Collection>(_ other: C, uniquingKeysWith combine: (Value, Value) throws -> Value) rethrows where C.Element == Element {
+		self = try merging(other, uniquingKeysWith: combine)
+	}
 }
 
 // MARK: - Dictionary Literal
