@@ -55,7 +55,6 @@ struct ParametersEncoder {
 						example: $0.value.container.anyValue
 					)
 				}
-				.sorted { $0.name < $1.name }
 				.with(description: (type as? OpenAPIDescriptable.Type)?.openAPIDescription)
 			}
 		}
