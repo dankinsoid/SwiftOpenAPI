@@ -8,7 +8,7 @@ import Foundation
 /// There are four possible parameter locations specified by the in field:
 ///
 /// - `path` - Used together with Path Templating, where the parameter value is actually part of the operation's URL. This does not include the host or base path of the API. For example, in /items/{itemId}, the path parameter is itemId.
-/// - `query` - Parameters that are appended to the URL. For example, in /items?id=###, the query parameter is id.
+/// - `query` - ParametersList that are appended to the URL. For example, in /items?id=###, the query parameter is id.
 /// - `header` - Custom headers that are expected as part of the request. Note that RFC7230 states header names are case insensitive.
 /// - `cookie` - Used to pass a specific cookie value to the API.
 public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
@@ -91,9 +91,9 @@ public extension ParameterObject {
 	}
 }
 
-public typealias Parameters = [ReferenceOr<ParameterObject>]
+public typealias ParametersList = [ReferenceOr<ParameterObject>]
 
-public extension Parameters {
+public extension ParametersList {
 
 	static func encode(
 		_ value: Encodable,
@@ -101,7 +101,7 @@ public extension Parameters {
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		schemas: inout ComponentsMap<SchemaObject>
-	) throws -> Parameters {
+	) throws -> ParametersList {
 		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.encode(value, schemas: &schemas)
 			.map {
@@ -115,7 +115,7 @@ public extension Parameters {
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
 		schemas: inout ComponentsMap<SchemaObject>
-	) throws -> Parameters {
+	) throws -> ParametersList {
 		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.decode(type, schemas: &schemas)
 			.map {

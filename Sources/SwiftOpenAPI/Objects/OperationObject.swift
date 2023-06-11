@@ -19,7 +19,7 @@ public struct OperationObject: Equatable, Codable, SpecificationExtendable {
 	public var operationId: String?
 
 	/// A list of parameters that are applicable for this operation. If a parameter is already defined at the Path Item, the new definition will override it but can never remove it. The list MUST NOT include duplicated parameters. A unique parameter is defined by a combination of a name and location. The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.
-	public var parameters: Parameters?
+	public var parameters: ParametersList?
 
 	/// The request body applicable for this operation. The requestBody is fully supported in HTTP methods where the HTTP 1.1 specification RFC7231 has explicitly defined semantics for request bodies. In other cases where the HTTP spec is vague (such as GET, HEAD and DELETE), requestBody is permitted but does not have well-defined semantics and SHOULD be avoided if possible.
 	public var requestBody: ReferenceOr<RequestBodyObject>?
@@ -41,7 +41,7 @@ public struct OperationObject: Equatable, Codable, SpecificationExtendable {
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
-	public init(tags: [String]? = nil, summary: String? = nil, description: String, externalDocs: ExternalDocumentationObject? = nil, operationId: String? = nil, parameters: Parameters? = nil, requestBody: ReferenceOr<RequestBodyObject>? = nil, responses: ResponsesObject? = nil, callbacks: [String: ReferenceOr<CallbackObject>]? = nil, deprecated: Bool? = nil, security: [SecurityRequirementObject]? = nil, servers: [ServerObject]? = nil) {
+	public init(tags: [String]? = nil, summary: String? = nil, description: String, externalDocs: ExternalDocumentationObject? = nil, operationId: String? = nil, parameters: ParametersList? = nil, requestBody: ReferenceOr<RequestBodyObject>? = nil, responses: ResponsesObject? = nil, callbacks: [String: ReferenceOr<CallbackObject>]? = nil, deprecated: Bool? = nil, security: [SecurityRequirementObject]? = nil, servers: [ServerObject]? = nil) {
 		self.tags = tags
 		self.summary = summary
 		self.description = description

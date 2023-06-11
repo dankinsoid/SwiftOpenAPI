@@ -15,7 +15,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 	public var servers: [ServerObject]?
 
 	/// A list of parameters that are applicable for all the operations described under this path. These parameters can be overridden at the operation level, but cannot be removed there. The list MUST NOT include duplicated parameters. A unique parameter is defined by a combination of a name and location. The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.
-	public var parameters: Parameters?
+	public var parameters: ParametersList?
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
@@ -23,7 +23,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject]? = nil,
-		parameters: Parameters? = nil,
+		parameters: ParametersList? = nil,
 		_ operations: [PathItemObject.Key: OperationObject]
 	) {
 		self.summary = summary
@@ -38,7 +38,7 @@ public struct PathItemObject: Codable, Equatable, SpecificationExtendable {
 		summary = try container.decodeIfPresent(String.self, forKey: .field(.summary))
 		description = try container.decodeIfPresent(String.self, forKey: .field(.description))
 		servers = try container.decodeIfPresent([ServerObject].self, forKey: .field(.servers))
-		parameters = try container.decodeIfPresent(Parameters.self, forKey: .field(.parameters))
+		parameters = try container.decodeIfPresent(ParametersList.self, forKey: .field(.parameters))
 		operations = [:]
 //		specificationExtensions = try SpecificationExtensions(from: decoder)
 
@@ -181,7 +181,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.get: operation]))
@@ -192,7 +192,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.put: operation]))
@@ -203,7 +203,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.post: operation]))
@@ -214,7 +214,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.delete: operation]))
@@ -225,7 +225,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.options: operation]))
@@ -236,7 +236,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.head: operation]))
@@ -247,7 +247,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.patch: operation]))
@@ -258,7 +258,7 @@ public extension ExpressibleByPathItemObject {
 		summary: String? = nil,
 		description: String? = nil,
 		servers: [ServerObject] = [],
-		parameters: Parameters = [],
+		parameters: ParametersList = [],
 		_ operation: OperationObject
 	) -> Self {
 		Self(pathItemObject: PathItemObject(summary: summary, description: description, servers: servers, parameters: parameters, [.trace: operation]))
