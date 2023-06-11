@@ -1,26 +1,9 @@
 import Foundation
 
-public enum ReferenceOr<Object: Codable & Equatable>: Equatable, Codable {
+public enum ReferenceOr<Object> {
 
 	case value(Object)
 	case ref(ReferenceObject)
-
-	public init(from decoder: Decoder) throws {
-		do {
-			self = try .ref(ReferenceObject(from: decoder))
-		} catch {
-			self = try .value(Object(from: decoder))
-		}
-	}
-
-	public func encode(to encoder: Encoder) throws {
-		switch self {
-		case let .value(object):
-			try object.encode(to: encoder)
-		case let .ref(referenceObject):
-			try referenceObject.encode(to: encoder)
-		}
-	}
 
 	public var ref: ReferenceObject? {
 		get {
@@ -47,6 +30,31 @@ public enum ReferenceOr<Object: Codable & Equatable>: Equatable, Codable {
 			if let newValue {
 				self = .value(newValue)
 			}
+		}
+	}
+}
+
+extension ReferenceOr: Equatable where Object: Equatable {}
+
+extension ReferenceOr: Encodable where Object: Encodable {
+
+	public func encode(to encoder: Encoder) throws {
+		switch self {
+		case let .value(object):
+			try object.encode(to: encoder)
+		case let .ref(referenceObject):
+			try referenceObject.encode(to: encoder)
+		}
+	}
+}
+
+extension ReferenceOr: Decodable where Object: Decodable {
+
+	public init(from decoder: Decoder) throws {
+		do {
+			self = try .ref(ReferenceObject(from: decoder))
+		} catch {
+			self = try .value(Object(from: decoder))
 		}
 	}
 }
@@ -151,7 +159,7 @@ extension ReferenceOr: ExpressibleByDictionary where Object: ExpressibleByDictio
 
 public protocol ExpressibleByReferenceOr<Object>: ReferenceObjectExpressible {
 
-	associatedtype Object: Codable & Equatable
+	associatedtype Object
 
 	init(referenceOr: ReferenceOr<Object>)
 }
@@ -172,7 +180,7 @@ extension ReferenceOr: ExpressibleByReferenceOr {
 
 public extension ExpressibleByReferenceOr {
 
-	static func ref(components keyPath: WritableKeyPath<ComponentsObject, OrderedDictionary<String, ReferenceOr<Object>>?>, _ name: String) -> Self {
+	static func ref(components keyPath: WritableKeyPath<ComponentsObject, ComponentsMap<Object>?>, _ name: String) -> Self {
 		let path: String
 		if let name = names[keyPath] {
 			path = name
@@ -191,14 +199,14 @@ public extension ExpressibleByReferenceOr {
 		return .ref(components: path, name)
 	}
 
-	static func ref(components keyPath: WritableKeyPath<ComponentsObject, OrderedDictionary<String, ReferenceOr<Object>>?>, _ type: Any.Type) -> Self {
+	static func ref(components keyPath: WritableKeyPath<ComponentsObject, ComponentsMap<Object>?>, _ type: Any.Type) -> Self {
 		.ref(components: keyPath, .typeName(type))
 	}
 }
 
 public extension ExpressibleByReferenceOr<SchemaObject> {
 
-	static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>) -> Self {
+	static func ref(schema: Encodable, dateFormat: DateEncodingFormat = .default, into schemas: inout ComponentsMap<SchemaObject>) -> Self {
 		_ = try? encodeSchema(schema, dateFormat: dateFormat, into: &schemas)
 		return .ref(components: \.schemas, .typeName(type(of: schema)))
 	}
@@ -207,7 +215,7 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> Self {
 		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try Self(referenceOr: encoder.encode(value, into: &schemas))
@@ -217,7 +225,7 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> Self {
 		let decoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		return try Self(referenceOr: decoder.decode(type, into: &schemas))
@@ -226,7 +234,7 @@ public extension ExpressibleByReferenceOr<SchemaObject> {
 
 public extension ExpressibleByReferenceOr<ExampleObject> {
 
-	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout OrderedDictionary<String, ReferenceOr<ExampleObject>>) throws -> Self {
+	static func ref(example value: Encodable, dateFormat: DateEncodingFormat = .default, into examples: inout ComponentsMap<ExampleObject>) throws -> Self {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat)
 		let example = try encoder.encode(value)
 		let typeName = String.typeName(type(of: value))

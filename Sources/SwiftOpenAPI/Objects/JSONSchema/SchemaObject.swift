@@ -41,7 +41,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		}
 	}
 
-	public var examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>? {
+	public var examples: ComponentsMap<ExampleObject>? {
 		didSet {
 			if examples != nil {
 				example = nil
@@ -63,7 +63,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		writeOnly: Bool? = nil,
 		specificationExtensions: SpecificationExtensions? = nil,
 		example: AnyValue? = nil,
-		examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>? = nil,
+		examples: ComponentsMap<ExampleObject>? = nil,
 		context: SchemaContexts? = nil
 	) {
 		self.title = title
@@ -94,7 +94,7 @@ public struct SchemaObject: Equatable, Codable, SpecificationExtendable {
 		externalDocs = try container.decodeIfPresent(ExternalDocumentationObject.self, forKey: .externalDocs)
 		format = try container.decodeIfPresent(DataFormat.self, forKey: .format)
 		example = try container.decodeIfPresent(AnyValue.self, forKey: .example)
-		examples = try container.decodeIfPresent(OrderedDictionary<String, ReferenceOr<ExampleObject>>.self, forKey: .examples)
+		examples = try container.decodeIfPresent(ComponentsMap<ExampleObject>.self, forKey: .examples)
 		deprecated = try container.decodeIfPresent(Bool.self, forKey: .deprecated)
 		`default` = try container.decodeIfPresent(AnyValue.self, forKey: .default)
 		`enum` = try container.decodeIfPresent([AnyValue].self, forKey: .enum)

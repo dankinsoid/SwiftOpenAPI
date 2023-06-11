@@ -30,7 +30,7 @@ import Foundation
 //
 //    mutating func refactor<T>(
 //        refs: [MutatingRef<OpenAPIObject, ReferenceOr<T>>],
-//        component: WritableKeyPath<ComponentsObject, OrderedDictionary<String, ReferenceOr<HeaderObject>>?>
+//        component: WritableKeyPath<ComponentsObject, ComponentsMap<HeaderObject>?>
 //    ) {
 //
 //    }

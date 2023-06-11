@@ -90,7 +90,7 @@ public extension ExpressibleBySchemaObject {
 	}
 
 	static func object(
-		properties: OrderedDictionary<String, ReferenceOr<SchemaObject>>,
+		properties: ComponentsMap<SchemaObject>,
 		required: Set<String> = [],
 		size: AnyRange<Int> = .any
 	) -> Self {

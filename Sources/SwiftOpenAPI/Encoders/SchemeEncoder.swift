@@ -9,7 +9,7 @@ struct SchemeEncoder {
 	@discardableResult
 	func encode(
 		_ value: Encodable,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> ReferenceOr<SchemaObject> {
 		let type = Swift.type(of: value)
 		return try parse(
@@ -22,7 +22,7 @@ struct SchemeEncoder {
 	@discardableResult
 	func decode(
 		_ type: Decodable.Type,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> ReferenceOr<SchemaObject> {
 		try parse(
 			value: TypeRevision().describe(type: type),
@@ -34,7 +34,7 @@ struct SchemeEncoder {
 	func parse(
 		value: @autoclosure () throws -> TypeInfo,
 		type: Any.Type,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> ReferenceOr<SchemaObject> {
 		let name = String.typeName(type)
 		var result: ReferenceOr<SchemaObject>

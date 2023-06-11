@@ -166,7 +166,7 @@ public indirect enum SchemaType: Equatable {
 	)
 
 	case object(
-		OrderedDictionary<String, ReferenceOr<SchemaObject>>? = nil,
+		ComponentsMap<SchemaObject>? = nil,
 		required: Set<String>? = nil,
 		additionalProperties: ReferenceOr<SchemaObject>? = nil,
 		xml: XMLObject? = nil
@@ -284,7 +284,7 @@ public extension ExpressibleBySchemaObject {
 	@available(*, deprecated, message: "Use init with(\\keyPath) instead")
 	@_disfavoredOverload
 	static func object(
-		properties: OrderedDictionary<String, ReferenceOr<SchemaObject>>,
+		properties: ComponentsMap<SchemaObject>,
 		required: Set<String> = [],
 		xml: XMLObject? = nil,
 		description: String? = nil,

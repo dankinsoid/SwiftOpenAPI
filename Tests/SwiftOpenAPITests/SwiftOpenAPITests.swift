@@ -12,7 +12,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	}
 
 	func testSchemeEncoding() throws {
-		var references: OrderedDictionary<String, ReferenceOr<SchemaObject>> = [:]
+		var references: ComponentsMap<SchemaObject> = [:]
 		try SchemaObject.encode(LoginBody.example, into: &references)
 		XCTAssertNoDifference(
 			references,
@@ -22,7 +22,7 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"username": .string,
 						"password": .string,
-						"tags": .array(of: .string).with(\.nullable, true),
+						"tags": .array(of: .string, uniqueItems: true).with(\.nullable, true),
 						"comments": .dictionary(of: .string).with(\.nullable, true),
 						"enumValue": .ref(components: \.schemas, "SomeEnum"),
 						"url": .uri.with(\.nullable, true),
@@ -36,7 +36,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	}
 
 	func testDescriptions() throws {
-		var references: OrderedDictionary<String, ReferenceOr<SchemaObject>> = [:]
+		var references: ComponentsMap<SchemaObject> = [:]
 		try SchemaObject.decode(CardMeta.self, into: &references)
 		guard let schema = references["CardMeta"]?.object else {
 			XCTFail()
@@ -110,7 +110,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	}
 
 	func testKeyEncoding() throws {
-		var references: OrderedDictionary<String, ReferenceOr<SchemaObject>> = [:]
+		var references: ComponentsMap<SchemaObject> = [:]
 		try SchemaObject.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
 		XCTAssertNoDifference(
 			references,
@@ -120,7 +120,7 @@ final class SwiftOpenAPITests: XCTestCase {
 					properties: [
 						"username": .string,
 						"password": .string,
-						"tags": .array(of: .string).with(\.nullable, true),
+						"tags": .array(of: .string, uniqueItems: true).with(\.nullable, true),
 						"comments": .dictionary(of: .string).with(\.nullable, true),
 						"enum_value": .ref(components: \.schemas, "SomeEnum"),
 						"url": .uri.with(\.nullable, true),

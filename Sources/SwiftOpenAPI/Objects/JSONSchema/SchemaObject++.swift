@@ -66,7 +66,7 @@ public extension SchemaObject {
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws {
 		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		try encoder.encode(value, into: &schemas)
@@ -76,7 +76,7 @@ public extension SchemaObject {
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
+		into schemas: inout ComponentsMap<SchemaObject>
 	) throws {
 		let encoder = SchemeEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		try encoder.decode(type, into: &schemas)

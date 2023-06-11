@@ -30,14 +30,14 @@ public struct HeaderObject: Codable, Equatable, SpecificationExtendable {
 	public var example: AnyValue?
 
 	/// Examples of the parameter's potential value. Each example SHOULD contain a value in the correct format as specified in the parameter encoding. The examples field is mutually exclusive of the example field. Furthermore, if referencing a schema that contains an example, the examples value SHALL override the example provided by the schema.
-	public var examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>?
+	public var examples: ComponentsMap<ExampleObject>?
 
 	/// A map containing the representations for the parameter. The key is the media type and the value describes it. The map MUST only contain one entry.
 	public var content: ContentObject?
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
-	public init(description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>? = nil, content: ContentObject? = nil) {
+	public init(description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: ComponentsMap<ExampleObject>? = nil, content: ContentObject? = nil) {
 		self.description = description
 		self.required = required
 		self.deprecated = deprecated
@@ -52,14 +52,14 @@ public struct HeaderObject: Codable, Equatable, SpecificationExtendable {
 	}
 }
 
-public extension OrderedDictionary<String, ReferenceOr<HeaderObject>> {
+public extension ComponentsMap<HeaderObject> {
 
 	static func encode(
 		_ value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
-	) throws -> OrderedDictionary<String, ReferenceOr<HeaderObject>> {
+		schemas: inout ComponentsMap<SchemaObject>
+	) throws -> ComponentsMap<HeaderObject> {
 		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.encode(value, schemas: &schemas)
 			.mapValues {
@@ -71,8 +71,8 @@ public extension OrderedDictionary<String, ReferenceOr<HeaderObject>> {
 		_ type: Decodable.Type,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
-	) throws -> OrderedDictionary<String, ReferenceOr<HeaderObject>> {
+		schemas: inout ComponentsMap<SchemaObject>
+	) throws -> ComponentsMap<HeaderObject> {
 		try HeadersEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.decode(type, schemas: &schemas)
 			.mapValues {

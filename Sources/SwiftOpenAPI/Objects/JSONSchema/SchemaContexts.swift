@@ -139,7 +139,7 @@ public struct NumberContext<Number: Codable & Comparable>: Codable, Equatable {
 
 public struct ObjectContext: Codable, Equatable {
 
-	public var properties: OrderedDictionary<String, ReferenceOr<SchemaObject>>?
+	public var properties: ComponentsMap<SchemaObject>?
 	public var additionalProperties: AdditionalProperties?
 	public var required: Set<String>?
 	private var minProperties: Int?
@@ -159,7 +159,7 @@ public struct ObjectContext: Codable, Equatable {
 	}
 
 	public init(
-		properties: OrderedDictionary<String, ReferenceOr<SchemaObject>>? = nil,
+		properties: ComponentsMap<SchemaObject>? = nil,
 		additionalProperties: AdditionalProperties? = nil,
 		required: Set<String>? = nil,
 		size: AnyRange<Int> = .any

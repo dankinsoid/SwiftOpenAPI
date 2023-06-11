@@ -50,14 +50,14 @@ public struct ParameterObject: Codable, Equatable, SpecificationExtendable {
 	public var example: AnyValue?
 
 	/// Examples of the parameter's potential value. Each example SHOULD contain a value in the correct format as specified in the parameter encoding. The examples field is mutually exclusive of the example field. Furthermore, if referencing a schema that contains an example, the examples value SHALL override the example provided by the schema.
-	public var examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>?
+	public var examples: ComponentsMap<ExampleObject>?
 
 	/// A map containing the representations for the parameter. The key is the media type and the value describes it. The map MUST only contain one entry.
 	public var content: ContentObject?
 
 	public var specificationExtensions: SpecificationExtensions? = nil
 
-	public init(name: String, in location: ParameterObject.Location, description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: OrderedDictionary<String, ReferenceOr<ExampleObject>>? = nil, content: ContentObject? = nil) {
+	public init(name: String, in location: ParameterObject.Location, description: String? = nil, required: Bool? = nil, deprecated: Bool? = nil, allowEmptyValue: Bool? = nil, style: ParameterObject.Style? = nil, explode: Bool? = nil, allowReserved: Bool? = nil, schema: ReferenceOr<SchemaObject>? = nil, example: AnyValue? = nil, examples: ComponentsMap<ExampleObject>? = nil, content: ContentObject? = nil) {
 		self.name = name
 		self.in = location
 		self.description = description
@@ -91,15 +91,17 @@ public extension ParameterObject {
 	}
 }
 
-public extension [ReferenceOr<ParameterObject>] {
+public typealias Parameters = [ReferenceOr<ParameterObject>]
+
+public extension Parameters {
 
 	static func encode(
 		_ value: Encodable,
 		in location: ParameterObject.Location,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
-	) throws -> [ReferenceOr<ParameterObject>] {
+		schemas: inout ComponentsMap<SchemaObject>
+	) throws -> Parameters {
 		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.encode(value, schemas: &schemas)
 			.map {
@@ -112,8 +114,8 @@ public extension [ReferenceOr<ParameterObject>] {
 		in location: ParameterObject.Location,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		schemas: inout OrderedDictionary<String, ReferenceOr<SchemaObject>>
-	) throws -> [ReferenceOr<ParameterObject>] {
+		schemas: inout ComponentsMap<SchemaObject>
+	) throws -> Parameters {
 		try ParametersEncoder(location: location, dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 			.decode(type, schemas: &schemas)
 			.map {
