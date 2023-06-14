@@ -130,7 +130,7 @@ struct SchemeEncoder {
     
     private func caseValue(for value: Any) -> String {
         if let anyRaw = value as? any RawRepresentable {
-            return caseValue(for: anyRaw.rawValue)
+            return "\(anyRaw.rawValue)"
         } else {
             return "\(value)"
         }
