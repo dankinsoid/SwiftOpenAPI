@@ -54,7 +54,7 @@ struct SchemeEncoder {
 				let schema: SchemaObject
 				if let iterable = type as? any CaseIterable.Type {
 					let allCases = iterable.allCases as any Collection
-					schema = .enum(of: dataType, cases: allCases.map { "\($0)" })
+                    schema = .enum(of: dataType, cases: allCases.map { .string(caseValue(for: $0)) })
 				} else {
 					schema = SchemaObject(format: format, context: SchemaContexts(dataType))
 				}
@@ -127,4 +127,12 @@ struct SchemeEncoder {
 			return (.string, nil)
 		}
 	}
+    
+    private func caseValue(for value: Any) -> String {
+        if let anyRaw = value as? any RawRepresentable {
+            return caseValue(for: anyRaw.rawValue)
+        } else {
+            return "\(value)"
+        }
+    }
 }
