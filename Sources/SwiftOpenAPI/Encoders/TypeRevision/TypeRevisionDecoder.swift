@@ -100,11 +100,7 @@ final class TypeRevisionDecoder: Decoder {
 				}
 				throw AnyError()
 			default:
-				if case .keyed = result.container {
-					let decoder = CheckAllKeysDecoder()
-					_ = try? type.init(from: decoder)
-					result.container.keyed.isFixed = !decoder.isAdditional
-				}
+                break
 			}
 		}
 		guard let value = decodable else {
@@ -260,6 +256,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
 	var allKeys: [Key] {
+        result.isFixed = false
 		if let iterable = Key.self as? any CaseIterable.Type {
 			let array = iterable.allCases as any Collection
 			return Array(array.compactMap { $0 as? Key }.prefix(1))

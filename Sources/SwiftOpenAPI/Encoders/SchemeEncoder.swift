@@ -54,7 +54,7 @@ struct SchemeEncoder {
 				let schema = try parse(value: codableValues)
 				if let iterable = type as? any CaseIterable.Type {
 					let allCases = iterable.allCases as any Collection
-					result = schema.with(allowedValues: allCases.map { AnyCodable("\($0)") })
+					result = schema.with(allowedValues: allCases.map { AnyCodable(stringValue(for: $0)) })
 				} else {
 					result = schema
 				}
@@ -142,6 +142,14 @@ struct SchemeEncoder {
 			return .string(nullable: true)
 		}
 	}
+    
+    private func stringValue(for value: Any) -> String {
+        if let rawValue = value as? any RawRepresentable {
+            return "\(rawValue.rawValue)"
+        } else {
+            return "\(value)"
+        }
+    }
 }
 
 private extension JSONSchema {
