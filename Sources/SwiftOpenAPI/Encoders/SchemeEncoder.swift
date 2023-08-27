@@ -245,7 +245,7 @@ public extension OpenAPI.Reference<OpenAPI.Example> {
 		let typeName = String.typeName(type(of: value)).rawValue
 		var name = typeName
 		var i = 0
-		while let current = examples[name]?.b?.value.b, current != example {
+        while let current = examples[name]?.b?.value?.b, current != example {
 			i += 1
 			name = "\(typeName)\(i)"
 		}
