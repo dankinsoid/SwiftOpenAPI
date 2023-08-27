@@ -211,7 +211,7 @@ public extension OpenAPI.Content {
 	static func encode(
 		_ value: Encodable,
 		schemas: inout OpenAPI.ComponentDictionary<JSONSchema>,
-		examples: inout OpenAPI.Example.Map
+		examples: inout OpenAPI.ComponentDictionary<OpenAPI.Example>
 	) throws -> OpenAPI.Content {
 		try OpenAPI.Content(
 			schema: .encode(value, into: &schemas),
@@ -238,18 +238,18 @@ public extension OpenAPI.Reference<OpenAPI.Example> {
 		example value: Encodable,
 		dateFormat: DateEncodingFormat = .default,
 		keyEncodingStrategy: KeyEncodingStrategy = .default,
-		into examples: inout OpenAPI.Example.Map
+		into examples: inout OpenAPI.ComponentDictionary<OpenAPI.Example>
 	) throws -> Self {
 		let encoder = AnyValueEncoder(dateFormat: dateFormat, keyEncodingStrategy: keyEncodingStrategy)
 		let example = try encoder.encode(value)
-		let typeName = String.typeName(type(of: value)).rawValue
-		var name = typeName
+        let typeName  = String.typeName(type(of: value))
+        var name  = typeName
 		var i = 0
-        while let current = examples[name]?.b?.value?.b, current != example {
+        while let current = examples[name]?.value?.b, current != example {
 			i += 1
-			name = "\(typeName)\(i)"
+            name = OpenAPI.ComponentKey(stringLiteral: "\(typeName.rawValue)\(i)")
 		}
-		examples[name] = .b(OpenAPI.Example(value: .b(example)))
-        return .component(named: name)
+		examples[name] = OpenAPI.Example(value: .b(example))
+        return .component(named: name.rawValue)
 	}
 }
