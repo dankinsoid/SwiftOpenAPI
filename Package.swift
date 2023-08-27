@@ -16,7 +16,7 @@ let package = Package(
 	],
 	dependencies: [
         .package(url: "https://github.com/mattpolzin/OpenAPIKit.git", from: "3.0.0-beta.2"),
-		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3"),
+		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "1.0.0"),
 	],
 	targets: [
 		.target(name: "SwiftOpenAPI", dependencies: ["OpenAPIKit"]),
