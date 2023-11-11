@@ -8,7 +8,27 @@ class ArrayDecodingTests: XCTestCase {
     func testDecodeArray() throws {
         var schemas: ComponentsMap<SchemaObject> = [:]
         _ = try ReferenceOr<SchemaObject>.decodeSchema(Tag.ListResponse.self, into: &schemas)
-        prettyPrint(schemas)
+        XCTAssertNoDifference(
+            schemas,
+            [
+                "TagResponse": .object(
+                    properties: [
+                        "id": .integer,
+                        "value": .string
+                    ],
+                    required: [
+                        "id",
+                        "value"
+                    ]
+                ),
+                "TagListResponse": .object(
+                    properties: [
+                        "tags": .array(of: .ref(components: \.schemas, "TagResponse"))
+                    ],
+                    required: ["tags"]
+                )
+            ]
+        )
     }
 }
     
