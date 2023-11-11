@@ -146,7 +146,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.18.1")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.18.2")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])
