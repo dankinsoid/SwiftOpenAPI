@@ -280,7 +280,6 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 
 	func decode<T: Decodable>(_ type: T.Type) throws -> T {
 		guard let t = _decodeIfPresent(type, optional: false) else {
-			print("Failed to decode \(type)")
 			throw AnyError()
 		}
 		return t
@@ -521,9 +520,6 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 		value.isOptional = optional
 		result[str(key)] = value
 		guard let t = decodable as? T else {
-			if !optional {
-				print("Failed to decode \(type) for key \(key.stringValue)")
-			}
 			throw AnyError()
 		}
 		return t
