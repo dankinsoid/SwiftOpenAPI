@@ -20,7 +20,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.2")
 	],
 	targets: [
-		.target(name: "SwiftOpenAPI", dependencies: []),
+		.target(name: "SwiftOpenAPI", dependencies: ["SwiftOpenAPIMacros"]),
         .macro(
             name: "SwiftOpenAPIMacros",
             dependencies: [
