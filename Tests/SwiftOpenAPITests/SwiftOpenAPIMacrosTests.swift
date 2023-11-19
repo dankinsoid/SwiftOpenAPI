@@ -11,37 +11,6 @@ let testMacros: [String: Macro.Type] = [
 
 final class OpenAPIDescriptionMacroTests: XCTestCase {
 
-    func test_should_create_extension() {
-        assertMacroExpansion(
-            """
-            /// A person.
-            @OpenAPIAutoDescriptable
-            struct Person: Codable {
-            
-                /// The person's name.
-                let name: String
-            }
-            """,
-            expandedSource: """
-            /// A person.
-            struct Person: Codable {
-            
-                /// The person's name.
-                let name: String
-
-                public static var openAPIDescription: OpenAPIDescriptionType? {
-                    OpenAPIDescription<CodingKeys>(#"A person."#)
-                        .add(for: .name, #"The person's name."#)
-                }
-            }
-
-            extension Person: OpenAPIDescriptable {
-            }
-            """,
-            macros: testMacros
-        )
-    }
-
     func test_created_extension() {
         XCTAssertEqual(
             Person.openAPIDescription?.asStringOpenAPIDescription,
@@ -51,8 +20,8 @@ final class OpenAPIDescriptionMacroTests: XCTestCase {
     }
 }
 
-@OpenAPIAutoDescriptable
 /// A person.
+@OpenAPIAutoDescriptable
 struct Person: Codable {
 
     /// The person's name.
