@@ -6,7 +6,7 @@ import SwiftOpenAPIMacros
 @testable import SwiftOpenAPI
 
 let testMacros: [String: Macro.Type] = [
-    "OpenAPICodingKeyDescriptionMacro": OpenAPICodingKeyDescriptionMacro.self
+    "OpenAPIDescriptionMacro": OpenAPIDescriptionMacro.self
 ]
 
 final class OpenAPIDescriptionMacroTests: XCTestCase {

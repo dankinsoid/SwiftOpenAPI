@@ -7,40 +7,18 @@ import SwiftSyntaxMacros
 struct OpenAPIDescriptionPlugin: CompilerPlugin {
 
     let providingMacros: [Macro.Type] = [
-        OpenAPIStringDescriptionMacro.self,
-        OpenAPICodingKeyDescriptionMacro.self
+        OpenAPIDescriptionMacro.self
     ]
 }
 
-public struct OpenAPIStringDescriptionMacro: ExtensionMacro, MemberMacro {
-
-    public static func expansion(
-        of node: AttributeSyntax,
-        providingMembersOf declaration: some DeclGroupSyntax,
-        in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-        try _expansion(of: node, providingMembersOf: declaration, in: context, type: .String)
-    }
-    
-    public static func expansion(
-        of node: AttributeSyntax,
-        attachedTo declaration: some DeclGroupSyntax,
-        providingExtensionsOf type: some TypeSyntaxProtocol,
-        conformingTo protocols: [TypeSyntax],
-        in context: some MacroExpansionContext
-    ) throws -> [ExtensionDeclSyntax] {
-        [openAPIDescriptableExtension(for: type)]
-    }
-}
-
-public struct OpenAPICodingKeyDescriptionMacro: ExtensionMacro, MemberMacro {
+public struct OpenAPIDescriptionMacro: ExtensionMacro, MemberMacro {
     
     public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        try _expansion(of: node, providingMembersOf: declaration, in: context, type: .CodingKeys)
+        try _expansion(of: node, providingMembersOf: declaration, in: context)
     }
     
     public static func expansion(
@@ -57,12 +35,27 @@ public struct OpenAPICodingKeyDescriptionMacro: ExtensionMacro, MemberMacro {
 private func _expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
-    in context: some MacroExpansionContext,
-    type: DescriptionType
+    in context: some MacroExpansionContext
 ) throws -> [DeclSyntax] {
+    var onlyDocComments = false
+    var type: DescriptionType = .CodingKeys
+    node.arguments?.as(LabeledExprListSyntax.self)?.forEach {
+        switch $0.label?.text {
+        case "codingKeys":
+            if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "false" {
+                type = .String
+            }
+        case "docCommentsOnly":
+            if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "true" {
+                onlyDocComments = true
+            }
+        default:
+            break
+        }
+    }
     let typeDoc = declaration
         .children(viewMode: .all)
-        .compactMap { $0.documentation(onlyDocComment: false) }
+        .compactMap { $0.documentation(onlyDocComment: onlyDocComments) }
         .first?
         .wrapped
     let varDocs = declaration.memberBlock.members.compactMap { member -> (String, String)? in
@@ -79,7 +72,6 @@ private func _expansion(
             guard let identifier = binding.pattern.as(IdentifierPatternSyntax.self) else {
                 continue
             }
-            print(binding)
             name = identifier.identifier.text
             if let closure = binding.accessorBlock {
                 guard
@@ -95,7 +87,7 @@ private func _expansion(
     let varDocsModifiers = varDocs.map {
         "\n        .add(for: \(type.wrap(name: $0.0)), \($0.1.wrapped))"
     }
-        .joined()
+    .joined()
     
     let openAPIDescription: DeclSyntax =
       """
