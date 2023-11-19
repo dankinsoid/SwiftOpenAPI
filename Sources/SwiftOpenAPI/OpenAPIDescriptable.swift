@@ -21,7 +21,10 @@ public extension OpenAPIDescriptable {
 /// OpenAPI documentation directly from your source code.
 ///
 /// - Parameters:
-///   - codingKeys: The Bool value indicating whether to use a `CodingKeys` enum for properties names. Defaults to `true`. When `false`, the property names are used directly.
+///   - codingKeys: The Bool value indicating whether to use a `CodingKeys` enum for properties names.
+///   When `true`, the property names are extracted from the `CodingKeys` enum, only stored properties are collected.
+///   When `false`, the property names are used directly, all properties are collected including computed, lazy and with attributes.
+///   Defaults to `true`.
 ///   - docCommentsOnly: The Bool value indicating whether to use only documentation comments (`///` and `/**`). Defaults to `false`.
 ///   - includeAttributes: The Bool value indicating whether to include properties with attributes. Defaults to `false`. The property is ignored when `codingKeys` is `false`.
 ///
