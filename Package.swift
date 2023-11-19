@@ -32,7 +32,6 @@ let package = Package(
 			name: "SwiftOpenAPITests",
 			dependencies: [
 				"SwiftOpenAPI",
-                "SwiftOpenAPIMacros",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
 				.product(name: "CustomDump", package: "swift-custom-dump"),
 			],
