@@ -6,13 +6,7 @@ public protocol OpenAPIDescriptionType {
 	var schemePropertyDescriptions: [String: String] { get }
 }
 
-extension String: OpenAPIDescriptionType {
-
-	public var openAPISchemeDescription: String? { self }
-	public var schemePropertyDescriptions: [String: String] { [:] }
-}
-
-public struct OpenAPIDescription<Key: CodingKey>: OpenAPIDescriptionType, ExpressibleByStringInterpolation {
+public struct OpenAPIDescription<Key>: OpenAPIDescriptionType, ExpressibleByStringInterpolation, Equatable {
 
 	public var openAPISchemeDescription: String?
 	public var schemePropertyDescriptions: [String: String] = [:]
@@ -28,12 +22,34 @@ public struct OpenAPIDescription<Key: CodingKey>: OpenAPIDescriptionType, Expres
 	public init(stringInterpolation: DefaultStringInterpolation) {
 		openAPISchemeDescription = String(stringInterpolation: stringInterpolation)
 	}
+}
 
-	public func add(for key: Key, _ description: String) -> OpenAPIDescription {
-		var result = self
-		result.schemePropertyDescriptions[key.stringValue] = description
-		return result
-	}
+extension OpenAPIDescription where Key: CodingKey {
+    
+    public func add(for key: Key, _ description: String) -> OpenAPIDescription {
+        var result = self
+        result.schemePropertyDescriptions[key.stringValue] = description
+        return result
+    }
+}
+
+extension OpenAPIDescription where Key == String {
+    
+    public func add(for key: Key, _ description: String) -> OpenAPIDescription {
+        var result = self
+        result.schemePropertyDescriptions[key] = description
+        return result
+    }
+}
+
+extension OpenAPIDescription where Key: RawRepresentable, Key.RawValue == String {
+    
+    @_disfavoredOverload
+    public func add(for key: Key, _ description: String) -> OpenAPIDescription {
+        var result = self
+        result.schemePropertyDescriptions[key.rawValue] = description
+        return result
+    }
 }
 
 extension SchemaObject {

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftOpenAPIMacros
 
 public protocol OpenAPIDescriptable {
 
@@ -11,6 +12,12 @@ public extension OpenAPIDescriptable {
 		nil
 	}
 }
+
+@attached(extension, conformances: OpenAPIDescriptable, names: arbitrary)
+public macro OpenAPIAutoDescriptable() = #externalMacro(
+    module: "SwiftOpenAPIMacros",
+    type: "OpenAPIDescriptionMacro"
+)
 
 public protocol OpenAPIType: OpenAPIDescriptable {
 
