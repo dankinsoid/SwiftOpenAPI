@@ -6,21 +6,25 @@ import SwiftSyntaxMacros
 extension TokenSyntax {
     
     var isWillSetOrDidSet: Bool {
-        self == .keyword(.didSet) || self == .keyword(.willSet)
+        tokenKind == .keyword(.didSet) || tokenKind == .keyword(.willSet)
+    }
+    
+    var isStaticOrLazy: Bool {
+        tokenKind == .keyword(.static) || tokenKind == .keyword(.lazy)
     }
 }
 
 extension SyntaxProtocol {
     
-    var documentation: String? {
-        leadingTrivia.documentation
+    func documentation(onlyDocComment: Bool) -> String? {
+        leadingTrivia.documentation(onlyDocComment: onlyDocComment)
     }
 }
 
 extension Trivia {
     
-    var documentation: String? {
-        let lines = compactMap { $0.documentation }
+    func documentation(onlyDocComment: Bool) -> String? {
+        let lines = compactMap { $0.documentation(onlyDocComment: onlyDocComment) }
         guard lines.count > 1 else { return lines.first?.trimmingCharacters(in: .whitespaces) }
         
         let indentation = lines.compactMap { $0.firstIndex(where: { !$0.isWhitespace })?.utf16Offset(in: $0) }
@@ -35,12 +39,13 @@ extension Trivia {
 
 extension TriviaPiece {
     
-    var documentation: String? {
+    func documentation(onlyDocComment: Bool) -> String? {
         switch self {
         case let .docLineComment(comment):
             let startIndex = comment.index(comment.startIndex, offsetBy: 3)
             return String(comment.suffix(from: startIndex))
         case let .lineComment(comment):
+            guard !onlyDocComment else { return nil }
             let startIndex = comment.index(comment.startIndex, offsetBy: 2)
             return String(comment.suffix(from: startIndex))
         case let .docBlockComment(comment):
@@ -48,6 +53,7 @@ extension TriviaPiece {
             let endIndex = comment.index(comment.endIndex, offsetBy: -2)
             return String(comment[startIndex ..< endIndex])
         case let .blockComment(comment):
+            guard !onlyDocComment else { return nil }
             let startIndex = comment.index(comment.startIndex, offsetBy: 2)
             let endIndex = comment.index(comment.endIndex, offsetBy: -2)
             return String(comment[startIndex ..< endIndex])

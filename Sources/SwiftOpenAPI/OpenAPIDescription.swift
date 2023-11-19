@@ -6,6 +6,22 @@ public protocol OpenAPIDescriptionType {
 	var schemePropertyDescriptions: [String: String] { get }
 }
 
+extension String: OpenAPIDescriptionType {
+    
+    public var openAPISchemeDescription: String? { self }
+    public var schemePropertyDescriptions: [String: String] { [:] }
+}
+
+extension OpenAPIDescriptionType {
+    
+    public var asStringOpenAPIDescription: OpenAPIDescription<String> {
+        OpenAPIDescription(
+            openAPISchemeDescription: openAPISchemeDescription,
+            schemePropertyDescriptions: schemePropertyDescriptions
+        )
+    }
+}
+
 public struct OpenAPIDescription<Key>: OpenAPIDescriptionType, ExpressibleByStringInterpolation, Equatable {
 
 	public var openAPISchemeDescription: String?
@@ -14,6 +30,14 @@ public struct OpenAPIDescription<Key>: OpenAPIDescriptionType, ExpressibleByStri
 	public init(_ openAPISchemeDescription: String? = nil) {
 		self.openAPISchemeDescription = openAPISchemeDescription
 	}
+    
+    init(
+        openAPISchemeDescription: String?,
+        schemePropertyDescriptions: [String: String]
+    ) {
+        self.openAPISchemeDescription = openAPISchemeDescription
+        self.schemePropertyDescriptions = schemePropertyDescriptions
+    }
 
 	public init(stringLiteral value: String) {
 		openAPISchemeDescription = value
