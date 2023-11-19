@@ -10,7 +10,11 @@ extension TokenSyntax {
     }
     
     var isStaticOrLazy: Bool {
-        tokenKind == .keyword(.static) || tokenKind == .keyword(.lazy)
+        isStatic || tokenKind == .keyword(.lazy)
+    }
+    
+    var isStatic: Bool {
+        tokenKind == .keyword(.static)
     }
 }
 

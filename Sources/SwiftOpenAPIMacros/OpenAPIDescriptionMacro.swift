@@ -66,8 +66,9 @@ private func _expansion(
     let varDocs = declaration.memberBlock.members.compactMap { member -> (String, String)? in
         guard
             let variable = member.decl.as(VariableDeclSyntax.self),
-            includeAttributes || variable.attributes.isEmpty,
-            !variable.modifiers.contains(where: \.name.isStaticOrLazy),
+            includeAttributes || type == .String || variable.attributes.isEmpty,
+            type == .CodingKeys && !variable.modifiers.contains(where: \.name.isStaticOrLazy) 
+                || type == .String && !variable.modifiers.contains(where: \.name.isStatic),
             let doc = variable.documentation(onlyDocComment: false)
         else {
             return nil
@@ -78,7 +79,7 @@ private func _expansion(
                 continue
             }
             name = identifier.identifier.text
-            if let closure = binding.accessorBlock {
+            if let closure = binding.accessorBlock, type == .CodingKeys {
                 guard
                     let list = closure.accessors.as(AccessorDeclListSyntax.self),
                     list.contains(where: \.accessorSpecifier.isWillSetOrDidSet)
