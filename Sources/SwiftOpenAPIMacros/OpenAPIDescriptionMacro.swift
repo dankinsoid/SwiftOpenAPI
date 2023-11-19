@@ -39,6 +39,7 @@ private func _expansion(
 ) throws -> [DeclSyntax] {
     var onlyDocComments = false
     var type: DescriptionType = .CodingKeys
+    var includeAttributes = false
     node.arguments?.as(LabeledExprListSyntax.self)?.forEach {
         switch $0.label?.text {
         case "codingKeys":
@@ -48,6 +49,10 @@ private func _expansion(
         case "docCommentsOnly":
             if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "true" {
                 onlyDocComments = true
+            }
+        case "includeAttributes":
+            if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "true" {
+                includeAttributes = true
             }
         default:
             break
@@ -61,7 +66,7 @@ private func _expansion(
     let varDocs = declaration.memberBlock.members.compactMap { member -> (String, String)? in
         guard
             let variable = member.decl.as(VariableDeclSyntax.self),
-            variable.attributes.isEmpty,
+            includeAttributes || variable.attributes.isEmpty,
             !variable.modifiers.contains(where: \.name.isStaticOrLazy),
             let doc = variable.documentation(onlyDocComment: false)
         else {

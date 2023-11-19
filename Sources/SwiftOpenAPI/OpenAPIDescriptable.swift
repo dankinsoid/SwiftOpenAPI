@@ -21,15 +21,16 @@ public extension OpenAPIDescriptable {
 /// OpenAPI documentation directly from your source code.
 ///
 /// - Parameters:
-///   - codingKeys: The Bool value indicating whether to use a `CodingKeys` enum for properties names.
-///   - docCommentsOnly: The Bool value indicating whether to use only documentation comments (`///` and `/**`).
+///   - codingKeys: The Bool value indicating whether to use a `CodingKeys` enum for properties names. Defaults to `true`. When `false`, the property names are used directly.
+///   - docCommentsOnly: The Bool value indicating whether to use only documentation comments (`///` and `/**`). Defaults to `false`.
+///   - includeAttributes: The Bool value indicating whether to include properties with attributes. Defaults to `false`.
 ///
 /// Features:
 /// - Automatically extracts and synthesizes descriptions from comments on types and stored properties.
 /// - Simplifies the process of conforming to `OpenAPIDescriptable` by generating necessary implementation details.
 ///
-/// - Warning: This macro does not process properties with attributes, as it's currently not feasible
-///   to distinguish between stored and computed properties in such cases.
+/// - Warning: Bu default this macro does not process properties with attributes, as it's currently not feasible
+///   to distinguish between stored and computed properties in such cases. You can override this behavior by setting the `includeAttributes` parameter to `true`.
 ///
 /// Example:
 /// ```swift
@@ -48,7 +49,8 @@ public extension OpenAPIDescriptable {
 @attached(extension, conformances: OpenAPIDescriptable, names: arbitrary)
 public macro OpenAPIAutoDescriptable(
     codingKeys: Bool = true,
-    docCommentsOnly: Bool = false
+    docCommentsOnly: Bool = false,
+    includeAttributes: Bool = false
 ) = #externalMacro(
     module: "SwiftOpenAPIMacros",
     type: "OpenAPIDescriptionMacro"
