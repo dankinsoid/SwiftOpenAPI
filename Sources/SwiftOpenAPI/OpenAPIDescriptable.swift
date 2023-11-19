@@ -29,7 +29,7 @@ public extension OpenAPIDescriptable {
 /// - Automatically extracts and synthesizes descriptions from comments on types and stored properties.
 /// - Simplifies the process of conforming to `OpenAPIDescriptable` by generating necessary implementation details.
 ///
-/// - Warning: Bu default this macro does not process properties with attributes, as it's currently not feasible
+/// - Warning: By default this macro does not process properties with attributes, as it's currently not feasible
 ///   to distinguish between stored and computed properties in such cases. You can override this behavior by setting the `includeAttributes` parameter to `true`.
 ///
 /// Example:
