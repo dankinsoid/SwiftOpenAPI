@@ -30,6 +30,18 @@ class ArrayDecodingTests: XCTestCase {
             ]
         )
     }
+    
+    func testEncodeRecursiveArray() throws {
+        var schemas: ComponentsMap<SchemaObject> = [:]
+        _ = try ReferenceOr<SchemaObject>.encodeSchema(ProductDependency.example, into: &schemas)
+        XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
+    }
+    
+    func testDecodeRecursiveArray() throws {
+        var schemas: ComponentsMap<SchemaObject> = [:]
+        _ = try ReferenceOr<SchemaObject>.encodeSchema(ProductDependency.example, into: &schemas)
+        XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
+    }
 }
     
 enum Tag {
@@ -43,4 +55,36 @@ enum Tag {
     struct ListResponse: Codable {
         let tags: [Response]
     }
+}
+
+public struct ProductDependency: Codable, Equatable {
+
+    public var identity: String
+    public var name: String
+    public var url: String
+    public var dependencies: [ProductDependency]
+    
+    public init(identity: String, name: String, url: String, dependencies: [ProductDependency]) {
+        self.identity = identity
+        self.name = name
+        self.url = url
+        self.dependencies = dependencies
+    }
+    
+    public static let example = ProductDependency(
+        identity: "0",
+        name: "name",
+        url: "http://vapor.com",
+        dependencies: []
+    )
+    
+    static let scheme: SchemaObject = .object(
+        properties: [
+            "identity": .string,
+            "name": .string,
+            "url": .string,
+            "dependencies": .array(of: .ref(components: \.schemas, "ProductDependency"))
+        ],
+        required: ["identity", "name", "url", "dependencies"]
+    )
 }

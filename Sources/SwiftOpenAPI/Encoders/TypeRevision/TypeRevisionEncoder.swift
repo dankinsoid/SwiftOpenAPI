@@ -28,7 +28,7 @@ final class TypeRevisionEncoder: Encoder {
 	}
 
 	func unkeyedContainer() -> UnkeyedEncodingContainer {
-		TypeRevisionSingleValueEncodingContainer(
+        TypeRevisionSingleValueEncodingContainer(
 			isSingle: false,
 			path: path,
 			encoder: self,
@@ -57,11 +57,26 @@ final class TypeRevisionEncoder: Encoder {
 			result = TypeInfo(type: type, isOptional: value == nil, container: container)
 		} else if let value {
 			try value.encode(to: self)
-			if case .keyed = result.container, let decodable = type as? Decodable.Type {
-				let decoder = CheckAllKeysDecoder()
-				_ = try? decodable.init(from: decoder)
-				result.container.keyed.isFixed = !decoder.isAdditional
+			if case let .keyed(fields) = result.container, let decodable = type as? Decodable.Type {
+                if fields.fields.isEmpty {
+                    let decoder = TypeRevisionDecoder(path: path, context: context)
+                    _ = try? decodable.init(from: decoder)
+                    result = decoder.result
+                } else {
+                    let decoder = CheckAllKeysDecoder()
+                    _ = try? decodable.init(from: decoder)
+                    result.container.keyed.isFixed = !decoder.isAdditional
+                }
 			}
+            if 
+                let collection = value as? any Collection,
+                collection.isEmpty,
+                let decodable = type as? Decodable.Type
+            {
+                let decoder = TypeRevisionDecoder(path: path, context: context)
+                _ = try? decodable.init(from: decoder)
+                result = decoder.result
+            }
 		} else if let decodable = type as? Decodable.Type {
 			let decoder = TypeRevisionDecoder(path: path, context: context)
 			_ = try? decoder.decode(decodable)

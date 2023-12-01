@@ -66,9 +66,24 @@ final class TypeRevisionDecoder: Decoder {
 		guard path.isEmpty || !path.dropLast().contains(where: { path in path.type == type }) else {
 			result.container = .recursive
 			result.type = type
-			throw AnyError()
+            if let decodable = collection(for: type) {
+                return decodable
+            }
+            if path.isEmpty {
+                throw AnyError("Cannot resolve recursive type \(type)")
+            } else {
+                throw AnyError("Cannot resolve recursive type \(type) at .\(path.map(\.key.stringValue).joined(separator: "."))")
+            }
 		}
-		let decodable = try? type.init(from: self)
+        let decodingError: Error
+        let decodable: Decodable?
+        do {
+            decodable = try type.init(from: self)
+            decodingError = AnyError("Unknown error")
+        } catch {
+            decodable = nil
+            decodingError = error
+        }
 		if let custom = context.customDescription(type, decodable) {
 			result.container = custom
 		} else {
@@ -95,10 +110,10 @@ final class TypeRevisionDecoder: Decoder {
 			case let iterable as any CaseIterable.Type:
 				result.type = type
 				let allCases = iterable.allCases as any Collection
-				if let result = allCases.first as? Decodable {
+				if let result = (allCases.first as? Decodable) ?? decodable {
 					return result
 				}
-				throw AnyError()
+                throw AnyError("Cannot decode CaseIterable \(type) type with an empty allCases")
 			default:
 				if case .keyed = result.container {
 					let decoder = CheckAllKeysDecoder()
@@ -107,12 +122,19 @@ final class TypeRevisionDecoder: Decoder {
 				}
 			}
 		}
-		guard let value = decodable else {
-			throw AnyError()
+		guard let value = decodable ?? collection(for: type) else {
+			throw decodingError
 		}
 		result.type = type
 		return value
 	}
+    
+    private func collection(for type: Decodable.Type) -> Decodable? {
+        if let collectionType = type as? any RangeReplaceableCollection.Type {
+            return collectionType.init() as? Decodable
+        }
+        return nil
+    }
 }
 
 private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingContainer, UnkeyedDecodingContainer {
@@ -280,7 +302,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 
 	func decode<T: Decodable>(_ type: T.Type) throws -> T {
 		guard let t = _decodeIfPresent(type, optional: false) else {
-			throw AnyError()
+			throw AnyError("Cannot create a mock instance of \(type)")
 		}
 		return t
 	}
@@ -514,15 +536,28 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 
 	private func decode<T: Decodable>(_ type: T.Type, forKey key: Key, optional: Bool) throws -> T {
 		let decoder = TypeRevisionDecoder(path: nestedPath(for: key, type), context: decoder.context)
-		let decodable = try? decoder.decode(type)
+        let decodeResult = Result {
+            try decoder.decode(type)
+        }
 		var value = decoder.result
 		value.type = type
 		value.isOptional = optional
 		result[str(key)] = value
-		guard let t = decodable as? T else {
-			throw AnyError()
-		}
-		return t
+        switch decodeResult {
+        case .success(let decodable):
+            guard let t = decodable as? T else {
+                throw DecodingError.typeMismatch(
+                    T.self,
+                    DecodingError.Context(
+                        codingPath: codingPath,
+                        debugDescription: "Expected to decode \(T.self) but found \(Swift.type(of: decodable)) instead."
+                    )
+                )
+            }
+            return t
+        case .failure(let failure):
+            throw failure
+        }
 	}
 
 	func nestedContainer<NestedKey: CodingKey>(keyedBy _: NestedKey.Type, forKey key: Key) -> KeyedDecodingContainer<NestedKey> {
@@ -570,7 +605,14 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 	}
 }
 
-private struct AnyError: Error {}
+private struct AnyError: LocalizedError {
+    
+    var errorDescription: String?
+    
+    init(_ errorDescription: String? = nil) {
+        self.errorDescription = errorDescription
+    }
+}
 
 private extension Optional {
 
