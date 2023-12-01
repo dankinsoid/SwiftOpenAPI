@@ -20,7 +20,20 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.2")
 	],
 	targets: [
-		.target(name: "SwiftOpenAPI", dependencies: ["SwiftOpenAPIMacros"]),
+		.target(
+            name: "SwiftOpenAPI",
+            dependencies: [
+                "SwiftOpenAPIMacros"
+            ]
+        ),
+		.testTarget(
+			name: "SwiftOpenAPITests",
+			dependencies: [
+				"SwiftOpenAPI",
+				.product(name: "CustomDump", package: "swift-custom-dump"),
+			],
+			exclude: ["Mocks/"]
+		),
         .macro(
             name: "SwiftOpenAPIMacros",
             dependencies: [
@@ -28,14 +41,13 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
-		.testTarget(
-			name: "SwiftOpenAPITests",
-			dependencies: [
-				"SwiftOpenAPI",
+        .testTarget(
+            name: "SwiftOpenAPIMacrosTests",
+            dependencies: [
+                "SwiftOpenAPI",
+                "SwiftOpenAPIMacros",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-				.product(name: "CustomDump", package: "swift-custom-dump"),
-			],
-			exclude: ["Mocks/"]
-		),
+            ]
+        ),
 	]
 )
