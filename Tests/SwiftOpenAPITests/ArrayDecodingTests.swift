@@ -42,6 +42,12 @@ class ArrayDecodingTests: XCTestCase {
         _ = try ReferenceOr<SchemaObject>.encodeSchema(ProductDependency.example, into: &schemas)
         XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
     }
+
+    func testDecodeEmbeddedRecursiveOptionalArray() throws {
+        var schemas: ComponentsMap<SchemaObject> = [:]
+        let _ = try ReferenceOr<SchemaObject>.encodeSchema(EmbeddedOptionalRecursiveTypeInArray.example, into: &schemas)
+        XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
+    }
 }
     
 enum Tag {
@@ -55,6 +61,24 @@ enum Tag {
     struct ListResponse: Codable {
         let tags: [Response]
     }
+}
+
+public struct EmbeddedOptionalRecursiveTypeInArray: Codable, Equatable {
+    public var name: String
+    public var dependencies: [ProductDependency]?
+
+    public static let example = EmbeddedOptionalRecursiveTypeInArray(
+        name: "DTOExample",
+        dependencies: [ProductDependency.example]
+    )
+
+    static let scheme: SchemaObject = .object(
+        properties: [
+            "name": .string,
+            "dependencies": .array(of: .ref(components: \.schemas, "ProductDependency"))
+        ],
+        required: ["name"]
+    )
 }
 
 public struct ProductDependency: Codable, Equatable {
