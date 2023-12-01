@@ -4,8 +4,7 @@ import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
 import SwiftOpenAPIMacros
-import SwiftOpenAPI
-@testable import SwiftOpenAPIDescriptable
+@testable import SwiftOpenAPI
 
 let testMacros: [String: Macro.Type] = [
     "OpenAPIDescriptionMacro": OpenAPIDescriptionMacro.self

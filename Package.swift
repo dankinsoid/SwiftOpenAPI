@@ -13,15 +13,14 @@ let package = Package(
 		.watchOS(.v6),
 	],
 	products: [
-		.library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI", "SwiftOpenAPIDescriptable"]),
+		.library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
 	],
 	dependencies: [
 		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.2")
 	],
 	targets: [
-		.target(name: "SwiftOpenAPI", dependencies: []),
-        .target(name: "SwiftOpenAPIDescriptable", dependencies: ["SwiftOpenAPI", "SwiftOpenAPIMacros"]),
+		.target(name: "SwiftOpenAPI", dependencies: ["SwiftOpenAPIMacros"]),
         .macro(
             name: "SwiftOpenAPIMacros",
             dependencies: [
@@ -33,17 +32,10 @@ let package = Package(
 			name: "SwiftOpenAPITests",
 			dependencies: [
 				"SwiftOpenAPI",
-                .product(name: "CustomDump", package: "swift-custom-dump"),
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+				.product(name: "CustomDump", package: "swift-custom-dump"),
 			],
 			exclude: ["Mocks/"]
 		),
-        .testTarget(
-            name: "SwiftOpenAPIMacroTests",
-            dependencies: [
-                "SwiftOpenAPIDescriptable",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-                .product(name: "CustomDump", package: "swift-custom-dump"),
-            ]
-        ),
 	]
 )
