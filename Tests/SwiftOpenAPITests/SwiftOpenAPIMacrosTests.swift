@@ -1,4 +1,4 @@
-#if canImport(SwiftSyntaxMacros)
+#if canImport(SwiftSyntaxMacros) && canImport(SwiftOpenAPIMacros)
 import Foundation
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport

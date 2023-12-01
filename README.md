@@ -163,7 +163,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "3.0.11")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.19.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])
@@ -173,14 +173,6 @@ let package = Package(
 ```ruby
 $ swift build
 ```
-
-2.  [CocoaPods](https://cocoapods.org)
-
-Add the following line to your Podfile:
-```ruby
-pod 'SwiftOpenAPI'
-```
-and run `pod update` from the podfile directory first.
 
 ## Related projects
 - [VaporToOpenAPI](https://github.com/dankinsoid/VaporToOpenAPI.git)
