@@ -73,4 +73,27 @@ extension String {
         "#\"\(self)\"#"
     }
 }
+
+extension LabeledExprListSyntax {
+    
+    func bool(_ name: String) -> Bool? {
+        first { $0.label?.text == name }?.bool
+    }
+}
+
+extension LabeledExprListSyntax.Element {
+    
+    var bool: Bool? {
+        (expression.as(BooleanLiteralExprSyntax.self)?.literal.text).map {
+            $0 == "true"
+        }
+    }
+}
+
+extension AttributeSyntax.Arguments {
+    
+    func bool(_ name: String) -> Bool? {
+        self.as(LabeledExprListSyntax.self)?.bool(name)
+    }
+}
 #endif
