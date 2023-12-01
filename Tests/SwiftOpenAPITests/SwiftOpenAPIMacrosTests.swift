@@ -1,3 +1,4 @@
+#if canImport(SwiftSyntaxMacros)
 import Foundation
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
@@ -38,3 +39,4 @@ struct Person: Codable {
     /// Static value
     static var someStatic = ""
 }
+#endif
