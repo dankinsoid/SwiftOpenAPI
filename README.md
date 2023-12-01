@@ -13,7 +13,7 @@ The main accent in the library is on simplifying the syntax: the active use of l
 ## Short example
 ```swift
 try OpenAPIObject(
-    openapi: "3.0.11",
+    openapi: "3.0.12",
     info: InfoObject(
         title: "Example API",
         version: "0.1.0"
@@ -163,7 +163,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "3.0.11")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "3.0.12")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])
