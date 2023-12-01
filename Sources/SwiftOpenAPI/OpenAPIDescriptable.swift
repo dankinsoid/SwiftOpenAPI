@@ -12,9 +12,7 @@ public extension OpenAPIDescriptable {
     }
 }
 
-#if canImport(SwiftOpenAPIMacros)
-import SwiftOpenAPIMacros
-
+#if swift(>=5.9)
 /// `OpenAPIAutoDescriptable`: An automatic implementation macro for the `OpenAPIDescriptable` protocol.
 ///
 /// This macro facilitates the automatic implementation of the `OpenAPIDescriptable` protocol
