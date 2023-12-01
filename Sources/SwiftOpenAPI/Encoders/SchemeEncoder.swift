@@ -11,11 +11,10 @@ struct SchemeEncoder {
 		_ value: Encodable,
 		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> ReferenceOr<SchemaObject> {
-		let type = Swift.type(of: value)
-		return try parse(
+		try parse(
 			value: TypeRevision().describeType(of: value),
-			type: type,
-			into: &schemas
+			type: Swift.type(of: value),
+            into: &schemas
 		)
 	}
 
@@ -24,21 +23,50 @@ struct SchemeEncoder {
 		_ type: Decodable.Type,
 		into schemas: inout ComponentsMap<SchemaObject>
 	) throws -> ReferenceOr<SchemaObject> {
-		try parse(
+        try parse(
 			value: TypeRevision().describe(type: type),
 			type: type,
 			into: &schemas
 		)
 	}
 
+    func parse(
+        value: TypeInfo,
+        type: Any.Type,
+        into schemas: inout ComponentsMap<SchemaObject>
+    ) throws -> ReferenceOr<SchemaObject> {
+        var needReparse = false
+        var cache: [ObjectIdentifier: ReferenceOr<SchemaObject>] = [:]
+        var result = try parse(
+            value: value,
+            type: type,
+            into: &schemas,
+            cache: &cache,
+            needReparse: &needReparse
+        )
+        if needReparse {
+            result = try parse(
+                value: value,
+                type: type,
+                into: &schemas,
+                cache: &cache,
+                needReparse: &needReparse
+            )
+        }
+        return result
+    }
+    
 	func parse(
-		value: @autoclosure () throws -> TypeInfo,
+		value: TypeInfo,
 		type: Any.Type,
-		into schemas: inout ComponentsMap<SchemaObject>
+		into schemas: inout ComponentsMap<SchemaObject>,
+        cache: inout [ObjectIdentifier: ReferenceOr<SchemaObject>],
+        needReparse: inout Bool
 	) throws -> ReferenceOr<SchemaObject> {
 		let name = String.typeName(type)
 		var result: ReferenceOr<SchemaObject>
-		let typeInfo = try value()
+		let typeInfo = value
+        let typeID = ObjectIdentifier(typeInfo.type)
 
 		switch type {
 		case is Date.Type:
@@ -67,7 +95,7 @@ struct SchemeEncoder {
 						properties: keyedInfo.fields.mapKeys {
 							keyEncodingStrategy.encode($0)
 						}.mapValues {
-							try parse(value: $0, type: $0.type, into: &schemas)
+                            try parse(value: $0, type: $0.type, into: &schemas, cache: &cache, needReparse: &needReparse)
 						},
 						required: Set(keyedInfo.fields.unorderedHash.filter { !$0.value.isOptional }.keys)
 					)
@@ -76,7 +104,7 @@ struct SchemeEncoder {
 				case false:
 					let schema = try SchemaObject.dictionary(
 						of: (keyedInfo.fields.first?.value).map {
-							try parse(value: $0, type: $0.type, into: &schemas)
+                            try parse(value: $0, type: $0.type, into: &schemas, cache: &cache, needReparse: &needReparse)
 						} ?? .any
 					)
 					result = .value(schema)
@@ -84,12 +112,17 @@ struct SchemeEncoder {
 
 			case let .unkeyed(itemInfo):
 				let schema = try SchemaObject.array(
-					of: parse(value: itemInfo, type: itemInfo.type, into: &schemas)
+                    of: parse(value: itemInfo, type: itemInfo.type, into: &schemas, cache: &cache, needReparse: &needReparse)
 				)
 				result = .value(schema)
 
 			case .recursive:
-				result = .ref(components: \.schemas, name)
+                needReparse = true
+                if let cached = cache[typeID] {
+                    result = cached
+                } else {
+                    result = .ref(components: \.schemas, name)
+                }
 			}
 		}
 
@@ -100,11 +133,13 @@ struct SchemeEncoder {
 		if extractReferences, result.isReferenceable {
 			result.object?.nullable = nil
 			schemas[name] = result
+            cache[typeID] = .ref(components: \.schemas, name)
 			return .ref(components: \.schemas, name)
 		} else {
 			if typeInfo.isOptional, result.object?.enum == nil {
 				result.object?.nullable = true
 			}
+            cache[typeID] = result
 			return result
 		}
 	}

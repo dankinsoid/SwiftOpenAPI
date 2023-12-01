@@ -46,7 +46,14 @@ class ArrayDecodingTests: XCTestCase {
     func testDecodeEmbeddedRecursiveOptionalArray() throws {
         var schemas: ComponentsMap<SchemaObject> = [:]
         let _ = try ReferenceOr<SchemaObject>.encodeSchema(EmbeddedOptionalRecursiveTypeInArray.example, into: &schemas)
-        XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
+        XCTAssertNoDifference(
+            schemas["EmbeddedOptionalRecursiveTypeInArray"],
+            .value(EmbeddedOptionalRecursiveTypeInArray.scheme)
+        )
+        XCTAssertNoDifference(
+            schemas["ProductDependency"],
+            .value(ProductDependency.scheme)
+        )
     }
 }
     
@@ -76,6 +83,7 @@ public struct EmbeddedOptionalRecursiveTypeInArray: Codable, Equatable {
         properties: [
             "name": .string,
             "dependencies": .array(of: .ref(components: \.schemas, "ProductDependency"))
+                .with(\.nullable, true)
         ],
         required: ["name"]
     )

@@ -337,7 +337,7 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
 
 	private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T: Encodable {
 		let encoder = TypeRevisionEncoder(
-			path: nestedPath(for: key, T.self),
+            path: nestedPath(for: key, optional ? Optional<T>.self : T.self),
 			context: encoder.context
 		)
 		var info = try encoder.encode(value, type: T.self)

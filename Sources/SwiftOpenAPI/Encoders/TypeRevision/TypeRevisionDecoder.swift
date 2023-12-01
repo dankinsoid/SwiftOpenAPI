@@ -309,7 +309,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
     
     private func _decodeIfPresent<T>(_ type: T.Type, optional: Bool) -> T? where T : Decodable {
         let decoder = TypeRevisionDecoder(
-            path: nestedPath(for: type),
+            path: nestedPath(for: optional ? Optional<T>.self : type),
             context: decoder.context
         )
         let decodable = try? decoder.decode(type)
@@ -535,7 +535,10 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 	}
 
 	private func decode<T: Decodable>(_ type: T.Type, forKey key: Key, optional: Bool) throws -> T {
-		let decoder = TypeRevisionDecoder(path: nestedPath(for: key, type), context: decoder.context)
+		let decoder = TypeRevisionDecoder(
+            path: nestedPath(for: key, optional ? Optional<T>.self : type),
+            context: decoder.context
+        )
         let decodeResult = Result {
             try decoder.decode(type)
         }
