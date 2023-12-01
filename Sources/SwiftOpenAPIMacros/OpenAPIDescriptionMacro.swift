@@ -43,15 +43,15 @@ private func _expansion(
     node.arguments?.as(LabeledExprListSyntax.self)?.forEach {
         switch $0.label?.text {
         case "codingKeys":
-            if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "false" {
+            if $0.bool == false {
                 type = .String
             }
         case "docCommentsOnly":
-            if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "true" {
+            if $0.bool == true {
                 onlyDocComments = true
             }
         case "includeAttributes":
-            if $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.text == "true" {
+            if $0.bool == true {
                 includeAttributes = true
             }
         default:
