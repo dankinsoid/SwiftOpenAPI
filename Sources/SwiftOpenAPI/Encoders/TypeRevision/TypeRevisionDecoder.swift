@@ -63,7 +63,7 @@ final class TypeRevisionDecoder: Decoder {
 
 	@discardableResult
 	func decode(_ type: Decodable.Type) throws -> Decodable {
-		guard path.isEmpty || !path.dropLast().contains(where: { path in path.type == type }) else {
+        guard path.isEmpty || !path.dropLast().contains(where: { path in path.type == type || path.unwrappedType == type }) else {
 			result.container = .recursive
 			result.type = type
             if let decodable = collection(for: type) {
@@ -309,7 +309,7 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
     
     private func _decodeIfPresent<T>(_ type: T.Type, optional: Bool) -> T? where T : Decodable {
         let decoder = TypeRevisionDecoder(
-            path: nestedPath(for: optional ? Optional<T>.self : type),
+            path: nestedPath(for: type, optional: optional),
             context: decoder.context
         )
         let decodable = try? decoder.decode(type)
@@ -354,8 +354,8 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 		TypeRevisionDecoder(path: path, context: decoder.context)
 	}
 
-	private func nestedPath(for type: Any.Type) -> [TypePath] {
-		isSingle ? path : path + [TypePath(type: type, key: IntKey(intValue: 0))]
+    private func nestedPath<T>(for type: T.Type, optional: Bool = false) -> [TypePath] {
+        isSingle ? path : path + [TypePath(type: type, optional: optional, key: IntKey(intValue: 0))]
 	}
 }
 
@@ -536,7 +536,7 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 
 	private func decode<T: Decodable>(_ type: T.Type, forKey key: Key, optional: Bool) throws -> T {
 		let decoder = TypeRevisionDecoder(
-            path: nestedPath(for: key, optional ? Optional<T>.self : type),
+            path: nestedPath(for: key, type, optional: optional),
             context: decoder.context
         )
         let decodeResult = Result {
@@ -598,8 +598,8 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 		TypeRevisionDecoder(path: nestedPath(for: key, Any.self), context: decoder.context)
 	}
 
-	private func nestedPath(for key: Key, _ type: Any.Type) -> [TypePath] {
-		path + [TypePath(type: type, key: key)]
+    private func nestedPath<T>(for key: Key, _ type: T.Type, optional: Bool = false) -> [TypePath] {
+        path + [TypePath(type: type, optional: optional, key: key)]
 	}
 
 	@inline(__always)
@@ -628,5 +628,18 @@ private extension Optional {
 struct TypePath {
 
 	var type: Any.Type
+    var unwrappedType: Any.Type
 	var key: CodingKey
+    
+    init(type: Any.Type, unwrappedType: Any.Type, key: CodingKey) {
+        self.type = type
+        self.unwrappedType = unwrappedType
+        self.key = key
+    }
+    
+    init<T>(type: T.Type, optional: Bool, key: CodingKey) {
+        self.type = optional ? Optional<T>.self : type
+        self.unwrappedType = type
+        self.key = key
+    }
 }

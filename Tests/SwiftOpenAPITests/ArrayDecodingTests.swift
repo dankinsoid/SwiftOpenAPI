@@ -55,6 +55,12 @@ class ArrayDecodingTests: XCTestCase {
             .value(ProductDependency.scheme)
         )
     }
+    
+    func testURL() throws {
+        var schemas: ComponentsMap<SchemaObject> = [:]
+        let _ = try ReferenceOr<SchemaObject>.decodeSchema(URL.self, into: &schemas)
+        prettyPrint(schemas)
+    }
 }
     
 enum Tag {
@@ -119,4 +125,15 @@ public struct ProductDependency: Codable, Equatable {
         ],
         required: ["identity", "name", "url", "dependencies"]
     )
+}
+
+public struct WebSocketBody: Codable {
+    
+    public var counter: Int
+    public var content: URL?
+    
+    public init(_ content: URL?, counter: Int) {
+        self.content = content
+        self.counter = counter
+    }
 }

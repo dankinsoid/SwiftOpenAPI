@@ -51,7 +51,7 @@ final class TypeRevisionEncoder: Encoder {
 
 	@discardableResult
 	func encode(_ value: Encodable?, type: Encodable.Type) throws -> TypeInfo {
-		if !path.isEmpty, path.dropLast().contains(where: { path in path.type == type }) {
+        if !path.isEmpty, path.dropLast().contains(where: { path in path.type == type || path.unwrappedType == type }) {
 			result.container = .recursive
 		} else if let container = context.customDescription(type, value) {
 			result = TypeInfo(type: type, isOptional: value == nil, container: container)
@@ -194,8 +194,8 @@ private struct TypeRevisionSingleValueEncodingContainer: SingleValueEncodingCont
 		TypeRevisionEncoder(path: path, context: encoder.context)
 	}
 
-	private func nestedPath(for type: Any.Type) -> [TypePath] {
-		isSingle ? path : path + [TypePath(type: type, key: IntKey(intValue: count))]
+    private func nestedPath<T>(for type: T.Type, optional: Bool = false) -> [TypePath] {
+		isSingle ? path : path + [TypePath(type: type, optional: optional, key: IntKey(intValue: count))]
 	}
 }
 
@@ -337,7 +337,7 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
 
 	private mutating func encode<T>(_ value: T?, forKey key: Key, optional: Bool) throws where T: Encodable {
 		let encoder = TypeRevisionEncoder(
-            path: nestedPath(for: key, optional ? Optional<T>.self : T.self),
+            path: nestedPath(for: key, T.self, optional: optional),
 			context: encoder.context
 		)
 		var info = try encoder.encode(value, type: T.self)
@@ -381,8 +381,8 @@ private struct TypeRevisionKeyedEncodingContainer<Key: CodingKey>: KeyedEncoding
 		TypeRevisionEncoder(path: path, context: encoder.context)
 	}
 
-	private func nestedPath(for key: Key, _ type: Any.Type) -> [TypePath] {
-		path + [TypePath(type: type, key: key)]
+    private func nestedPath<T>(for key: Key, _ type: T.Type, optional: Bool = false) -> [TypePath] {
+        path + [TypePath(type: type, optional: optional, key: key)]
 	}
 
 	@inline(__always)
