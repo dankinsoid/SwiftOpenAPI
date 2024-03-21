@@ -51,6 +51,18 @@ public extension OpenAPIDescriptable {
 /// API documentation, streamlining the process of maintaining up-to-date and accurate OpenAPI docs.
 @attached(member, conformances: OpenAPIDescriptable, names: arbitrary)
 @attached(extension, conformances: OpenAPIDescriptable, names: arbitrary)
+public macro OpenAPIDescriptable(
+    codingKeys: Bool = true,
+    docCommentsOnly: Bool = false,
+    includeAttributes: Bool = false
+) = #externalMacro(
+    module: "SwiftOpenAPIMacros",
+    type: "OpenAPIDescriptionMacro"
+)
+
+@available(*, deprecated, renamed: "OpenAPIDescriptable")
+@attached(member, conformances: OpenAPIDescriptable, names: arbitrary)
+@attached(extension, conformances: OpenAPIDescriptable, names: arbitrary)
 public macro OpenAPIAutoDescriptable(
     codingKeys: Bool = true,
     docCommentsOnly: Bool = false,

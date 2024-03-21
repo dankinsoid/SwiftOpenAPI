@@ -90,7 +90,7 @@ You can customize the encoding/decoding result by implementing `OpenAPIDescripta
 ```swift
 import SwiftOpenAPI
 
-@OpenAPIAutoDescriptable
+@OpenAPIDescriptable
 /// Login request body.
 struct LoginBody: Codable {
     
@@ -163,7 +163,7 @@ import PackageDescription
 let package = Package(
   name: "SomeProject",
   dependencies: [
-    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.19.6")
+    .package(url: "https://github.com/dankinsoid/SwiftOpenAPI.git", from: "2.20.0")
   ],
   targets: [
     .target(name: "SomeProject", dependencies: ["SwiftOpenAPI"])
