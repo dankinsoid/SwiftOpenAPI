@@ -16,8 +16,7 @@ let package = Package(
 		.library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
 	],
 	dependencies: [
-		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3"),
-                .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0")
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0")
 	],
 	targets: [
 		.target(
@@ -29,8 +28,7 @@ let package = Package(
 		.testTarget(
 			name: "SwiftOpenAPITests",
 			dependencies: [
-				"SwiftOpenAPI",
-				.product(name: "CustomDump", package: "swift-custom-dump"),
+				"SwiftOpenAPI"
 			],
 			exclude: ["Mocks/"]
 		),

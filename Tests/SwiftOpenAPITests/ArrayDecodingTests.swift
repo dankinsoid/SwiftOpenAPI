@@ -1,4 +1,3 @@
-import CustomDump
 import Foundation
 @testable import SwiftOpenAPI
 import XCTest
@@ -8,7 +7,7 @@ class ArrayDecodingTests: XCTestCase {
     func testDecodeArray() throws {
         var schemas: ComponentsMap<SchemaObject> = [:]
         _ = try ReferenceOr<SchemaObject>.decodeSchema(Tag.ListResponse.self, into: &schemas)
-        XCTAssertNoDifference(
+        XCTAssertEqual(
             schemas,
             [
                 "TagResponse": .object(
@@ -34,23 +33,23 @@ class ArrayDecodingTests: XCTestCase {
     func testEncodeRecursiveArray() throws {
         var schemas: ComponentsMap<SchemaObject> = [:]
         _ = try ReferenceOr<SchemaObject>.encodeSchema(ProductDependency.example, into: &schemas)
-        XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
+        XCTAssertEqual(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
     }
     
     func testDecodeRecursiveArray() throws {
         var schemas: ComponentsMap<SchemaObject> = [:]
         _ = try ReferenceOr<SchemaObject>.encodeSchema(ProductDependency.example, into: &schemas)
-        XCTAssertNoDifference(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
+        XCTAssertEqual(schemas, ["ProductDependency": .value(ProductDependency.scheme)])
     }
 
     func testDecodeEmbeddedRecursiveOptionalArray() throws {
         var schemas: ComponentsMap<SchemaObject> = [:]
         let _ = try ReferenceOr<SchemaObject>.encodeSchema(EmbeddedOptionalRecursiveTypeInArray.example, into: &schemas)
-        XCTAssertNoDifference(
+        XCTAssertEqual(
             schemas["EmbeddedOptionalRecursiveTypeInArray"],
             .value(EmbeddedOptionalRecursiveTypeInArray.scheme)
         )
-        XCTAssertNoDifference(
+        XCTAssertEqual(
             schemas["ProductDependency"],
             .value(ProductDependency.scheme)
         )

@@ -15,15 +15,13 @@ let package = Package(
 		.library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
 	],
 	dependencies: [
-		.package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.3"),
 	],
 	targets: [
 		.target(name: "SwiftOpenAPI", dependencies: []),
 		.testTarget(
 			name: "SwiftOpenAPITests",
 			dependencies: [
-				"SwiftOpenAPI",
-				.product(name: "CustomDump", package: "swift-custom-dump"),
+				"SwiftOpenAPI"
 			],
 			exclude: ["Mocks/"]
 		),

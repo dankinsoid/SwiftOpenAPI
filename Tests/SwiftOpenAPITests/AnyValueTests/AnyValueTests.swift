@@ -1,4 +1,3 @@
-import CustomDump
 @testable import SwiftOpenAPI
 import XCTest
 
