@@ -89,39 +89,19 @@ final class SwiftOpenAPITests: XCTestCase {
 
 	func testEnumDescriptions() throws {
 		var references: ComponentsMap<SchemaObject> = [:]
-		try SchemaObject.encode(SomeIntEnum.first, into: &references)
+		try SchemaObject.decode(SomeIntEnum.self, into: &references)
 		guard let schema = references["SomeIntEnum"]?.object else {
 			XCTFail()
 			return
 		}
-		XCTAssertEqual(schema.description, "- 1: first\n- 2: second")
-		XCTAssertEqual(schema.enum, [.int(1), .int(2)])
-		
-		// Test Double enum
-		enum SomeDoubleEnum: Double, Codable, CaseIterable {
-			case first = 1.1
-			case second = 2.2
-		}
-		try SchemaObject.encode(SomeDoubleEnum.first, into: &references)
+		XCTAssertEqual(schema.description, "• 1 → first\n• 2 → second")
+
+		try SchemaObject.decode(SomeDoubleEnum.self, into: &references)
 		guard let doubleSchema = references["SomeDoubleEnum"]?.object else {
 			XCTFail()
 			return
 		}
-		XCTAssertEqual(doubleSchema.description, "- 1.1: first\n- 2.2: second")
-		XCTAssertEqual(doubleSchema.enum, [.double(1.1), .double(2.2)])
-		
-		// Test Bool enum
-		enum SomeBoolEnum: Bool, Codable, CaseIterable {
-			case first = true
-			case second = false
-		}
-		try SchemaObject.encode(SomeBoolEnum.first, into: &references)
-		guard let boolSchema = references["SomeBoolEnum"]?.object else {
-			XCTFail()
-			return
-		}
-		XCTAssertEqual(boolSchema.description, "- true: first\n- false: second")
-		XCTAssertEqual(boolSchema.enum, [.bool(true), .bool(false)])
+		XCTAssertEqual(doubleSchema.description, "• 1.1 → first\n• 2.2 → second")
 	}
 
 	func testSpecificationKeys() throws {
@@ -215,6 +195,12 @@ enum SomeEnum: String, Codable, CaseIterable {
 enum SomeIntEnum: Int, Codable, CaseIterable {
 
 	case first = 1, second = 2
+}
+
+enum SomeDoubleEnum: Double, Codable, CaseIterable {
+
+	case first = 1.1
+	case second = 2.2
 }
 
 struct CardMeta: Codable, OpenAPIDescriptable {

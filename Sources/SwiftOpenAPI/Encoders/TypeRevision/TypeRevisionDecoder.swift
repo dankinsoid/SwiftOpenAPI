@@ -63,27 +63,27 @@ final class TypeRevisionDecoder: Decoder {
 
 	@discardableResult
 	func decode(_ type: Decodable.Type) throws -> Decodable {
-        guard path.isEmpty || !path.dropLast().contains(where: { path in path.type == type || path.unwrappedType == type }) else {
+		guard path.isEmpty || !path.dropLast().contains(where: { path in path.type == type || path.unwrappedType == type }) else {
 			result.container = .recursive
 			result.type = type
-            if let decodable = collection(for: type) {
-                return decodable
-            }
-            if path.isEmpty {
-                throw AnyError("Cannot resolve recursive type \(type)")
-            } else {
-                throw AnyError("Cannot resolve recursive type \(type) at .\(path.map(\.key.stringValue).joined(separator: "."))")
-            }
+			if let decodable = collection(for: type) {
+				return decodable
+			}
+			if path.isEmpty {
+				throw AnyError("Cannot resolve recursive type \(type)")
+			} else {
+				throw AnyError("Cannot resolve recursive type \(type) at .\(path.map(\.key.stringValue).joined(separator: "."))")
+			}
 		}
-        let decodingError: Error
-        let decodable: Decodable?
-        do {
-            decodable = try type.init(from: self)
-            decodingError = AnyError("Unknown error")
-        } catch {
-            decodable = nil
-            decodingError = error
-        }
+		let decodingError: Error
+		let decodable: Decodable?
+		do {
+			decodable = try type.init(from: self)
+			decodingError = AnyError("Unknown error")
+		} catch {
+			decodable = nil
+			decodingError = error
+		}
 		if let custom = context.customDescription(type, decodable) {
 			result.container = custom
 		} else {
@@ -113,7 +113,7 @@ final class TypeRevisionDecoder: Decoder {
 				if let result = (allCases.first as? Decodable) ?? decodable {
 					return result
 				}
-                throw AnyError("Cannot decode CaseIterable \(type) type with an empty allCases")
+				throw AnyError("Cannot decode CaseIterable \(type) type with an empty allCases")
 			default:
 				if case .keyed = result.container {
 					let decoder = CheckAllKeysDecoder()
@@ -128,13 +128,13 @@ final class TypeRevisionDecoder: Decoder {
 		result.type = type
 		return value
 	}
-    
-    private func collection(for type: Decodable.Type) -> Decodable? {
-        if let collectionType = type as? any RangeReplaceableCollection.Type {
-            return collectionType.init() as? Decodable
-        }
-        return nil
-    }
+
+	private func collection(for type: Decodable.Type) -> Decodable? {
+		if let collectionType = type as? any RangeReplaceableCollection.Type {
+			return collectionType.init() as? Decodable
+		}
+		return nil
+	}
 }
 
 private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingContainer, UnkeyedDecodingContainer {
@@ -160,145 +160,145 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 		result = TypeInfo(type: type, container: .single(.bool(nil)))
 		return true
 	}
-    
-    func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.bool(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.bool(nil)))
+		return nil
+	}
 
 	func decode(_ type: String.Type) throws -> String {
 		result = TypeInfo(type: type, container: .single(.string(nil)))
 		return ""
 	}
-    
-    func decodeIfPresent(_ type: String.Type) throws -> String? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.string(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: String.Type) throws -> String? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.string(nil)))
+		return nil
+	}
 
 	func decode(_ type: Double.Type) throws -> Double {
 		result = TypeInfo(type: type, container: .single(.double(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Double.Type) throws -> Double? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.double(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Double.Type) throws -> Double? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.double(nil)))
+		return nil
+	}
 
 	func decode(_ type: Float.Type) throws -> Float {
 		result = TypeInfo(type: type, container: .single(.float(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Float.Type) throws -> Float? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.float(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Float.Type) throws -> Float? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.float(nil)))
+		return nil
+	}
 
 	func decode(_ type: Int.Type) throws -> Int {
 		result = TypeInfo(type: type, container: .single(.int(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Int.Type) throws -> Int? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.int(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Int.Type) throws -> Int? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.int(nil)))
+		return nil
+	}
 
 	func decode(_ type: Int8.Type) throws -> Int8 {
 		result = TypeInfo(type: type, container: .single(.int8(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Int8.Type) throws -> Int8? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.int8(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Int8.Type) throws -> Int8? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.int8(nil)))
+		return nil
+	}
 
 	func decode(_ type: Int16.Type) throws -> Int16 {
 		result = TypeInfo(type: type, container: .single(.int16(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Int16.Type) throws -> Int16? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.int16(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Int16.Type) throws -> Int16? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.int16(nil)))
+		return nil
+	}
 
 	func decode(_ type: Int32.Type) throws -> Int32 {
 		result = TypeInfo(type: type, container: .single(.int32(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Int32.Type) throws -> Int32? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.int32(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Int32.Type) throws -> Int32? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.int32(nil)))
+		return nil
+	}
 
 	func decode(_ type: Int64.Type) throws -> Int64 {
 		result = TypeInfo(type: type, container: .single(.int64(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: Int64.Type) throws -> Int64? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.int64(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: Int64.Type) throws -> Int64? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.int64(nil)))
+		return nil
+	}
 
 	func decode(_ type: UInt.Type) throws -> UInt {
 		result = TypeInfo(type: type, container: .single(.uint(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: UInt.Type) throws -> UInt? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.uint(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: UInt.Type) throws -> UInt? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.uint(nil)))
+		return nil
+	}
 
 	func decode(_ type: UInt8.Type) throws -> UInt8 {
 		result = TypeInfo(type: type, container: .single(.uint8(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: UInt8.Type) throws -> UInt8? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.uint8(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: UInt8.Type) throws -> UInt8? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.uint8(nil)))
+		return nil
+	}
 
 	func decode(_ type: UInt16.Type) throws -> UInt16 {
 		result = TypeInfo(type: type, container: .single(.uint16(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: UInt16.Type) throws -> UInt16? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.uint16(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: UInt16.Type) throws -> UInt16? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.uint16(nil)))
+		return nil
+	}
 
 	func decode(_ type: UInt32.Type) throws -> UInt32 {
 		result = TypeInfo(type: type, container: .single(.uint32(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: UInt32.Type) throws -> UInt32? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.uint32(nil)))
-        return nil
-    }
+
+	func decodeIfPresent(_ type: UInt32.Type) throws -> UInt32? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.uint32(nil)))
+		return nil
+	}
 
 	func decode(_ type: UInt64.Type) throws -> UInt64 {
 		result = TypeInfo(type: type, container: .single(.uint64(nil)))
 		return 0
 	}
-    
-    func decodeIfPresent(_ type: UInt64.Type) throws -> UInt64? {
-        result = TypeInfo(type: type, isOptional: true, container: .single(.uint64(nil)))
-        return nil
-    }
-    
-    func decodeIfPresent<T>(_ type: T.Type) throws -> T? where T : Decodable {
-        _decodeIfPresent(type, optional: true)
-    }
+
+	func decodeIfPresent(_ type: UInt64.Type) throws -> UInt64? {
+		result = TypeInfo(type: type, isOptional: true, container: .single(.uint64(nil)))
+		return nil
+	}
+
+	func decodeIfPresent<T>(_ type: T.Type) throws -> T? where T: Decodable {
+		_decodeIfPresent(type, optional: true)
+	}
 
 	func decode<T: Decodable>(_ type: T.Type) throws -> T {
 		guard let t = _decodeIfPresent(type, optional: false) else {
@@ -306,21 +306,21 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 		}
 		return t
 	}
-    
-    private func _decodeIfPresent<T>(_ type: T.Type, optional: Bool) -> T? where T : Decodable {
-        let decoder = TypeRevisionDecoder(
-            path: nestedPath(for: type, optional: optional),
-            context: decoder.context
-        )
-        let decodable = try? decoder.decode(type)
-        var value = decoder.result
-        if optional {
-            value.isOptional = true
-        }
-        value.type = type
-        result = value
-        return decodable as? T
-    }
+
+	private func _decodeIfPresent<T>(_ type: T.Type, optional: Bool) -> T? where T: Decodable {
+		let decoder = TypeRevisionDecoder(
+			path: nestedPath(for: type, optional: optional),
+			context: decoder.context
+		)
+		let decodable = try? decoder.decode(type)
+		var value = decoder.result
+		if optional {
+			value.isOptional = true
+		}
+		value.type = type
+		result = value
+		return decodable as? T
+	}
 
 	func nestedContainer<NestedKey>(keyedBy _: NestedKey.Type) -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
 		result[or: .any].container.keyed = KeyedInfo()
@@ -354,8 +354,8 @@ private struct TypeRevisionSingleValueDecodingContainer: SingleValueDecodingCont
 		TypeRevisionDecoder(path: path, context: decoder.context)
 	}
 
-    private func nestedPath<T>(for type: T.Type, optional: Bool = false) -> [TypePath] {
-        isSingle ? path : path + [TypePath(type: type, optional: optional, key: IntKey(intValue: 0))]
+	private func nestedPath<T>(for type: T.Type, optional: Bool = false) -> [TypePath] {
+		isSingle ? path : path + [TypePath(type: type, optional: optional, key: IntKey(intValue: 0))]
 	}
 }
 
@@ -536,31 +536,31 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 
 	private func decode<T: Decodable>(_ type: T.Type, forKey key: Key, optional: Bool) throws -> T {
 		let decoder = TypeRevisionDecoder(
-            path: nestedPath(for: key, type, optional: optional),
-            context: decoder.context
-        )
-        let decodeResult = Result {
-            try decoder.decode(type)
-        }
+			path: nestedPath(for: key, type, optional: optional),
+			context: decoder.context
+		)
+		let decodeResult = Result {
+			try decoder.decode(type)
+		}
 		var value = decoder.result
 		value.type = type
 		value.isOptional = optional
 		result[str(key)] = value
-        switch decodeResult {
-        case .success(let decodable):
-            guard let t = decodable as? T else {
-                throw DecodingError.typeMismatch(
-                    T.self,
-                    DecodingError.Context(
-                        codingPath: codingPath,
-                        debugDescription: "Expected to decode \(T.self) but found \(Swift.type(of: decodable)) instead."
-                    )
-                )
-            }
-            return t
-        case .failure(let failure):
-            throw failure
-        }
+		switch decodeResult {
+		case let .success(decodable):
+			guard let t = decodable as? T else {
+				throw DecodingError.typeMismatch(
+					T.self,
+					DecodingError.Context(
+						codingPath: codingPath,
+						debugDescription: "Expected to decode \(T.self) but found \(Swift.type(of: decodable)) instead."
+					)
+				)
+			}
+			return t
+		case let .failure(failure):
+			throw failure
+		}
 	}
 
 	func nestedContainer<NestedKey: CodingKey>(keyedBy _: NestedKey.Type, forKey key: Key) -> KeyedDecodingContainer<NestedKey> {
@@ -598,8 +598,8 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 		TypeRevisionDecoder(path: nestedPath(for: key, Any.self), context: decoder.context)
 	}
 
-    private func nestedPath<T>(for key: Key, _ type: T.Type, optional: Bool = false) -> [TypePath] {
-        path + [TypePath(type: type, optional: optional, key: key)]
+	private func nestedPath<T>(for key: Key, _ type: T.Type, optional: Bool = false) -> [TypePath] {
+		path + [TypePath(type: type, optional: optional, key: key)]
 	}
 
 	@inline(__always)
@@ -609,12 +609,12 @@ private struct TypeRevisionKeyedDecodingContainer<Key: CodingKey>: KeyedDecoding
 }
 
 private struct AnyError: LocalizedError {
-    
-    var errorDescription: String?
-    
-    init(_ errorDescription: String? = nil) {
-        self.errorDescription = errorDescription
-    }
+
+	var errorDescription: String?
+
+	init(_ errorDescription: String? = nil) {
+		self.errorDescription = errorDescription
+	}
 }
 
 private extension Optional {
@@ -628,18 +628,18 @@ private extension Optional {
 struct TypePath {
 
 	var type: Any.Type
-    var unwrappedType: Any.Type
+	var unwrappedType: Any.Type
 	var key: CodingKey
-    
-    init(type: Any.Type, unwrappedType: Any.Type, key: CodingKey) {
-        self.type = type
-        self.unwrappedType = unwrappedType
-        self.key = key
-    }
-    
-    init<T>(type: T.Type, optional: Bool, key: CodingKey) {
-        self.type = optional ? Optional<T>.self : type
-        self.unwrappedType = type
-        self.key = key
-    }
+
+	init(type: Any.Type, unwrappedType: Any.Type, key: CodingKey) {
+		self.type = type
+		self.unwrappedType = unwrappedType
+		self.key = key
+	}
+
+	init<T>(type: T.Type, optional: Bool, key: CodingKey) {
+		self.type = optional ? T?.self : type
+		unwrappedType = type
+		self.key = key
+	}
 }
