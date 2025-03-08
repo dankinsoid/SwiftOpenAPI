@@ -164,6 +164,24 @@ public extension ExpressibleBySchemaObject {
 			.with(\.example, example.map { .string($0.rawValue) })
 	}
 
+	static func `enum`<T>(
+		_ type: T.Type,
+		example: T? = nil
+	) -> Self where T: CaseIterable, T.AllCases.Element: RawRepresentable, T.AllCases.Element.RawValue == Int {
+		.enum(cases: type.allCases.map { .int($0.rawValue) })
+			.with(\.example, example.map { .int($0.rawValue) })
+			.with(\.description, type.allCases.map { "- \($0.rawValue): \($0)" }.joined(separator: "\n"))
+	}
+
+	static func `enum`<T>(
+		_ type: T.Type,
+		example: T? = nil
+	) -> Self where T: CaseIterable, T.AllCases.Element: RawRepresentable, T.AllCases.Element.RawValue == Double {
+		.enum(cases: type.allCases.map { .double($0.rawValue) })
+			.with(\.example, example.map { .double($0.rawValue) })
+			.with(\.description, type.allCases.map { "- \($0.rawValue): \($0)" }.joined(separator: "\n"))
+	}
+
 	static var string: Self {
 		.string()
 	}
