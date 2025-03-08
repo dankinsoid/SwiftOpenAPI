@@ -13,7 +13,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testSchemeEncoding() throws {
 		var references: ComponentsMap<SchemaObject> = [:]
 		try SchemaObject.encode(LoginBody.example, into: &references)
-        XCTAssertEqual(
+		XCTAssertEqual(
 			references,
 			[
 				"SomeEnum": .enum(cases: ["first", "second"]),
@@ -60,7 +60,7 @@ final class SwiftOpenAPITests: XCTestCase {
 		withSpec.projectedValue[key] = value
 		let data = try JSONEncoder().encode(withSpec)
 		let decoded = try JSONDecoder().decode(WithSpecExtensions<SchemaObject>.self, from: data)
-        XCTAssertEqual(decoded.projectedValue[key], value)
+		XCTAssertEqual(decoded.projectedValue[key], value)
 	}
 
 	func testSpecificationExtensionsWrapperWithDictionary0() throws {
@@ -111,7 +111,7 @@ final class SwiftOpenAPITests: XCTestCase {
 	func testKeyEncoding() throws {
 		var references: ComponentsMap<SchemaObject> = [:]
 		try SchemaObject.encode(LoginBody.example, keyEncodingStrategy: .convertToSnakeCase, into: &references)
-        XCTAssertEqual(
+		XCTAssertEqual(
 			references,
 			[
 				"SomeEnum": .enum(cases: ["first", "second"]),
@@ -173,6 +173,11 @@ struct LoginBody: Codable {
 enum SomeEnum: String, Codable, CaseIterable {
 
 	case first, second
+}
+
+enum SomeIntEnum: Int, Codable, CaseIterable {
+
+	case first = 1, second = 2
 }
 
 struct CardMeta: Codable, OpenAPIDescriptable {
