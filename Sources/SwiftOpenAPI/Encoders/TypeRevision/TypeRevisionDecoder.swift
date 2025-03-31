@@ -107,13 +107,15 @@ final class TypeRevisionDecoder: Decoder {
 				result.container = .single(.string(nil))
 				result.type = type
 				return Data()
-			case let iterable as any CaseIterable.Type:
-				result.type = type
-				let allCases = iterable.allCases as any Collection
-				if let result = (allCases.first as? Decodable) ?? decodable {
-					return result
-				}
-				throw AnyError("Cannot decode CaseIterable \(type) type with an empty allCases")
+            case let iterable as any CaseIterable.Type:
+                result.type = type
+                guard
+                    let typedAll = iterable.allCases as? [Decodable],
+                    let first = typedAll.first
+                else {
+                    throw AnyError("Cannot decode CaseIterable \(type) with an empty allCases")
+                }
+                return first
 			default:
 				if case .keyed = result.container {
 					let decoder = CheckAllKeysDecoder()
