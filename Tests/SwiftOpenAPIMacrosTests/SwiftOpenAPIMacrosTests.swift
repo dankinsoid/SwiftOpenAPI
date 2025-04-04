@@ -22,7 +22,7 @@ final class OpenAPIDescriptionMacroTests: XCTestCase {
 }
 
 /// A person.
-@OpenAPIAutoDescriptable
+@OpenAPIDescriptable
 struct Person: Codable {
 
     /// The person's name.
