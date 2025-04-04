@@ -102,7 +102,7 @@ private func _expansion(
     let openAPIDescription: DeclSyntax =
       """
       
-      public static var openAPIDescription: OpenAPIDescriptionType? {
+      public static var openAPIDescription: (any OpenAPIDescriptionType)? {
           OpenAPIDescription<\(raw: type.rawValue)>(\(raw: typeDoc ?? ""))\(raw: varDocsModifiers)
       }
       """
