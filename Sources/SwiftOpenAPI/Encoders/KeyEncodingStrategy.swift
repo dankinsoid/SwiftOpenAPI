@@ -7,7 +7,14 @@ public struct KeyEncodingStrategy {
 
 public extension KeyEncodingStrategy {
 
-	static var `default`: KeyEncodingStrategy = .useDefaultKeys
+    static var `default`: KeyEncodingStrategy {
+        get {
+            defaultKeyEncodingStrategy.wrappedValue
+        }
+        set {
+            defaultKeyEncodingStrategy.wrappedValue = newValue
+        }
+    }
 
 	static var useDefaultKeys: KeyEncodingStrategy = .custom { $0 }
 
@@ -25,3 +32,5 @@ public extension KeyEncodingStrategy {
 		}
 	}
 }
+
+private let defaultKeyEncodingStrategy = Lock(KeyEncodingStrategy.useDefaultKeys)

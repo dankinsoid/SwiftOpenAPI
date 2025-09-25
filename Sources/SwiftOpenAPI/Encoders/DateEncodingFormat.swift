@@ -8,7 +8,14 @@ public struct DateEncodingFormat {
 
 public extension DateEncodingFormat {
 
-	static var `default`: DateEncodingFormat = .dateTime
+    static var `default`: DateEncodingFormat {
+        get {
+            defaultDateEncodingFormat.wrappedValue
+        }
+        set {
+            defaultDateEncodingFormat.wrappedValue = newValue
+        }
+    }
 
 	/// full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21
 	static var date: DateEncodingFormat {
@@ -66,6 +73,8 @@ extension DateEncodingFormat {
 		return dateFormatter.string(from: date)
 	}
 }
+
+private let defaultDateEncodingFormat = Lock(DateEncodingFormat.dateTime)
 
 private let isoFormatter = ISO8601DateFormatter()
 private let dateFormatter = DateFormatter()

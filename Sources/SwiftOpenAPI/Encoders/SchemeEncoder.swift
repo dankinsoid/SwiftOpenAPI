@@ -144,6 +144,7 @@ struct SchemeEncoder {
 				result.object?.nullable = true
 			}
 			cache[typeID] = result
+            cache[typeID]?.object?.nullable = nil
 			return result
 		}
 	}
