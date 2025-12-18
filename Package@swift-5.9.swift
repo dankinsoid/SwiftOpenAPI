@@ -16,7 +16,7 @@ let package = Package(
 		.library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
 	],
 	dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0")
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0"..<"700.0.0"),
 	],
 	targets: [
 		.target(
